@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.annulusgames.arch.unity": {
+      "version": "https://github.com/AnnulusGames/Arch.Unity.git?path=src/Arch.Unity/Assets/Arch.Unity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "e32b48d99d2f2158a02c0b197fb320c8d05119c1"
+    },
     "com.cysharp.r3": {
       "version": "https://github.com/Cysharp/R3.git?path=src/R3.Unity/Assets/R3.Unity",
       "depth": 0,

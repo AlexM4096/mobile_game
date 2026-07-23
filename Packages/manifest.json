@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.annulusgames.arch.unity": "https://github.com/AnnulusGames/Arch.Unity.git?path=src/Arch.Unity/Assets/Arch.Unity",
     "com.cysharp.r3": "https://github.com/Cysharp/R3.git?path=src/R3.Unity/Assets/R3.Unity",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.cysharp.zstring": "https://github.com/Cysharp/ZString.git?path=src/ZString.Unity/Assets/Scripts/ZString",
@@ -24,6 +25,7 @@
     "com.unity.timeline": "1.8.12",
     "com.unity.ugui": "2.0.0",
     "jp.hadashikick.vcontainer": "1.19.0",
+    "media.lightside.unitext": "2.12.12",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
@@ -57,8 +59,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "media.lightside.unitext": "2.12.12"
+    "com.unity.modules.xr": "1.0.0"
   },
   "scopedRegistries": [
     {
