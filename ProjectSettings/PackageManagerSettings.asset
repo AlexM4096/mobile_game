@@ -46,6 +46,8 @@ MonoBehaviour:
     m_Url: https://package.openupm.com
     m_Scopes:
     - jp.hadashikick.vcontainer
+    - com.ivanmurzak
+    - extensions.unity
     m_IsDefault: 0
     m_Capabilities: 0
     m_ConfigSource: 4
@@ -63,11 +65,11 @@ MonoBehaviour:
     m_Compliance:
       m_Status: 0
       m_Violations: []
-  m_UserSelectedRegistryName: Light Side
+  m_UserSelectedRegistryName: package.openupm.com
   m_UserAddingNewScopedRegistry: 0
   m_RegistryInfoDraft:
     m_Modified: 0
     m_ErrorMessage: 
-    m_UserModificationsInstanceId: -924
-    m_OriginalInstanceId: -926
+    m_UserModificationsInstanceId: -900
+    m_OriginalInstanceId: -904
   m_LoadAssets: 0
