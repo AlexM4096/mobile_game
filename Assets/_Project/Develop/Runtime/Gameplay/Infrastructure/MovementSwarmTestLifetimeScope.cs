@@ -80,6 +80,7 @@ namespace _Project.Gameplay.Infrastructure
                 systems.Add<DamageSystem>(SystemRunner.Update);
                 systems.Add<HealSystem>(SystemRunner.Update);
                 systems.Add<PositionSyncSystem>(SystemRunner.PreLateUpdate);
+                systems.Add<RotationSyncSystem>(SystemRunner.PreLateUpdate);
                 systems.Add<HealthBarSystem>(SystemRunner.PreLateUpdate);
             });
             builder.RegisterEntryPoint<SwarmSpawner>();
