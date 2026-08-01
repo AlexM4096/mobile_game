@@ -8,14 +8,13 @@ namespace _Project.Gameplay.Features.Movement.Systems
 {
     public sealed class TargetSystem : UnitySystemBase
     {
-        private readonly MovementSettings settings;
         private readonly QueryDescription query = 
             new QueryDescription()
                 .WithAll<Position, Velocity, MoveSpeed, Target>();
 
-        public TargetSystem(World world, MovementSettings settings) : base(world)
+        public TargetSystem(World world) : base(world)
         {
-            this.settings = settings;
+
         }
 
         public override void Update(in SystemState state)

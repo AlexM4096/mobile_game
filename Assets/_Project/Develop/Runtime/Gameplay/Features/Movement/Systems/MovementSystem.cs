@@ -38,7 +38,7 @@ namespace _Project.Gameplay.Features.Movement.Systems
             public void Execute(NativeChunk chunk)
             {
                 var positionArray = chunk.GetNativeArray<Position>(PositionId);
-                var velocityArray = chunk.GetNativeArray<Position>(VelocityId);
+                var velocityArray = chunk.GetNativeArray<Velocity>(VelocityId);
 
                 var length = positionArray.Length;
 

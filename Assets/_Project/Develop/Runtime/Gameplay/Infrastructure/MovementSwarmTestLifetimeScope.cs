@@ -2,12 +2,13 @@ using Arch.Core;
 using Arch.Unity;
 using Arch.Unity.Conversion;
 using Arch.Unity.Toolkit;
-using _Project.Gameplay.Features.Health.Components;
+using _Project.Gameplay.Features.Collision;
+using _Project.Gameplay.Features.Collision.Components;
+using _Project.Gameplay.Features.Collision.Systems;
 using _Project.Gameplay.Features.Health.Systems;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Movement.Components;
 using _Project.Gameplay.Features.Movement.Systems;
-using _Project.Gameplay.Features.Movement.Views;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
@@ -25,9 +26,12 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, Min(0f)] private float innerSpawnRadius = 7f;
         [SerializeField, Min(0f)] private float outerSpawnRadius = 11f;
         [SerializeField] private int randomSeed = 12345;
-        [SerializeField] private EnemyGameObjectView enemyPrefab;
+        [SerializeField] private GameObject enemyPrefab;
         [SerializeField, Min(1f)] private float enemyHealth = 100f;
         [SerializeField, Min(1f)] private float targetHealth = 100f;
+        [Header("Collision")]
+        [SerializeField, Min(0.01f)] private float enemyColliderRadius = 0.25f;
+        [SerializeField, Min(0.01f)] private float targetColliderRadius = 0.35f;
         [Header("Health Bars")]
         [SerializeField] private Vector3 healthBarWorldOffset = new(0f, 0.45f, 0f);
         [SerializeField, Min(1f)] private float healthBarWidth = 56f;
@@ -43,6 +47,8 @@ namespace _Project.Gameplay.Infrastructure
                 enemySpeed,
                 enemyHealth,
                 targetHealth,
+                enemyColliderRadius,
+                targetColliderRadius,
                 innerSpawnRadius,
                 outerSpawnRadius,
                 randomSeed,
@@ -59,6 +65,9 @@ namespace _Project.Gameplay.Infrastructure
                 healthBarWorldOffset,
                 healthBarWidth,
                 healthBarHeight));
+            var matrix = new CollisionMatrix();
+            matrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Enemy, false);
+            builder.RegisterInstance(matrix);
             builder.Register<TargetEntityReference>(Lifetime.Scoped);
             builder.UseNewArchApp(Lifetime.Scoped, systems =>
             {
@@ -66,6 +75,8 @@ namespace _Project.Gameplay.Infrastructure
                 systems.Add<TargetControlSystem>(SystemRunner.Update);
                 systems.Add<TargetSystem>(SystemRunner.Update);
                 systems.Add<MovementSystem>(SystemRunner.Update);
+                systems.Add<CircleCollisionSystem>(SystemRunner.Update);
+                systems.Add<CollisionDamageSystem>(SystemRunner.Update);
                 systems.Add<DamageSystem>(SystemRunner.Update);
                 systems.Add<HealSystem>(SystemRunner.Update);
                 systems.Add<PositionSyncSystem>(SystemRunner.PreLateUpdate);
@@ -82,15 +93,19 @@ namespace _Project.Gameplay.Infrastructure
             float enemySpeed,
             float enemyHealth,
             float targetHealth,
+            float enemyColliderRadius,
+            float targetColliderRadius,
             float innerSpawnRadius,
             float outerSpawnRadius,
             int randomSeed,
-            EnemyGameObjectView enemyPrefab)
+            GameObject enemyPrefab)
         {
             EnemyCount = enemyCount;
             EnemySpeed = enemySpeed;
             EnemyHealth = enemyHealth;
             TargetHealth = targetHealth;
+            EnemyColliderRadius = enemyColliderRadius;
+            TargetColliderRadius = targetColliderRadius;
             InnerSpawnRadius = innerSpawnRadius;
             OuterSpawnRadius = outerSpawnRadius;
             RandomSeed = randomSeed;
@@ -101,10 +116,12 @@ namespace _Project.Gameplay.Infrastructure
         public float EnemySpeed { get; }
         public float EnemyHealth { get; }
         public float TargetHealth { get; }
+        public float EnemyColliderRadius { get; }
+        public float TargetColliderRadius { get; }
         public float InnerSpawnRadius { get; }
         public float OuterSpawnRadius { get; }
         public int RandomSeed { get; }
-        public EnemyGameObjectView EnemyPrefab { get; }
+        public GameObject EnemyPrefab { get; }
     }
 
     internal sealed class SwarmSpawner : IStartable, System.IDisposable
@@ -136,6 +153,13 @@ namespace _Project.Gameplay.Infrastructure
             var targetEntity = world.Create(
                 new Position { Value = Vector2.zero },
                 new Velocity { Value = Vector2.zero },
+                new CircleCollider
+                {
+                    Radius = configuration.TargetColliderRadius,
+                    Kind = ColliderKind.Solid,
+                    BodyType = ColliderBodyType.Dynamic,
+                    Layer = CollisionLayer.Player
+                },
                 new HealthComponent { Current = configuration.TargetHealth, Max = configuration.TargetHealth }
             );
             targetEntityReference.Entity = targetEntity;
@@ -157,6 +181,13 @@ namespace _Project.Gameplay.Infrastructure
                     new Velocity { Value = Vector2.zero },
                     new MoveSpeed { Value = configuration.EnemySpeed },
                     new Target { Entity = targetEntity },
+                    new CircleCollider
+                    {
+                        Radius = configuration.EnemyColliderRadius,
+                        Kind = ColliderKind.Solid,
+                        BodyType = ColliderBodyType.Dynamic,
+                        Layer = CollisionLayer.Enemy
+                    },
                     new HealthComponent { Current = Random.Range(1, configuration.EnemyHealth), Max = configuration.EnemyHealth });
                 var view = Object.Instantiate(configuration.EnemyPrefab, spawnedViewsRoot);
                 view.name = $"Enemy View {index + 1}";
