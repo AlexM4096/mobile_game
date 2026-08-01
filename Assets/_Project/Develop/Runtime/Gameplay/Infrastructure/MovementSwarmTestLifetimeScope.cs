@@ -2,6 +2,8 @@ using Arch.Core;
 using Arch.Unity;
 using Arch.Unity.Conversion;
 using Arch.Unity.Toolkit;
+using _Project.Gameplay.Features.Health.Components;
+using _Project.Gameplay.Features.Health.Systems;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Movement.Components;
 using _Project.Gameplay.Features.Movement.Systems;
@@ -10,6 +12,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
 using VContainer.Unity;
+using HealthComponent = _Project.Gameplay.Features.Health.Components.Health;
 
 namespace _Project.Gameplay.Infrastructure
 {
@@ -23,6 +26,12 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, Min(0f)] private float outerSpawnRadius = 11f;
         [SerializeField] private int randomSeed = 12345;
         [SerializeField] private EnemyGameObjectView enemyPrefab;
+        [SerializeField, Min(1f)] private float enemyHealth = 100f;
+        [SerializeField, Min(1f)] private float targetHealth = 100f;
+        [Header("Health Bars")]
+        [SerializeField] private Vector3 healthBarWorldOffset = new(0f, 0.45f, 0f);
+        [SerializeField, Min(1f)] private float healthBarWidth = 56f;
+        [SerializeField, Min(1f)] private float healthBarHeight = 7f;
         [Header("Target Movement")]
         [SerializeField, Min(0f)] private float targetSpeed = 2f;
         [SerializeField, Min(0.01f)] private float targetDirectionChangeInterval = 1.5f;
@@ -32,6 +41,8 @@ namespace _Project.Gameplay.Infrastructure
             var configuration = new SwarmConfiguration(
                 enemyCount,
                 enemySpeed,
+                enemyHealth,
+                targetHealth,
                 innerSpawnRadius,
                 outerSpawnRadius,
                 randomSeed,
@@ -44,6 +55,10 @@ namespace _Project.Gameplay.Infrastructure
                 targetSpeed,
                 targetDirectionChangeInterval,
                 randomSeed));
+            builder.RegisterInstance(new HealthBarSettings(
+                healthBarWorldOffset,
+                healthBarWidth,
+                healthBarHeight));
             builder.Register<TargetEntityReference>(Lifetime.Scoped);
             builder.UseNewArchApp(Lifetime.Scoped, systems =>
             {
@@ -51,7 +66,10 @@ namespace _Project.Gameplay.Infrastructure
                 systems.Add<TargetControlSystem>(SystemRunner.Update);
                 systems.Add<TargetSystem>(SystemRunner.Update);
                 systems.Add<MovementSystem>(SystemRunner.Update);
+                systems.Add<DamageSystem>(SystemRunner.Update);
+                systems.Add<HealSystem>(SystemRunner.Update);
                 systems.Add<PositionSyncSystem>(SystemRunner.PreLateUpdate);
+                systems.Add<HealthBarSystem>(SystemRunner.PreLateUpdate);
             });
             builder.RegisterEntryPoint<SwarmSpawner>();
         }
@@ -62,6 +80,8 @@ namespace _Project.Gameplay.Infrastructure
         public SwarmConfiguration(
             int enemyCount,
             float enemySpeed,
+            float enemyHealth,
+            float targetHealth,
             float innerSpawnRadius,
             float outerSpawnRadius,
             int randomSeed,
@@ -69,6 +89,8 @@ namespace _Project.Gameplay.Infrastructure
         {
             EnemyCount = enemyCount;
             EnemySpeed = enemySpeed;
+            EnemyHealth = enemyHealth;
+            TargetHealth = targetHealth;
             InnerSpawnRadius = innerSpawnRadius;
             OuterSpawnRadius = outerSpawnRadius;
             RandomSeed = randomSeed;
@@ -77,6 +99,8 @@ namespace _Project.Gameplay.Infrastructure
 
         public int EnemyCount { get; }
         public float EnemySpeed { get; }
+        public float EnemyHealth { get; }
+        public float TargetHealth { get; }
         public float InnerSpawnRadius { get; }
         public float OuterSpawnRadius { get; }
         public int RandomSeed { get; }
@@ -111,7 +135,8 @@ namespace _Project.Gameplay.Infrastructure
             spawnedViewsRoot = new GameObject("Spawned Enemy Views").transform;
             var targetEntity = world.Create(
                 new Position { Value = Vector2.zero },
-                new Velocity { Value = Vector2.zero }
+                new Velocity { Value = Vector2.zero },
+                new HealthComponent { Current = configuration.TargetHealth, Max = configuration.TargetHealth }
             );
             targetEntityReference.Entity = targetEntity;
             var targetView = Object.Instantiate(configuration.EnemyPrefab, spawnedViewsRoot);
@@ -131,7 +156,8 @@ namespace _Project.Gameplay.Infrastructure
                     new Position { Value = position },
                     new Velocity { Value = Vector2.zero },
                     new MoveSpeed { Value = configuration.EnemySpeed },
-                    new Target { Entity = targetEntity });
+                    new Target { Entity = targetEntity },
+                    new HealthComponent { Current = Random.Range(1, configuration.EnemyHealth), Max = configuration.EnemyHealth });
                 var view = Object.Instantiate(configuration.EnemyPrefab, spawnedViewsRoot);
                 view.name = $"Enemy View {index + 1}";
                 view.transform.position = new Vector3(position.x, position.y, 0f);
