@@ -1,5 +1,4 @@
 using System;
-using _Project.Gameplay.Features.Collision.Components;
 
 namespace _Project.Gameplay.Features.Collision
 {
@@ -7,8 +6,7 @@ namespace _Project.Gameplay.Features.Collision
     {
         private const int LayerCount = (int)CollisionLayer.Projectile + 1;
 
-        private readonly bool[,] interactions =
-            new bool[LayerCount, LayerCount];
+        private readonly bool[,] _interactions = new bool[LayerCount, LayerCount];
 
         public CollisionMatrix()
         {
@@ -23,7 +21,7 @@ namespace _Project.Gameplay.Features.Collision
 
         public bool CanInteract(CollisionLayer first, CollisionLayer second)
         {
-            return IsValid(first) && IsValid(second) && interactions[(int)first, (int)second];
+            return IsValid(first) && IsValid(second) && _interactions[(int)first, (int)second];
         }
 
         public void SetInteraction(CollisionLayer first, CollisionLayer second, bool enabled)
@@ -38,8 +36,8 @@ namespace _Project.Gameplay.Features.Collision
                 throw new ArgumentOutOfRangeException(nameof(second), second, "Choose a concrete collision layer.");
             }
 
-            interactions[(int)first, (int)second] = enabled;
-            interactions[(int)second, (int)first] = enabled;
+            _interactions[(int)first, (int)second] = enabled;
+            _interactions[(int)second, (int)first] = enabled;
         }
 
         private static bool IsValid(CollisionLayer layer)

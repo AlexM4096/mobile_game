@@ -44,6 +44,21 @@ Assets/_Project/
 └── Art/                        # Art assets
 ```
 
+## Feature template
+
+```
+Features/<Name>/
+├── <Name>Feature.cs              # → rules/arch-features.md
+├── <Name>FeatureComponents.cs    # → rules/arch-components.md
+├── Systems/
+│   ├── <Verb><Subject>System.cs  # → rules/arch-systems.md
+│   └── ...
+├── <Name>View.cs                 # optional
+├── <Name>Registrator.cs          # optional
+├── <Name>Factory.cs              # optional - factory to spawn entity for feature 
+└── ...                           
+```
+
 **Parallelism between `Gameplay/` and `Meta/`** are two game domains of the same level. Both follow the same pattern: the `Infrastructure/` subfolder for bootstraps/installers for their scene and the `Features/` subfolder for feature division. When meta-mechanics (currencies, progression, battle passes) appear in the game, their features are placed in `Meta/Features/`, following the same pattern as gameplay features. Don't mix meta-logic in `Gameplay/Features/` and vice versa.
 
 **Resources vs Addressables.** Addressables is a default option. `Resources/` should contain only what must be available at startup without asynchronous loading and justifies the increase in build size.

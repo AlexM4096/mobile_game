@@ -1,0 +1,119 @@
+using Arch.Core;
+using Arch.Unity.Conversion;
+using Arch.Unity.Toolkit;
+using _Project.Gameplay.Features.Collision;
+using _Project.Gameplay.Features.Health;
+using _Project.Gameplay.Features.Movement;
+using _Project.Gameplay.Features.Player;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace _Project.Gameplay.Features.Shooting.Systems
+{
+    public sealed class ShootProjectilesSystem : UnitySystemBase
+    {
+        private static readonly QueryDescription _description =
+            new QueryDescription()
+                .WithAll<PlayerTag, Position>();
+
+        private readonly ProjectileSettings _settings;
+        private double _nextShotTime;
+
+        public ShootProjectilesSystem(World world, ProjectileSettings settings) : base(world)
+        {
+            _settings = settings;
+        }
+
+        public override void Update(in SystemState state)
+        {
+            if (state.Time < _nextShotTime || !IsShootPressed())
+            {
+                return;
+            }
+
+            var hasPlayer = false;
+            var playerPosition = Vector2.zero;
+            World.Query(in _description, (ref Position position) =>
+            {
+                if (hasPlayer)
+                {
+                    return;
+                }
+
+                hasPlayer = true;
+                playerPosition = position.Value;
+            });
+
+            if (!hasPlayer || !TryGetMouseDirection(playerPosition, out var direction))
+            {
+                return;
+            }
+
+            SpawnProjectile(playerPosition, direction);
+            _nextShotTime = state.Time + _settings.FireCooldown;
+        }
+
+        private void SpawnProjectile(Vector2 playerPosition, Vector2 direction)
+        {
+            var position = playerPosition + direction * (_settings.Radius + 0.4f);
+            var projectileEntity = World.Create(
+                new ProjectileTag(),
+                new Position { Value = position },
+                new Velocity { Value = direction * _settings.Speed },
+                new CircleCollider
+                {
+                    Radius = _settings.Radius,
+                    Kind = ColliderKind.Trigger,
+                    BodyType = ColliderBodyType.Dynamic,
+                    Layer = CollisionLayer.Projectile
+                },
+                new CollisionEvents(),
+                new DamageOnCollision
+                {
+                    Amount = _settings.Damage,
+                    EventType = CollisionEventType.TriggerEnter
+                },
+                new ProjectileLifetime { Value = _settings.Lifetime });
+
+            if (_settings.Prefab == null)
+            {
+                return;
+            }
+
+            var view = Object.Instantiate(_settings.Prefab);
+            view.name = "Projectile View";
+            view.transform.position = new Vector3(position.x, position.y, 0f);
+            World.Add(projectileEntity, new GameObjectReference(view));
+        }
+
+        private static bool IsShootPressed()
+        {
+            return Keyboard.current?.spaceKey.wasPressedThisFrame == true ||
+                   Mouse.current?.leftButton.wasPressedThisFrame == true;
+        }
+
+        private static bool TryGetMouseDirection(Vector2 playerPosition, out Vector2 direction)
+        {
+            direction = Vector2.zero;
+
+            var mouse = Mouse.current;
+            var camera = Camera.main;
+            if (mouse == null || camera == null)
+            {
+                return false;
+            }
+
+            var screenPosition = mouse.position.ReadValue();
+            var worldPosition = camera.ScreenToWorldPoint(
+                new Vector3(screenPosition.x, screenPosition.y, -camera.transform.position.z));
+            var difference = (Vector2)worldPosition - playerPosition;
+            if (difference == Vector2.zero)
+            {
+                return false;
+            }
+
+            direction = difference.normalized;
+            return true;
+        }
+    }
+}
