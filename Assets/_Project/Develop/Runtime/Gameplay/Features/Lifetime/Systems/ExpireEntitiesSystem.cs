@@ -1,7 +1,6 @@
 using Arch.Buffer;
 using Arch.Core;
 using Arch.Unity.Toolkit;
-using _Project.Gameplay.Features.Health;
 
 namespace _Project.Gameplay.Features.Lifetime.Systems
 {
@@ -28,10 +27,6 @@ namespace _Project.Gameplay.Features.Lifetime.Systems
                 }
 
                 lifetime.Value -= deltaTime;
-                if (lifetime.Value <= 0f)
-                {
-                    commandBuffer.Add<DeadTag>(entity);
-                }
             });
 
             commandBuffer.Playback(World, false);

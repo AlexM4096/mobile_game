@@ -10,7 +10,6 @@ namespace _Project.Gameplay.Features.Health
 
     public struct DamageRequest { public float Amount; }
     public struct HealRequest { public float Amount; }
-    public struct DeadTag { }
 
     public struct DamageOnCollision
     {

@@ -26,9 +26,6 @@ namespace _Project.Gameplay.Features.Health.Systems
             {
                 health.Current = Mathf.Clamp(health.Current - damageRequest.Amount, 0f, health.Max);
                 commandBuffer.Remove<DamageRequest>(entity);
-
-                if (health.Current <= 0)
-                    commandBuffer.Add<DeadTag>(entity);
             });
 
             commandBuffer.Playback(World, false);

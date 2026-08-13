@@ -2,8 +2,9 @@ using Arch.Core;
 using Arch.Unity;
 using Arch.Unity.Conversion;
 using _Project.Gameplay.Features.Collision;
+using _Project.Gameplay.Features.Death;
+using _Project.Gameplay.Features.Destroy;
 using _Project.Gameplay.Features.Health;
-using _Project.Gameplay.Features.Health.Systems;
 using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
@@ -11,6 +12,7 @@ using _Project.Gameplay.Features.Shooting;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
+using _Project.Gameplay.Features.Health.Systems;
 
 namespace _Project.Gameplay.Infrastructure
 {
@@ -94,8 +96,10 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddMovementFeature();
                     systems.AddCollisionFeature();
                     systems.AddHealthFeature();
+                    systems.AddDeathFeature();
                     systems.AddShootingFeature();
                     systems.AddLifetimeFeature();
+                    systems.AddDestroyFeature();
                 });
             builder.RegisterEntryPoint<SwarmSpawner>();
         }

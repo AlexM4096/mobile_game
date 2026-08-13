@@ -23,7 +23,8 @@ namespace _Project.Gameplay.Features.Movement.Systems
         {
             World.InlineQuery<SyncRotationQuery, Velocity, GameObjectReference>(
                 in _description,
-                ref _query);
+                ref _query
+            );
         }
 
         private struct SyncRotationQuery : IForEach<Velocity, GameObjectReference>
