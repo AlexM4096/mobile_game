@@ -11,8 +11,9 @@ namespace _Project.Gameplay.Features.Health
             systems.Add<ApplyCollisionDamageSystem>(SystemRunner.Update);
             systems.Add<ApplyDamageSystem>(SystemRunner.Update);
             systems.Add<ApplyHealSystem>(SystemRunner.Update);
-            systems.Add<UpdateHealthBarsSystem>(SystemRunner.PreLateUpdate);
-            systems.Add<DestroyDeadEntitiesSystem>(SystemRunner.PostLateUpdate);
+            systems.Add<DestroyViewsSystem>(SystemRunner.Update);
+            systems.Add<DestroyEntitiesSystem>(SystemRunner.Update);
+            systems.Add<UpdateHealthBarsSystem>(SystemRunner.PreLateUpdate);     
         }
     }
 }
