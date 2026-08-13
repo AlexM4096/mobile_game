@@ -4,6 +4,7 @@ using Arch.Unity.Conversion;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Health.Systems;
+using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Shooting;
@@ -44,7 +45,8 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, Min(0f)] private float projectileSpeed = 9f;
         [SerializeField, Min(0f)] private float projectileDamage = 25f;
         [SerializeField, Min(0.01f)] private float projectileRadius = 0.12f;
-        [SerializeField, Min(0.01f)] private float projectileLifetime = 1.5f;
+        [SerializeField, Tooltip("-1 means infinite lifetime.")]
+        private float projectileLifetime = 1.5f;
         [SerializeField, Min(0f)] private float fireCooldown = 0.2f;
 
         protected override void Configure(IContainerBuilder builder)
@@ -84,7 +86,7 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(collisionMatrix);
 
             builder.UseNewArchApp(
-                Lifetime.Scoped,
+                VContainer.Lifetime.Scoped,
                 EntityConversion.DefaultWorld,
                 systems =>
                 {
@@ -93,6 +95,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddCollisionFeature();
                     systems.AddHealthFeature();
                     systems.AddShootingFeature();
+                    systems.AddLifetimeFeature();
                 });
             builder.RegisterEntryPoint<SwarmSpawner>();
         }

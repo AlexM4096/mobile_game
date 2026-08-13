@@ -9,7 +9,7 @@ namespace _Project.Gameplay.Features.Shooting
         public static void AddShootingFeature(this NewArchAppBuilder systems)
         {
             systems.Add<ShootProjectilesSystem>(SystemRunner.PreUpdate);
-            systems.Add<ExpireProjectilesSystem>(SystemRunner.Update);
+            systems.Add<ExpireProjectilesOnEnemyHitSystem>(SystemRunner.Update);
         }
     }
 }

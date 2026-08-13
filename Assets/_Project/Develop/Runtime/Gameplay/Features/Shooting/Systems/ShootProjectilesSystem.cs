@@ -3,6 +3,7 @@ using Arch.Unity.Conversion;
 using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Health;
+using EntityLifetime = _Project.Gameplay.Features.Lifetime.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using UnityEngine;
@@ -73,7 +74,7 @@ namespace _Project.Gameplay.Features.Shooting.Systems
                     Amount = _settings.Damage,
                     EventType = CollisionEventType.TriggerEnter
                 },
-                new ProjectileLifetime { Value = _settings.Lifetime });
+                new EntityLifetime { Value = _settings.Lifetime });
 
             if (_settings.Prefab == null)
             {
