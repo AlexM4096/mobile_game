@@ -5,7 +5,7 @@ using _Project.Gameplay.Features.Health.Views;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
-using PositionComponent = _Project.Gameplay.Features.Movement.Position;
+using PositionComponent = _Project.Gameplay.Features.Common.Position;
 
 namespace _Project.Gameplay.Features.Health.Systems
 {

@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Unity.Conversion;
 using Arch.Unity.Toolkit;
+using _Project.Gameplay.Features.Common;
 
 namespace _Project.Gameplay.Features.Movement.Systems
 {
@@ -22,7 +23,8 @@ namespace _Project.Gameplay.Features.Movement.Systems
         {
             World.InlineQuery<SyncPositionQuery, Position, GameObjectReference>(
                 in _description,
-                ref _query);
+                ref _query
+            );
         }
 
         private struct SyncPositionQuery : IForEach<Position, GameObjectReference>

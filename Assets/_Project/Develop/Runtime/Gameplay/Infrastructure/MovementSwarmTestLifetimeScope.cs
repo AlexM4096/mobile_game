@@ -1,18 +1,23 @@
 using Arch.Core;
 using Arch.Unity;
 using Arch.Unity.Conversion;
+using _Project.Gameplay.Features.AI;
 using _Project.Gameplay.Features.Collision;
+using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.Death;
 using _Project.Gameplay.Features.Destroy;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
+using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using _Project.Gameplay.Features.Health.Systems;
+using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
+using quaternion = Unity.Mathematics.quaternion;
 
 namespace _Project.Gameplay.Infrastructure
 {
@@ -68,7 +73,6 @@ namespace _Project.Gameplay.Infrastructure
 
             builder.RegisterInstance(configuration);
             builder.RegisterInstance(new MovementSettings(arrivalDistance));
-            builder.RegisterInstance(new PlayerMovementSettings(targetSpeed));
             builder.RegisterInstance(new ProjectileSettings(
                 projectilePrefab,
                 projectileSpeed,
@@ -93,7 +97,9 @@ namespace _Project.Gameplay.Infrastructure
                 systems =>
                 {
                     systems.AddPlayerFeature();
+                    systems.AddAIFeature();
                     systems.AddMovementFeature();
+                    systems.AddRotationFeature();
                     systems.AddCollisionFeature();
                     systems.AddHealthFeature();
                     systems.AddDeathFeature();
@@ -177,7 +183,11 @@ namespace _Project.Gameplay.Infrastructure
                 new PlayerTag(),
                 new PlayerAim { Value = Vector2.right },
                 new Position { Value = Vector2.zero },
-                new Velocity { Value = Vector2.zero },
+                new RotationComponent { Value = quaternion.identity },
+                new FlipRotationTag(),
+                new Direction(),
+                new MoveSpeed { Value = 5 },
+                new Velocity(),
                 new CircleCollider
                 {
                     Radius = _configuration.TargetColliderRadius,
@@ -207,9 +217,11 @@ namespace _Project.Gameplay.Infrastructure
                 var position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
                 var entity = _world.Create(
                     new Position { Value = position },
-                    new Velocity { Value = Vector2.zero },
+                    new RotationComponent { Value = quaternion.identity },
+                    new FlipRotationTag(),
+                    new Direction() { Value = Vector2.right },
+                    new Velocity(),
                     new MoveSpeed { Value = _configuration.EnemySpeed },
-                    new Target { Entity = targetEntity },
                     new CircleCollider
                     {
                         Radius = _configuration.EnemyColliderRadius,

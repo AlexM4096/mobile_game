@@ -9,10 +9,9 @@ namespace _Project.Gameplay.Features.Movement
     {
         public static void AddMovementFeature(this NewArchAppBuilder systems)
         {
-            systems.Add<MoveToTargetSystem>(SystemRunner.Update);
+            systems.Add<CalculateVelocitySystem>(SystemRunner.Update);
             systems.Add<MoveEntitiesSystem>(SystemRunner.Update);
             systems.Add<SyncPositionSystem>(SystemRunner.PreLateUpdate);
-            systems.Add<SyncRotationSystem>(SystemRunner.PreLateUpdate);
         }
     }
 }

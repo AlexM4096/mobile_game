@@ -5,9 +5,14 @@ using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Health;
 using EntityLifetime = _Project.Gameplay.Features.Lifetime.Lifetime;
 using _Project.Gameplay.Features.Movement;
+using _Project.Gameplay.Features.Common;
+using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
+using quaternion = Unity.Mathematics.quaternion;
 using _Project.Gameplay.Features.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using _Project.Gameplay.Features.Rotation;
+using Unity.Mathematics;
 
 namespace _Project.Gameplay.Features.Shooting.Systems
 {
@@ -60,7 +65,11 @@ namespace _Project.Gameplay.Features.Shooting.Systems
             var projectileEntity = World.Create(
                 new ProjectileTag(),
                 new Position { Value = position },
-                new Velocity { Value = direction * _settings.Speed },
+                new RotationComponent { Value = quaternion.identity },
+                new Direction { Value = direction },
+                new MoveSpeed { Value = _settings.Speed },
+                new Velocity(),
+                new AngularVelocity() { Value = new float3(0, 0, 40) },
                 new CircleCollider
                 {
                     Radius = _settings.Radius,
@@ -83,7 +92,6 @@ namespace _Project.Gameplay.Features.Shooting.Systems
 
             var view = Object.Instantiate(_settings.Prefab);
             view.name = "Projectile View";
-            view.transform.position = new Vector3(position.x, position.y, 0f);
             World.Add(projectileEntity, new GameObjectReference(view));
         }
 

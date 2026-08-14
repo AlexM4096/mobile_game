@@ -10,13 +10,10 @@ namespace _Project.Gameplay.Features.Player.Systems
     {
         private static readonly QueryDescription _description =
             new QueryDescription()
-                .WithAll<PlayerTag, PlayerAim, Velocity>();
+                .WithAll<PlayerTag, PlayerAim, Direction>();
 
-        private readonly PlayerMovementSettings _settings;
-
-        public ControlPlayerSystem(World world, PlayerMovementSettings settings) : base(world)
+        public ControlPlayerSystem(World world) : base(world)
         {
-            _settings = settings;
         }
 
         public override void Update(in SystemState state)
@@ -49,9 +46,9 @@ namespace _Project.Gameplay.Features.Player.Systems
             }
 
             var normalizedDirection = direction == Vector2.zero ? Vector2.zero : direction.normalized;
-            World.Query(in _description, (ref Velocity velocity, ref PlayerAim aim) =>
+            World.Query(in _description, (ref Direction movementDirection, ref PlayerAim aim) =>
             {
-                velocity.Value = normalizedDirection * _settings.Speed;
+                movementDirection.Value = normalizedDirection;
                 if (normalizedDirection != Vector2.zero)
                 {
                     aim.Value = normalizedDirection;
