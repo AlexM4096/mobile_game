@@ -1,5 +1,4 @@
 using Arch.Core;
-using Arch.Unity.Conversion;
 using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Health;
@@ -13,6 +12,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using _Project.Gameplay.Features.Rotation;
 using Unity.Mathematics;
+using PooledViewComponent = _Project.Gameplay.Features.PooledView.PooledView;
 
 namespace _Project.Gameplay.Features.Shooting.Systems
 {
@@ -62,7 +62,7 @@ namespace _Project.Gameplay.Features.Shooting.Systems
         private void SpawnProjectile(Vector2 playerPosition, Vector2 direction)
         {
             var position = playerPosition + direction * (_settings.Radius + 0.4f);
-            var projectileEntity = World.Create(
+            World.Create(
                 new ProjectileTag(),
                 new Position { Value = position },
                 new RotationComponent { Value = quaternion.identity },
@@ -70,6 +70,7 @@ namespace _Project.Gameplay.Features.Shooting.Systems
                 new MoveSpeed { Value = _settings.Speed },
                 new Velocity(),
                 new AngularVelocity() { Value = new float3(0, 0, 40) },
+                new PooledViewComponent { PoolId = _settings.ViewPoolId },
                 new CircleCollider
                 {
                     Radius = _settings.Radius,
@@ -84,15 +85,6 @@ namespace _Project.Gameplay.Features.Shooting.Systems
                     EventType = CollisionEventType.TriggerEnter
                 },
                 new EntityLifetime { Value = _settings.Lifetime });
-
-            if (_settings.Prefab == null)
-            {
-                return;
-            }
-
-            var view = Object.Instantiate(_settings.Prefab);
-            view.name = "Projectile View";
-            World.Add(projectileEntity, new GameObjectReference(view));
         }
 
         private static bool IsShootPressed()

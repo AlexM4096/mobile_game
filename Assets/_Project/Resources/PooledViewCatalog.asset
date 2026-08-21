@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 676edea2f8785af408545f7eeb09ad43, type: 3}
+  m_Name: PooledViewCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.PooledView.PooledViewCatalog
+  viewportMargin: 0.1
+  entries:
+  - poolId: 1
+    prefab: {fileID: 4509844207118935503, guid: ff60058b848a48f4e82639167cc9c2e0, type: 3}
+    preloadCount: 32
+    maxRetained: 128
+    releaseDelay: 0.25
+  - poolId: 2
+    prefab: {fileID: 5792670239869242502, guid: 496cfebc73ec3d943b2f06ebe691198e, type: 3}
+    preloadCount: 8
+    maxRetained: 64
+    releaseDelay: 0.1

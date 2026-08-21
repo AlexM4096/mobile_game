@@ -295,13 +295,14 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
-  enemyCount: 100
+  enemyCount: 1000
   enemySpeed: 3
   arrivalDistance: 0.05
   innerSpawnRadius: 20
   outerSpawnRadius: 24
   randomSeed: 12345
-  enemyPrefab: {fileID: 4509844207118935503, guid: ff60058b848a48f4e82639167cc9c2e0, type: 3}
+  pooledViewCatalog: {fileID: 11400000, guid: 2a8b2d17f383a6e469080993a8fc2016, type: 2}
+  enemyPoolId: 1
   playerPrefab: {fileID: 4069379607421392838, guid: d9ff2b4cb6a8d5241b4bfcbeae7e58f7, type: 3}
   enemyHealth: 100
   targetHealth: 100
@@ -311,7 +312,7 @@ MonoBehaviour:
   healthBarWidth: 56
   healthBarHeight: 7
   targetSpeed: 5
-  projectilePrefab: {fileID: 5792670239869242502, guid: 496cfebc73ec3d943b2f06ebe691198e, type: 3}
+  projectilePoolId: 2
   projectileSpeed: 9
   projectileDamage: 25
   projectileRadius: 0.12

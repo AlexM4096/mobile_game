@@ -1,18 +1,16 @@
-using UnityEngine;
-
 namespace _Project.Gameplay.Features.Shooting
 {
     public readonly struct ProjectileSettings
     {
         public ProjectileSettings(
-            GameObject prefab,
+            int viewPoolId,
             float speed,
             float damage,
             float radius,
             float lifetime,
             float fireCooldown)
         {
-            Prefab = prefab;
+            ViewPoolId = viewPoolId;
             Speed = speed;
             Damage = damage;
             Radius = radius;
@@ -20,7 +18,7 @@ namespace _Project.Gameplay.Features.Shooting
             FireCooldown = fireCooldown;
         }
 
-        public GameObject Prefab { get; }
+        public int ViewPoolId { get; }
         public float Speed { get; }
         public float Damage { get; }
         public float Radius { get; }

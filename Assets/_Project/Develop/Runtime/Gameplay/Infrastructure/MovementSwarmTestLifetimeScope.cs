@@ -12,12 +12,14 @@ using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
+using _Project.Gameplay.Features.PooledView;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using _Project.Gameplay.Features.Health.Systems;
 using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
 using quaternion = Unity.Mathematics.quaternion;
+using PooledViewComponent = _Project.Gameplay.Features.PooledView.PooledView;
 
 namespace _Project.Gameplay.Infrastructure
 {
@@ -30,7 +32,8 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, Min(0f)] private float innerSpawnRadius = 7f;
         [SerializeField, Min(0f)] private float outerSpawnRadius = 11f;
         [SerializeField] private int randomSeed = 12345;
-        [SerializeField] private GameObject enemyPrefab;
+        [SerializeField] private PooledViewCatalog pooledViewCatalog;
+        [SerializeField, Min(1)] private int enemyPoolId = 1;
         [SerializeField] private GameObject playerPrefab;
         [SerializeField, Min(1f)] private float enemyHealth = 100f;
         [SerializeField, Min(1f)] private float targetHealth = 100f;
@@ -48,7 +51,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, Min(0f)] private float targetSpeed = 2f;
 
         [Header("Shooting")]
-        [SerializeField] private GameObject projectilePrefab;
+        [SerializeField, Min(1)] private int projectilePoolId = 2;
         [SerializeField, Min(0f)] private float projectileSpeed = 9f;
         [SerializeField, Min(0f)] private float projectileDamage = 25f;
         [SerializeField, Min(0.01f)] private float projectileRadius = 0.12f;
@@ -58,6 +61,12 @@ namespace _Project.Gameplay.Infrastructure
 
         protected override void Configure(IContainerBuilder builder)
         {
+            if (pooledViewCatalog == null)
+            {
+                throw new System.InvalidOperationException(
+                    "Movement swarm test requires a pooled-view catalog.");
+            }
+
             var configuration = new SwarmConfiguration(
                 enemyCount,
                 enemySpeed,
@@ -68,13 +77,13 @@ namespace _Project.Gameplay.Infrastructure
                 innerSpawnRadius,
                 outerSpawnRadius,
                 randomSeed,
-                enemyPrefab,
+                enemyPoolId,
                 playerPrefab);
 
             builder.RegisterInstance(configuration);
             builder.RegisterInstance(new MovementSettings(arrivalDistance));
             builder.RegisterInstance(new ProjectileSettings(
-                projectilePrefab,
+                projectilePoolId,
                 projectileSpeed,
                 projectileDamage,
                 projectileRadius,
@@ -84,6 +93,11 @@ namespace _Project.Gameplay.Infrastructure
                 healthBarWorldOffset,
                 healthBarWidth,
                 healthBarHeight));
+
+            builder.RegisterInstance(pooledViewCatalog);
+            builder.RegisterEntryPoint<ViewPool>(VContainer.Lifetime.Scoped);
+            builder.Register<IViewVisibilityService, CameraViewVisibilityService>(
+                VContainer.Lifetime.Scoped);
 
             var collisionMatrix = new CollisionMatrix();
             collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Enemy, false);
@@ -106,6 +120,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddDeathFeature();
                     systems.AddShootingFeature();
                     systems.AddLifetimeFeature();
+                    systems.AddPooledViewFeature();
                     systems.AddDestroyFeature();
                 });
             builder.RegisterEntryPoint<SwarmSpawner>();
@@ -124,7 +139,7 @@ namespace _Project.Gameplay.Infrastructure
             float innerSpawnRadius,
             float outerSpawnRadius,
             int randomSeed,
-            GameObject enemyPrefab,
+            int enemyPoolId,
             GameObject playerPrefab)
         {
             EnemyCount = enemyCount;
@@ -136,7 +151,7 @@ namespace _Project.Gameplay.Infrastructure
             InnerSpawnRadius = innerSpawnRadius;
             OuterSpawnRadius = outerSpawnRadius;
             RandomSeed = randomSeed;
-            EnemyPrefab = enemyPrefab;
+            EnemyPoolId = enemyPoolId;
             PlayerPrefab = playerPrefab;
         }
 
@@ -149,7 +164,7 @@ namespace _Project.Gameplay.Infrastructure
         public float InnerSpawnRadius { get; }
         public float OuterSpawnRadius { get; }
         public int RandomSeed { get; }
-        public GameObject EnemyPrefab { get; }
+        public int EnemyPoolId { get; }
         public GameObject PlayerPrefab { get; }
     }
 
@@ -167,12 +182,6 @@ namespace _Project.Gameplay.Infrastructure
 
         public void Start()
         {
-            if (_configuration.EnemyPrefab == null)
-            {
-                Debug.LogError("Movement swarm test requires an enemy prefab.");
-                return;
-            }
-
             if (_configuration.PlayerPrefab == null)
             {
                 Debug.LogError("Movement swarm test requires a player prefab.");
@@ -216,12 +225,13 @@ namespace _Project.Gameplay.Infrastructure
                 var angle = (float)(random.NextDouble() * Mathf.PI * 2f);
                 var radius = Mathf.Lerp(minRadius, maxRadius, (float)random.NextDouble());
                 var position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-                var entity = _world.Create(
+                _world.Create(
                     new Position { Value = position },
                     new RotationComponent { Value = quaternion.identity },
                     new FlipRotationTag(),
                     new Direction() { Value = Vector2.right },
                     new Velocity(),
+                    new PooledViewComponent { PoolId = _configuration.EnemyPoolId },
                     new MoveSpeed { Value = Random.Range(1, _configuration.EnemySpeed) },
                     new CircleCollider
                     {
@@ -235,11 +245,6 @@ namespace _Project.Gameplay.Infrastructure
                         Current = Random.Range(1f, _configuration.EnemyHealth),
                         Max = _configuration.EnemyHealth
                     });
-
-                var view = Object.Instantiate(_configuration.EnemyPrefab, _spawnedViewsRoot);
-                view.name = $"Enemy View {index + 1}";
-                view.transform.position = new Vector3(position.x, position.y, 0f);
-                _world.Add(entity, new GameObjectReference(view));
             }
         }
 
