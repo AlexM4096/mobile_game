@@ -87,6 +87,7 @@ namespace _Project.Gameplay.Infrastructure
 
             var collisionMatrix = new CollisionMatrix();
             collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Enemy, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Enemy, CollisionLayer.Enemy, false);
             collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Projectile, false);
             collisionMatrix.SetInteraction(CollisionLayer.Projectile, CollisionLayer.Projectile, false);
             builder.RegisterInstance(collisionMatrix);
@@ -221,7 +222,7 @@ namespace _Project.Gameplay.Infrastructure
                     new FlipRotationTag(),
                     new Direction() { Value = Vector2.right },
                     new Velocity(),
-                    new MoveSpeed { Value = _configuration.EnemySpeed },
+                    new MoveSpeed { Value = Random.Range(1, _configuration.EnemySpeed) },
                     new CircleCollider
                     {
                         Radius = _configuration.EnemyColliderRadius,

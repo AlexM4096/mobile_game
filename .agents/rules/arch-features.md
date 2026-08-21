@@ -5,7 +5,7 @@ Each feature lives under:
 ```text
 Features/<Name>/
 ├── <Name>Feature.cs
-├── <Name>FeatureComponents.cs
+├── <Name>Components.cs
 ├── Systems/
 │   ├── <Verb><Subject>System.cs
 │   └── ...
@@ -21,7 +21,7 @@ Optional files are created only when required.
 | File                               | Purpose                                               |
 | ---------------------------------- | ----------------------------------------------------- |
 | `<Name>Feature.cs`                 | Extension method that registers the feature's systems |
-| `<Name>FeatureComponents.cs`       | Feature components; follow `rules/arch-components.md` |
+| `<Name>Components.cs`              | Feature components; follow `rules/arch-components.md` |
 | `Systems/<Verb><Subject>System.cs` | Feature systems; follow `rules/arch-systems.md`       |
 | `<Name>View.cs`                    | Optional Unity view                                   |
 | `<Name>Registrator.cs`             | Optional feature-specific registration/helper         |

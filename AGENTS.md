@@ -49,7 +49,7 @@ Assets/_Project/
 ```
 Features/<Name>/
 ├── <Name>Feature.cs              # → rules/arch-features.md
-├── <Name>FeatureComponents.cs    # → rules/arch-components.md
+├── <Name>Components.cs           # → rules/arch-components.md
 ├── Systems/
 │   ├── <Verb><Subject>System.cs  # → rules/arch-systems.md
 │   └── ...

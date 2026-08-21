@@ -50,11 +50,11 @@ header: "Short tag" # ≤12 characters
 multiSelect: false # usually a single choice
 options:
   - label: "Option A (Recommended)"
-  description: "Why this: 1-2 sentences with reasoning."
+    description: "Why this: 1-2 sentences with reasoning."
   - label: "Option B"
-  description: "When it's better: 1-2 sentences with a trade-off."
+    description: "When it's better: 1-2 sentences with a trade-off."
   - label: "Option C"
-  description: "Alternative: 1-2 sentences."
+    description: "Alternative: 1-2 sentences."
 ```
 
 ## When to Stop

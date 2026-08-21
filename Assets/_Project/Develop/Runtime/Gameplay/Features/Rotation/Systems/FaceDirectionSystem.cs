@@ -14,9 +14,8 @@ namespace _Project.Gameplay.Features.Rotation.Systems
 
         private static readonly QueryDescription _description =
             new QueryDescription()
-                .WithAll<RotationComponent, Direction>()
-                .WithNone<AngularVelocity>()
-                .WithNone<FlipRotationTag>();
+                .WithAll<RotationComponent, Direction, FaceDirectionTag>()
+                .WithNone<AngularVelocity>();
 
         private FaceDirectionQuery _query;
 

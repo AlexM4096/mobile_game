@@ -3,7 +3,7 @@
 Components belonging to the same feature must be declared together in:
 
 ```text
-Features/<Name>/<Name>FeatureComponents.cs
+Features/<Name>/<Name>Components.cs
 ```
 
 Feature naming and placement follow `rules/arch-features.md`.
@@ -14,7 +14,7 @@ Do not create one file per component unless there is a strong reason to separate
 
 | Area                    | Rule                                                                                                  |
 | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| Location                | Put feature-owned components in `<Name>FeatureComponents.cs`; see `rules/arch-features.md`            |
+| Location                | Put feature-owned components in `<Name>Components.cs`; see `rules/arch-features.md`                   |
 | Scope                   | Keep components with the feature that owns them                                                       |
 | Naming                  | Use concise domain names such as `Health`, `Damage`, `MoveSpeed`, `DamageRequest`, `EnemyKilledEvent` |
 | Single-field component  | Prefer a one-line declaration                                                                         |
@@ -74,7 +74,7 @@ public struct DamageAppliedEvent
 }
 ```
 
-Tags, requests, and events belong in the same `<Name>FeatureComponents.cs` file as the rest of the feature components.
+Tags, requests, and events belong in the same `<Name>Components.cs` file as the rest of the feature components.
 
 Their systems and feature placement follow `rules/arch-systems.md` and `rules/arch-features.md`.
 
