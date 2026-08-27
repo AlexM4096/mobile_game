@@ -18,8 +18,8 @@ namespace _Project.Gameplay.Features.Player.Systems
             new QueryDescription()
                 .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion>();
 
-        private readonly PlayerInputSettings _inputSettings;
-        private readonly PlayerMovementSettings _movementSettings;
+        private readonly PlayerInputConfig _inputSettings;
+        private readonly PlayerMovementConfig _movementSettings;
 
         private InputAction _pointAction;
         private InputAction _pressAction;
@@ -29,8 +29,8 @@ namespace _Project.Gameplay.Features.Player.Systems
 
         public ReadPlayerOrbitInputSystem(
             World world, 
-            PlayerInputSettings inputSettings,
-            PlayerMovementSettings movementSettings
+            PlayerInputConfig inputSettings,
+            PlayerMovementConfig movementSettings
         ) : base(world)
         {
             _inputSettings = inputSettings;

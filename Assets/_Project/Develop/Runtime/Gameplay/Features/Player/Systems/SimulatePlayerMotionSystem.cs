@@ -14,9 +14,9 @@ namespace _Project.Gameplay.Features.Player.Systems
             new QueryDescription()
                 .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion, ManualMovementTag>();
 
-        private readonly PlayerMovementSettings _settings;
+        private readonly PlayerMovementConfig _settings;
 
-        public SimulatePlayerMotionSystem(World world, PlayerMovementSettings settings) : base(world)
+        public SimulatePlayerMotionSystem(World world, PlayerMovementConfig settings) : base(world)
         {
             _settings = settings;
         }

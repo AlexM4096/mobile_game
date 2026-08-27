@@ -11,14 +11,14 @@ namespace _Project.Gameplay.Features.Player.Systems
         private const int MarkerSegments = 32;
         private static readonly QueryDescription _description = new QueryDescription()
             .WithAll<PlayerTag, PlayerMotion>();
-        private readonly PlayerOrbitVisualizationSettings _settings;
+        private readonly PlayerOrbitVisualizationConfig _settings;
         private GameObject _root;
         private LineRenderer _trajectory;
         private LineRenderer _marker;
         private Material _material;
 
         public UpdatePlayerOrbitVisualizationSystem(
-            World world, PlayerOrbitVisualizationSettings settings) : base(world)
+            World world, PlayerOrbitVisualizationConfig settings) : base(world)
         {
             _settings = settings;
         }

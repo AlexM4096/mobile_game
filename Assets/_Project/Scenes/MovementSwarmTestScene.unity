@@ -295,32 +295,13 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
-  enemyCount: 100
-  enemySpeed: 3
-  arrivalDistance: 0.05
-  innerSpawnRadius: 20
-  outerSpawnRadius: 24
-  randomSeed: 12345
-  enemyPrefab: {fileID: 4509844207118935503, guid: ff60058b848a48f4e82639167cc9c2e0, type: 3}
-  playerPrefab: {fileID: 4069379607421392838, guid: d9ff2b4cb6a8d5241b4bfcbeae7e58f7, type: 3}
-  enemyHealth: 100
-  targetHealth: 100
-  enemyColliderRadius: 1
-  targetColliderRadius: 1
-  healthBarWorldOffset: {x: 0, y: 1, z: 0}
-  healthBarWidth: 56
-  healthBarHeight: 7
-  rotationSpeed: 90
-  launchSpeed: 8
-  decelerationSpeed: 2
-  minimumSpeed: 3
-  bounceSpeedIncrease: 1
-  maximumSpeed: 12
-  pointAction: {fileID: 0}
-  pressAction: {fileID: 0}
-  orbitColor: {r: 0, g: 1, b: 1, a: 0.75}
-  orbitLineWidth: 0.05
-  orbitMarkerRadius: 0.15
+  swarmConfig: {fileID: 11400000, guid: a1111111111111111111111111111111, type: 2}
+  movementConfig: {fileID: 11400000, guid: a2222222222222222222222222222222, type: 2}
+  playerMovementConfig: {fileID: 11400000, guid: a3333333333333333333333333333333, type: 2}
+  playerInputConfig: {fileID: 11400000, guid: a4444444444444444444444444444444, type: 2}
+  playerOrbitVisualizationConfig: {fileID: 11400000, guid: a5555555555555555555555555555555, type: 2}
+  healthBarConfig: {fileID: 11400000, guid: a6666666666666666666666666666666, type: 2}
+  projectileConfig: {fileID: 11400000, guid: a7777777777777777777777777777777, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

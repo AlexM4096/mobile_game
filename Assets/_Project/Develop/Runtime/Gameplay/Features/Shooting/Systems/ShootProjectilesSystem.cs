@@ -22,10 +22,10 @@ namespace _Project.Gameplay.Features.Shooting.Systems
             new QueryDescription()
                 .WithAll<PlayerTag, Position>();
 
-        private readonly ProjectileSettings _settings;
+        private readonly ProjectileConfig _settings;
         private double _nextShotTime;
 
-        public ShootProjectilesSystem(World world, ProjectileSettings settings) : base(world)
+        public ShootProjectilesSystem(World world, ProjectileConfig settings) : base(world)
         {
             _settings = settings;
         }

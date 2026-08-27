@@ -12,9 +12,9 @@ namespace _Project.Gameplay.Features.Player.Systems
         private const float DirectionEpsilonSquared = 0.00000001f;
         private static readonly QueryDescription _description = new QueryDescription()
             .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion, CollisionEvents>();
-        private readonly PlayerMovementSettings _settings;
+        private readonly PlayerMovementConfig _settings;
 
-        public BouncePlayerOnEnvironmentSystem(World world, PlayerMovementSettings settings) : base(world)
+        public BouncePlayerOnEnvironmentSystem(World world, PlayerMovementConfig settings) : base(world)
         {
             _settings = settings;
         }

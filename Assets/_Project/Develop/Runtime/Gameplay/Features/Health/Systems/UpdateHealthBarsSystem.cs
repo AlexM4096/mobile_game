@@ -9,20 +9,6 @@ using PositionComponent = _Project.Gameplay.Features.Common.Position;
 
 namespace _Project.Gameplay.Features.Health.Systems
 {
-    public readonly struct HealthBarSettings
-    {
-        public HealthBarSettings(Vector3 worldOffset, float width, float height)
-        {
-            WorldOffset = worldOffset;
-            Width = width;
-            Height = height;
-        }
-
-        public Vector3 WorldOffset { get; }
-        public float Width { get; }
-        public float Height { get; }
-    }
-
     public sealed class UpdateHealthBarsSystem : UnitySystemBase
     {
         private static readonly Color BackgroundColor = new(0.08f, 0.09f, 0.1f, 0.9f);
@@ -34,7 +20,7 @@ namespace _Project.Gameplay.Features.Health.Systems
         private readonly Dictionary<Entity, HealthBarView> _bars = new();
         private readonly HashSet<Entity> _visibleEntities = new();
         private readonly List<Entity> _staleEntities = new();
-        private readonly HealthBarSettings _settings;
+        private readonly HealthBarConfig _settings;
 
         private GameObject _documentObject;
         private PanelSettings _panelSettings;
@@ -44,7 +30,7 @@ namespace _Project.Gameplay.Features.Health.Systems
         private bool _isUiInitialized;
         private bool _isDisposed;
 
-        public UpdateHealthBarsSystem(World world, HealthBarSettings settings) : base(world)
+        public UpdateHealthBarsSystem(World world, HealthBarConfig settings) : base(world)
         {
             _settings = settings;
         }

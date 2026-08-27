@@ -11,6 +11,7 @@ using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
+using _Project.Gameplay.Features.Shooting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VContainer;
@@ -18,92 +19,30 @@ using VContainer.Unity;
 using _Project.Gameplay.Features.Health.Systems;
 using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
 using quaternion = Unity.Mathematics.quaternion;
+using Sirenix.OdinInspector;
 
 namespace _Project.Gameplay.Infrastructure
 {
     public sealed class MovementSwarmTestLifetimeScope : LifetimeScope
     {
-        [Header("Swarm")]
-        [SerializeField, Min(1)] private int enemyCount = 500;
-        [SerializeField, Min(0f)] private float enemySpeed = 3f;
-        [SerializeField, Min(0f)] private float arrivalDistance = 0.05f;
-        [SerializeField, Min(0f)] private float innerSpawnRadius = 7f;
-        [SerializeField, Min(0f)] private float outerSpawnRadius = 11f;
-        [SerializeField] private int randomSeed = 12345;
-        [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private GameObject playerPrefab;
-        [SerializeField, Min(1f)] private float enemyHealth = 100f;
-        [SerializeField, Min(1f)] private float targetHealth = 100f;
-
-        [Header("Collision")]
-        [SerializeField, Min(0.01f)] private float enemyColliderRadius = 0.25f;
-        [SerializeField, Min(0.01f)] private float targetColliderRadius = 0.35f;
-
-        [Header("Health Bars")]
-        [SerializeField] private Vector3 healthBarWorldOffset = new(0f, 0.45f, 0f);
-        [SerializeField, Min(1f)] private float healthBarWidth = 56f;
-        [SerializeField, Min(1f)] private float healthBarHeight = 7f;
-
-        [Header("Player Movement")]
-        [SerializeField, Min(0f)] private float rotationSpeed = 90f;
-        [SerializeField, Min(0f)] private float launchSpeed = 8f;
-        [SerializeField, Min(0f)] private float decelerationSpeed = 2f;
-        [SerializeField, Min(0f)] private float minimumSpeed = 3f;
-        [SerializeField, Min(0f)] private float bounceSpeedIncrease = 1f;
-        [SerializeField, Min(0f)] private float maximumSpeed = 12f;
-        [SerializeField] private InputActionReference pointAction;
-        [SerializeField] private InputActionReference pressAction;
-
-        [Header("Orbit Visualization")]
-        [SerializeField] private Color orbitColor = new(0f, 1f, 1f, 0.75f);
-        [SerializeField, Min(0.001f)] private float orbitLineWidth = 0.05f;
-        [SerializeField, Min(0.001f)] private float orbitMarkerRadius = 0.15f;
-
-        private void OnValidate()
-        {
-            rotationSpeed = Mathf.Max(0f, rotationSpeed);
-            decelerationSpeed = Mathf.Max(0f, decelerationSpeed);
-            minimumSpeed = Mathf.Max(0f, minimumSpeed);
-            launchSpeed = Mathf.Max(minimumSpeed, launchSpeed);
-            bounceSpeedIncrease = Mathf.Max(0f, bounceSpeedIncrease);
-            maximumSpeed = Mathf.Max(launchSpeed, maximumSpeed);
-            orbitLineWidth = Mathf.Max(0.001f, orbitLineWidth);
-            orbitMarkerRadius = Mathf.Max(0.001f, orbitMarkerRadius);
-        }
+        [SerializeField, InlineEditor] private SwarmConfig swarmConfig;
+        [SerializeField, InlineEditor] private MovementConfig movementConfig;
+        [SerializeField, InlineEditor] private PlayerMovementConfig playerMovementConfig;
+        [SerializeField, InlineEditor] private PlayerInputConfig playerInputConfig;
+        [SerializeField, InlineEditor] private PlayerOrbitVisualizationConfig playerOrbitVisualizationConfig;
+        [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
+        [SerializeField, InlineEditor] private ProjectileConfig projectileConfig;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            var configuration = new SwarmConfiguration(
-                enemyCount,
-                enemySpeed,
-                enemyHealth,
-                targetHealth,
-                enemyColliderRadius,
-                targetColliderRadius,
-                innerSpawnRadius,
-                outerSpawnRadius,
-                randomSeed,
-                enemyPrefab,
-                playerPrefab);
+            builder.RegisterInstance(swarmConfig);
+            builder.RegisterInstance(movementConfig);
+            builder.RegisterInstance(playerMovementConfig);
+            builder.RegisterInstance(playerInputConfig);
+            builder.RegisterInstance(playerOrbitVisualizationConfig);
+            builder.RegisterInstance(healthBarConfig);
+            builder.RegisterInstance(projectileConfig);
 
-            builder.RegisterInstance(configuration);
-            builder.RegisterInstance(new MovementSettings(arrivalDistance));
-            builder.RegisterInstance(new PlayerMovementSettings(
-                rotationSpeed,
-                launchSpeed,
-                decelerationSpeed,
-                minimumSpeed,
-                bounceSpeedIncrease,
-                maximumSpeed));
-            builder.RegisterInstance(new PlayerInputSettings(pointAction, pressAction));
-            builder.RegisterInstance(new PlayerOrbitVisualizationSettings(
-                orbitColor,
-                orbitLineWidth,
-                orbitMarkerRadius));
-            builder.RegisterInstance(new HealthBarSettings(
-                healthBarWorldOffset,
-                healthBarWidth,
-                healthBarHeight));
 
             var collisionMatrix = new CollisionMatrix();
             collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Enemy, false);
@@ -133,62 +72,22 @@ namespace _Project.Gameplay.Infrastructure
         }
     }
 
-    internal readonly struct SwarmConfiguration
-    {
-        public SwarmConfiguration(
-            int enemyCount,
-            float enemySpeed,
-            float enemyHealth,
-            float targetHealth,
-            float enemyColliderRadius,
-            float targetColliderRadius,
-            float innerSpawnRadius,
-            float outerSpawnRadius,
-            int randomSeed,
-            GameObject enemyPrefab,
-            GameObject playerPrefab)
-        {
-            EnemyCount = enemyCount;
-            EnemySpeed = enemySpeed;
-            EnemyHealth = enemyHealth;
-            TargetHealth = targetHealth;
-            EnemyColliderRadius = enemyColliderRadius;
-            TargetColliderRadius = targetColliderRadius;
-            InnerSpawnRadius = innerSpawnRadius;
-            OuterSpawnRadius = outerSpawnRadius;
-            RandomSeed = randomSeed;
-            EnemyPrefab = enemyPrefab;
-            PlayerPrefab = playerPrefab;
-        }
-
-        public int EnemyCount { get; }
-        public float EnemySpeed { get; }
-        public float EnemyHealth { get; }
-        public float TargetHealth { get; }
-        public float EnemyColliderRadius { get; }
-        public float TargetColliderRadius { get; }
-        public float InnerSpawnRadius { get; }
-        public float OuterSpawnRadius { get; }
-        public int RandomSeed { get; }
-        public GameObject EnemyPrefab { get; }
-        public GameObject PlayerPrefab { get; }
-    }
 
     internal sealed class SwarmSpawner : IStartable, System.IDisposable
     {
         private readonly World _world;
-        private readonly SwarmConfiguration _configuration;
-        private readonly PlayerMovementSettings _playerMovementSettings;
+        private readonly SwarmConfig _configuration;
+        private readonly PlayerMovementConfig _playerMovementConfig;
         private Transform _spawnedViewsRoot;
 
         public SwarmSpawner(
             World world,
-            SwarmConfiguration configuration,
-            PlayerMovementSettings playerMovementSettings)
+            SwarmConfig configuration,
+            PlayerMovementConfig playerMovementConfig)
         {
             _world = world;
             _configuration = configuration;
-            _playerMovementSettings = playerMovementSettings;
+            _playerMovementConfig = playerMovementConfig;
         }
 
         public void Start()
@@ -213,7 +112,7 @@ namespace _Project.Gameplay.Infrastructure
                 new RotationComponent { Value = quaternion.identity },
                 new FlipRotationTag(),
                 new Direction { Value = Vector2.right },
-                new Velocity { Value = Vector2.right * _playerMovementSettings.MinimumSpeed },
+                new Velocity { Value = Vector2.right * _playerMovementConfig.MinimumSpeed },
                 new ManualMovementTag(),
                 new CircleCollider
                 {
