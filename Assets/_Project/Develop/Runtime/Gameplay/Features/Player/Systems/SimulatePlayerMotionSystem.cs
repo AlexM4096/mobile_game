@@ -24,8 +24,13 @@ namespace _Project.Gameplay.Features.Player.Systems
         public override void Update(in SystemState state)
         {
             var deltaTime = state.DeltaTime;
-            World.Query(in _description, (ref Position position, ref Direction direction,
-                ref Velocity velocity, ref PlayerMotion motion) =>
+            World.Query(in _description,
+            (
+                ref Position position, 
+                ref Direction direction,
+                ref Velocity velocity, 
+                ref PlayerMotion motion
+            ) =>
             {
                 if (motion.Mode == PlayerMotionMode.Orbit)
                 {
@@ -37,8 +42,13 @@ namespace _Project.Gameplay.Features.Player.Systems
             });
         }
 
-        private void SimulateOrbit(float deltaTime, ref Position position,
-            ref Direction direction, ref Velocity velocity, ref PlayerMotion motion)
+        private void SimulateOrbit(
+            float deltaTime, 
+            ref Position position,
+            ref Direction direction, 
+            ref Velocity velocity, 
+            ref PlayerMotion motion
+        )
         {
             var radiusDirection = position.Value - motion.OrbitCenter;
             if (radiusDirection.sqrMagnitude <= DirectionEpsilonSquared)
@@ -61,8 +71,12 @@ namespace _Project.Gameplay.Features.Player.Systems
             velocity.Value = tangent * (_settings.RotationSpeed * Mathf.Deg2Rad * motion.OrbitRadius);
         }
 
-        private void SimulateFlight(float deltaTime, ref Position position,
-            ref Direction direction, ref Velocity velocity)
+        private void SimulateFlight(
+            float deltaTime, 
+            ref Position position,
+            ref Direction direction, 
+            ref Velocity velocity
+        )
         {
             var flightDirection = velocity.Value.sqrMagnitude > DirectionEpsilonSquared
                 ? velocity.Value.normalized

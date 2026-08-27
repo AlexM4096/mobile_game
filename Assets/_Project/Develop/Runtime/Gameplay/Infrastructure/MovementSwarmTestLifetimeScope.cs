@@ -12,6 +12,7 @@ using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -83,17 +84,21 @@ namespace _Project.Gameplay.Infrastructure
         private readonly World _world;
         private readonly SwarmConfig _configuration;
         private readonly PlayerMovementConfig _playerMovementConfig;
+        private readonly Camera _mainCamera;
         private Transform _spawnedViewsRoot;
+        private CinemachineCamera _playerFollowCamera;
 
         public SwarmSpawner(
             World world,
             SwarmConfig configuration,
-            PlayerMovementConfig playerMovementConfig
+            PlayerMovementConfig playerMovementConfig,
+            Camera mainCamera
         )
         {
             _world = world;
             _configuration = configuration;
             _playerMovementConfig = playerMovementConfig;
+            _mainCamera = mainCamera;
         }
 
         public void Start()
@@ -137,6 +142,7 @@ namespace _Project.Gameplay.Infrastructure
             targetView.name = "Player View";
             targetView.transform.position = Vector3.zero;
             _world.Add(targetEntity, new GameObjectReference(targetView));
+            CreatePlayerFollowCamera(targetView.transform);
 
             var random = new System.Random(_configuration.RandomSeed);
             var minRadius = Mathf.Min(_configuration.InnerSpawnRadius, _configuration.OuterSpawnRadius);
@@ -177,10 +183,43 @@ namespace _Project.Gameplay.Infrastructure
 
         public void Dispose()
         {
+            if (_playerFollowCamera != null)
+            {
+                Object.Destroy(_playerFollowCamera.gameObject);
+            }
+
             if (_spawnedViewsRoot != null)
             {
                 Object.Destroy(_spawnedViewsRoot.gameObject);
             }
+        }
+
+        private void CreatePlayerFollowCamera(Transform player)
+        {
+            if (_mainCamera == null)
+            {
+                Debug.LogError("Player follow camera requires a main camera.");
+                return;
+            }
+
+            if (!_mainCamera.TryGetComponent<CinemachineBrain>(out _))
+            {
+                _mainCamera.gameObject.AddComponent<CinemachineBrain>();
+            }
+
+            var cameraObject = new GameObject("Player Follow Camera");
+            cameraObject.transform.SetPositionAndRotation(
+                _mainCamera.transform.position,
+                _mainCamera.transform.rotation);
+
+            _playerFollowCamera = cameraObject.AddComponent<CinemachineCamera>();
+            _playerFollowCamera.Lens = LensSettings.FromCamera(_mainCamera);
+            _playerFollowCamera.Follow = player;
+
+            var positionComposer = cameraObject.AddComponent<CinemachinePositionComposer>();
+            positionComposer.CameraDistance = Mathf.Abs(
+                _mainCamera.transform.position.z - player.position.z);
+            positionComposer.Damping = new Vector3(0.25f, 0.25f, 0f);
         }
     }
 }
