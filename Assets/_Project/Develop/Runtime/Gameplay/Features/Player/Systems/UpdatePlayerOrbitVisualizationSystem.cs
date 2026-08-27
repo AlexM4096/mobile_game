@@ -9,16 +9,23 @@ namespace _Project.Gameplay.Features.Player.Systems
     {
         private const int TrajectorySegments = 96;
         private const int MarkerSegments = 32;
-        private static readonly QueryDescription _description = new QueryDescription()
-            .WithAll<PlayerTag, PlayerMotion>();
+
+        private static readonly QueryDescription _description =
+            new QueryDescription()
+                .WithAll<PlayerTag, PlayerMotion>();
+
         private readonly PlayerOrbitVisualizationConfig _settings;
+
         private GameObject _root;
         private LineRenderer _trajectory;
         private LineRenderer _marker;
         private Material _material;
 
-        public UpdatePlayerOrbitVisualizationSystem(
-            World world, PlayerOrbitVisualizationConfig settings) : base(world)
+        public UpdatePlayerOrbitVisualizationSystem
+        (
+            World world, 
+            PlayerOrbitVisualizationConfig settings
+        ) : base(world)
         {
             _settings = settings;
         }
@@ -93,7 +100,12 @@ namespace _Project.Gameplay.Features.Player.Systems
             return line;
         }
 
-        private static void UpdateCircle(LineRenderer line, Vector2 center, float radius, int segments)
+        private static void UpdateCircle(
+            LineRenderer line, 
+            Vector2 center, 
+            float radius, 
+            int segments
+        )
         {
             for (var index = 0; index < segments; index++)
             {
@@ -101,7 +113,8 @@ namespace _Project.Gameplay.Features.Player.Systems
                 line.SetPosition(index, new Vector3(
                     center.x + Mathf.Cos(angle) * radius,
                     center.y + Mathf.Sin(angle) * radius,
-                    0f));
+                    0f
+                ));
             }
         }
 

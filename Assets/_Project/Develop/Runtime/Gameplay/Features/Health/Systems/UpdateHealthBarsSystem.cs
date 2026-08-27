@@ -21,18 +21,23 @@ namespace _Project.Gameplay.Features.Health.Systems
         private readonly HashSet<Entity> _visibleEntities = new();
         private readonly List<Entity> _staleEntities = new();
         private readonly HealthBarConfig _settings;
+        private readonly Camera _worldCamera;
 
         private GameObject _documentObject;
         private PanelSettings _panelSettings;
         private VisualElement _root;
         private IPanel _panel;
-        private Camera _worldCamera;
         private bool _isUiInitialized;
         private bool _isDisposed;
 
-        public UpdateHealthBarsSystem(World world, HealthBarConfig settings) : base(world)
+        public UpdateHealthBarsSystem(
+            World world,
+            HealthBarConfig settings,
+            Camera worldCamera
+        ) : base(world)
         {
             _settings = settings;
+            _worldCamera = worldCamera;
         }
 
         public override void Initialize()
@@ -43,10 +48,9 @@ namespace _Project.Gameplay.Features.Health.Systems
             }
 
             _isUiInitialized = true;
-            _worldCamera = Camera.main;
             if (_worldCamera == null)
             {
-                Debug.LogError("Health bar system requires a camera tagged MainCamera.");
+                Debug.LogError("Health bar system requires a configured world camera.");
             }
 
             _panelSettings = ScriptableObject.CreateInstance<PanelSettings>();

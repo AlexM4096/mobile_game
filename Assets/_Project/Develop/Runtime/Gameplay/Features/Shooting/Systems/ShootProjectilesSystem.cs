@@ -23,11 +23,17 @@ namespace _Project.Gameplay.Features.Shooting.Systems
                 .WithAll<PlayerTag, Position>();
 
         private readonly ProjectileConfig _settings;
+        private readonly Camera _worldCamera;
         private double _nextShotTime;
 
-        public ShootProjectilesSystem(World world, ProjectileConfig settings) : base(world)
+        public ShootProjectilesSystem(
+            World world,
+            ProjectileConfig settings,
+            Camera worldCamera
+        ) : base(world)
         {
             _settings = settings;
+            _worldCamera = worldCamera;
         }
 
         public override void Update(in SystemState state)
@@ -101,20 +107,19 @@ namespace _Project.Gameplay.Features.Shooting.Systems
                    Mouse.current?.leftButton.wasPressedThisFrame == true;
         }
 
-        private static bool TryGetMouseDirection(Vector2 playerPosition, out Vector2 direction)
+        private bool TryGetMouseDirection(Vector2 playerPosition, out Vector2 direction)
         {
             direction = Vector2.zero;
 
             var mouse = Mouse.current;
-            var camera = Camera.main;
-            if (mouse == null || camera == null)
+            if (mouse == null || _worldCamera == null)
             {
                 return false;
             }
 
             var screenPosition = mouse.position.ReadValue();
-            var worldPosition = camera.ScreenToWorldPoint(
-                new Vector3(screenPosition.x, screenPosition.y, -camera.transform.position.z));
+            var worldPosition = _worldCamera.ScreenToWorldPoint(
+                new Vector3(screenPosition.x, screenPosition.y, -_worldCamera.transform.position.z));
             var difference = (Vector2)worldPosition - playerPosition;
             if (difference == Vector2.zero)
             {

@@ -13,6 +13,7 @@ using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using VContainer;
 using VContainer.Unity;
@@ -32,6 +33,8 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private PlayerOrbitVisualizationConfig playerOrbitVisualizationConfig;
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
         [SerializeField, InlineEditor] private ProjectileConfig projectileConfig;
+        [SerializeField] private Camera mainCamera;
+        [SerializeField] private EventSystem eventSystem;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -42,6 +45,8 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(playerOrbitVisualizationConfig);
             builder.RegisterInstance(healthBarConfig);
             builder.RegisterInstance(projectileConfig);
+            builder.RegisterInstance(mainCamera);
+            builder.RegisterInstance(eventSystem);
 
 
             var collisionMatrix = new CollisionMatrix();
@@ -83,7 +88,8 @@ namespace _Project.Gameplay.Infrastructure
         public SwarmSpawner(
             World world,
             SwarmConfig configuration,
-            PlayerMovementConfig playerMovementConfig)
+            PlayerMovementConfig playerMovementConfig
+        )
         {
             _world = world;
             _configuration = configuration;
@@ -159,7 +165,8 @@ namespace _Project.Gameplay.Infrastructure
                     {
                         Current = Random.Range(1f, _configuration.EnemyHealth),
                         Max = _configuration.EnemyHealth
-                    });
+                    }
+                );
 
                 var view = Object.Instantiate(_configuration.EnemyPrefab, _spawnedViewsRoot);
                 view.name = $"Enemy View {index + 1}";

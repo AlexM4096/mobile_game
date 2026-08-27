@@ -20,27 +20,30 @@ namespace _Project.Gameplay.Features.Player.Systems
 
         private readonly PlayerInputConfig _inputSettings;
         private readonly PlayerMovementConfig _movementSettings;
+        private readonly Camera _worldCamera;
+        private readonly EventSystem _eventSystem;
 
         private InputAction _pointAction;
         private InputAction _pressAction;
-        private Camera _worldCamera;
 
         private bool _wasHeld;
 
         public ReadPlayerOrbitInputSystem(
             World world, 
             PlayerInputConfig inputSettings,
-            PlayerMovementConfig movementSettings
+            PlayerMovementConfig movementSettings,
+            Camera worldCamera,
+            EventSystem eventSystem
         ) : base(world)
         {
             _inputSettings = inputSettings;
             _movementSettings = movementSettings;
+            _worldCamera = worldCamera;
+            _eventSystem = eventSystem;
         }
 
         public override void Initialize()
         {
-            _worldCamera = Camera.main;
-
             _pointAction = _inputSettings.PointAction;
             _pressAction = _inputSettings.PressAction;
 
@@ -103,15 +106,14 @@ namespace _Project.Gameplay.Features.Player.Systems
 
         private bool IsPointerOverUi()
         {
-            var eventSystem = EventSystem.current;
-            if (eventSystem == null) return false;
+            if (_eventSystem == null) return false;
 
             if (_pressAction.activeControl?.device is Touchscreen touchscreen)
             {
-                return eventSystem.IsPointerOverGameObject(touchscreen.primaryTouch.touchId.ReadValue());
+                return _eventSystem.IsPointerOverGameObject(touchscreen.primaryTouch.touchId.ReadValue());
             }
 
-            return eventSystem.IsPointerOverGameObject();
+            return _eventSystem.IsPointerOverGameObject();
         }      
 
         public override void Dispose()

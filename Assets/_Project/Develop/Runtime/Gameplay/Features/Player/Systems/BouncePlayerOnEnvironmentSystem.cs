@@ -10,11 +10,15 @@ namespace _Project.Gameplay.Features.Player.Systems
     public sealed class BouncePlayerOnEnvironmentSystem : UnitySystemBase
     {
         private const float DirectionEpsilonSquared = 0.00000001f;
-        private static readonly QueryDescription _description = new QueryDescription()
-            .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion, CollisionEvents>();
+        private static readonly QueryDescription _description = 
+            new QueryDescription()
+                .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion, CollisionEvents>();
         private readonly PlayerMovementConfig _settings;
 
-        public BouncePlayerOnEnvironmentSystem(World world, PlayerMovementConfig settings) : base(world)
+        public BouncePlayerOnEnvironmentSystem(
+            World world, 
+            PlayerMovementConfig settings
+        ) : base(world)
         {
             _settings = settings;
         }
