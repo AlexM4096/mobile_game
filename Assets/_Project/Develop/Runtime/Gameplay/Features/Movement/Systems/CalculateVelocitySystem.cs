@@ -10,7 +10,8 @@ namespace _Project.Gameplay.Features.Movement.Systems
     {
         private static readonly QueryDescription _description =
             new QueryDescription()
-                .WithAll<Direction, MoveSpeed, Velocity>();
+                .WithAll<Direction, MoveSpeed, Velocity>()
+                .WithNone<ManualMovementTag>();
 
         public CalculateVelocitySystem(World world) : base(world)
         {

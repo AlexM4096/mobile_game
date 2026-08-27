@@ -6,9 +6,20 @@ namespace _Project.Gameplay.Features.Player
 {
     public static class PlayerFeature
     {
-        public static void AddPlayerFeature(this NewArchAppBuilder systems)
+        public static void AddPlayerControlFeature(this NewArchAppBuilder systems)
         {
-            systems.Add<ControlPlayerSystem>(SystemRunner.Update);
+            systems.Add<ReadPlayerOrbitInputSystem>(SystemRunner.Update);
+            systems.Add<SimulatePlayerMotionSystem>(SystemRunner.Update);
+        }
+
+        public static void AddPlayerCollisionResponseFeature(this NewArchAppBuilder systems)
+        {
+            systems.Add<BouncePlayerOnEnvironmentSystem>(SystemRunner.Update);
+        }
+
+        public static void AddPlayerVisualizationFeature(this NewArchAppBuilder systems)
+        {
+            systems.Add<UpdatePlayerOrbitVisualizationSystem>(SystemRunner.PreLateUpdate);
         }
     }
 }

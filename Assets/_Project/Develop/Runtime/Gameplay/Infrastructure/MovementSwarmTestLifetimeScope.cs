@@ -11,8 +11,8 @@ using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
-using _Project.Gameplay.Features.Shooting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using VContainer;
 using VContainer.Unity;
 using _Project.Gameplay.Features.Health.Systems;
@@ -45,16 +45,31 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, Min(1f)] private float healthBarHeight = 7f;
 
         [Header("Player Movement")]
-        [SerializeField, Min(0f)] private float targetSpeed = 2f;
+        [SerializeField, Min(0f)] private float rotationSpeed = 90f;
+        [SerializeField, Min(0f)] private float launchSpeed = 8f;
+        [SerializeField, Min(0f)] private float decelerationSpeed = 2f;
+        [SerializeField, Min(0f)] private float minimumSpeed = 3f;
+        [SerializeField, Min(0f)] private float bounceSpeedIncrease = 1f;
+        [SerializeField, Min(0f)] private float maximumSpeed = 12f;
+        [SerializeField] private InputActionReference pointAction;
+        [SerializeField] private InputActionReference pressAction;
 
-        [Header("Shooting")]
-        [SerializeField] private GameObject projectilePrefab;
-        [SerializeField, Min(0f)] private float projectileSpeed = 9f;
-        [SerializeField, Min(0f)] private float projectileDamage = 25f;
-        [SerializeField, Min(0.01f)] private float projectileRadius = 0.12f;
-        [SerializeField, Tooltip("-1 means infinite lifetime.")]
-        private float projectileLifetime = 1.5f;
-        [SerializeField, Min(0f)] private float fireCooldown = 0.2f;
+        [Header("Orbit Visualization")]
+        [SerializeField] private Color orbitColor = new(0f, 1f, 1f, 0.75f);
+        [SerializeField, Min(0.001f)] private float orbitLineWidth = 0.05f;
+        [SerializeField, Min(0.001f)] private float orbitMarkerRadius = 0.15f;
+
+        private void OnValidate()
+        {
+            rotationSpeed = Mathf.Max(0f, rotationSpeed);
+            decelerationSpeed = Mathf.Max(0f, decelerationSpeed);
+            minimumSpeed = Mathf.Max(0f, minimumSpeed);
+            launchSpeed = Mathf.Max(minimumSpeed, launchSpeed);
+            bounceSpeedIncrease = Mathf.Max(0f, bounceSpeedIncrease);
+            maximumSpeed = Mathf.Max(launchSpeed, maximumSpeed);
+            orbitLineWidth = Mathf.Max(0.001f, orbitLineWidth);
+            orbitMarkerRadius = Mathf.Max(0.001f, orbitMarkerRadius);
+        }
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -73,13 +88,18 @@ namespace _Project.Gameplay.Infrastructure
 
             builder.RegisterInstance(configuration);
             builder.RegisterInstance(new MovementSettings(arrivalDistance));
-            builder.RegisterInstance(new ProjectileSettings(
-                projectilePrefab,
-                projectileSpeed,
-                projectileDamage,
-                projectileRadius,
-                projectileLifetime,
-                fireCooldown));
+            builder.RegisterInstance(new PlayerMovementSettings(
+                rotationSpeed,
+                launchSpeed,
+                decelerationSpeed,
+                minimumSpeed,
+                bounceSpeedIncrease,
+                maximumSpeed));
+            builder.RegisterInstance(new PlayerInputSettings(pointAction, pressAction));
+            builder.RegisterInstance(new PlayerOrbitVisualizationSettings(
+                orbitColor,
+                orbitLineWidth,
+                orbitMarkerRadius));
             builder.RegisterInstance(new HealthBarSettings(
                 healthBarWorldOffset,
                 healthBarWidth,
@@ -97,16 +117,17 @@ namespace _Project.Gameplay.Infrastructure
                 EntityConversion.DefaultWorld,
                 systems =>
                 {
-                    systems.AddPlayerFeature();
+                    systems.AddPlayerControlFeature();
                     systems.AddAIFeature();
                     systems.AddMovementFeature();
-                    systems.AddRotationFeature();
                     systems.AddCollisionFeature();
+                    systems.AddPlayerCollisionResponseFeature();
+                    systems.AddRotationFeature();
                     systems.AddHealthFeature();
                     systems.AddDeathFeature();
-                    systems.AddShootingFeature();
                     systems.AddLifetimeFeature();
                     systems.AddDestroyFeature();
+                    systems.AddPlayerVisualizationFeature();
                 });
             builder.RegisterEntryPoint<SwarmSpawner>();
         }
@@ -157,12 +178,17 @@ namespace _Project.Gameplay.Infrastructure
     {
         private readonly World _world;
         private readonly SwarmConfiguration _configuration;
+        private readonly PlayerMovementSettings _playerMovementSettings;
         private Transform _spawnedViewsRoot;
 
-        public SwarmSpawner(World world, SwarmConfiguration configuration)
+        public SwarmSpawner(
+            World world,
+            SwarmConfiguration configuration,
+            PlayerMovementSettings playerMovementSettings)
         {
             _world = world;
             _configuration = configuration;
+            _playerMovementSettings = playerMovementSettings;
         }
 
         public void Start()
@@ -182,13 +208,13 @@ namespace _Project.Gameplay.Infrastructure
             _spawnedViewsRoot = new GameObject("Spawned Enemy Views").transform;
             var targetEntity = _world.Create(
                 new PlayerTag(),
-                new PlayerAim { Value = Vector2.right },
+                new PlayerMotion { Mode = PlayerMotionMode.Flight },
                 new Position { Value = Vector2.zero },
                 new RotationComponent { Value = quaternion.identity },
                 new FlipRotationTag(),
-                new Direction(),
-                new MoveSpeed { Value = 5 },
-                new Velocity(),
+                new Direction { Value = Vector2.right },
+                new Velocity { Value = Vector2.right * _playerMovementSettings.MinimumSpeed },
+                new ManualMovementTag(),
                 new CircleCollider
                 {
                     Radius = _configuration.TargetColliderRadius,

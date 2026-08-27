@@ -310,13 +310,17 @@ MonoBehaviour:
   healthBarWorldOffset: {x: 0, y: 1, z: 0}
   healthBarWidth: 56
   healthBarHeight: 7
-  targetSpeed: 5
-  projectilePrefab: {fileID: 5792670239869242502, guid: 496cfebc73ec3d943b2f06ebe691198e, type: 3}
-  projectileSpeed: 9
-  projectileDamage: 25
-  projectileRadius: 0.12
-  projectileLifetime: 1.5
-  fireCooldown: 0.2
+  rotationSpeed: 90
+  launchSpeed: 8
+  decelerationSpeed: 2
+  minimumSpeed: 3
+  bounceSpeedIncrease: 1
+  maximumSpeed: 12
+  pointAction: {fileID: 0}
+  pressAction: {fileID: 0}
+  orbitColor: {r: 0, g: 1, b: 1, a: 0.75}
+  orbitLineWidth: 0.05
+  orbitMarkerRadius: 0.15
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

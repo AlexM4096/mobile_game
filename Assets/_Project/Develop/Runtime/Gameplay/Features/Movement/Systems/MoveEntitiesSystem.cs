@@ -11,7 +11,8 @@ namespace _Project.Gameplay.Features.Movement.Systems
     {
         private static readonly QueryDescription _description =
             new QueryDescription()
-                .WithAll<Position, Velocity>();
+                .WithAll<Position, Velocity>()
+                .WithNone<ManualMovementTag>();
 
         public MoveEntitiesSystem(World world) : base(world)
         {
