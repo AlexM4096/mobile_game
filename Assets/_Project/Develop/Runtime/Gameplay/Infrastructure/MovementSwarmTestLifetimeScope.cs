@@ -33,7 +33,6 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private PlayerInputConfig playerInputConfig;
         [SerializeField, InlineEditor] private PlayerOrbitVisualizationConfig playerOrbitVisualizationConfig;
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
-        [SerializeField, InlineEditor] private ProjectileConfig projectileConfig;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private EventSystem eventSystem;
 
@@ -45,7 +44,6 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(playerInputConfig);
             builder.RegisterInstance(playerOrbitVisualizationConfig);
             builder.RegisterInstance(healthBarConfig);
-            builder.RegisterInstance(projectileConfig);
             builder.RegisterInstance(mainCamera);
             builder.RegisterInstance(eventSystem);
 

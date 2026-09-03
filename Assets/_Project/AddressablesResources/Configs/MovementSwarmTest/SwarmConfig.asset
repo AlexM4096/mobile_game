@@ -14,5 +14,5 @@ MonoBehaviour:
   innerSpawnRadius: 20
   outerSpawnRadius: 24
   randomSeed: 12345
-  enemyPrefab: {fileID: 4509844207118935503, guid: ff60058b848a48f4e82639167cc9c2e0, type: 3}
-  playerPrefab: {fileID: 4069379607421392838, guid: d9ff2b4cb6a8d5241b4bfcbeae7e58f7, type: 3}
+  enemyPrefab: {fileID: 2363021009994210881, guid: 6e423fbf4cf202746ae57510feab35b4, type: 3}
+  playerPrefab: {fileID: 544961538741716828, guid: f9eaa5484fa4d8042b038c8f3476cd72, type: 3}
