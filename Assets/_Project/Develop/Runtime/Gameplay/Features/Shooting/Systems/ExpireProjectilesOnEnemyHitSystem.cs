@@ -6,23 +6,40 @@ namespace _Project.Gameplay.Features.Shooting.Systems
 {
     public sealed class ExpireProjectilesOnEnemyHitSystem : UnitySystemBase
     {
-        private static readonly QueryDescription _description = new QueryDescription().WithAll<ProjectileTag, EntityLifetime, CollisionEvents>();
+        private static readonly QueryDescription _description =
+            new QueryDescription().WithAll<CollisionEvent>();
+
         public ExpireProjectilesOnEnemyHitSystem(World world) : base(world) { }
+
         public override void Update(in SystemState state)
         {
-            World.Query(in _description, (ref EntityLifetime lifetime, ref CollisionEvents collisionEvents) =>
+            World.Query(in _description, (ref CollisionEvent collisionEvent) =>
             {
-                if (HasEnemyHit(collisionEvents)) lifetime.Value = 0f;
+                if (collisionEvent.Phase != CollisionPhase.Enter)
+                {
+                    return;
+                }
+
+                ExpireIfProjectileHitEnemy(collisionEvent.First, collisionEvent.Second);
+                ExpireIfProjectileHitEnemy(collisionEvent.Second, collisionEvent.First);
             });
         }
-        private bool HasEnemyHit(CollisionEvents collisionEvents)
+
+        private void ExpireIfProjectileHitEnemy(Entity projectile, Entity other)
         {
-            if (collisionEvents.Items == null) return false;
-            foreach (var collisionEvent in collisionEvents.Items)
+            if (!World.IsAlive(projectile) ||
+                !World.IsAlive(other) ||
+                !World.Has<ProjectileTag>(projectile) ||
+                !World.Has<EntityLifetime>(projectile) ||
+                !World.Has<TriggerTag>(projectile) ||
+                !World.Has<CollisionBody>(other) ||
+                World.Get<CollisionBody>(other).Layer != CollisionLayer.Enemy)
             {
-                if (collisionEvent.Type == CollisionEventType.TriggerEnter && World.IsAlive(collisionEvent.Other) && World.Has<CircleCollider>(collisionEvent.Other) && World.Get<CircleCollider>(collisionEvent.Other).Layer == CollisionLayer.Enemy) return true;
+                return;
             }
-            return false;
+
+            ref var lifetime = ref World.Get<EntityLifetime>(projectile);
+            lifetime.Value = 0f;
         }
     }
 }

@@ -125,13 +125,12 @@ namespace _Project.Gameplay.Infrastructure
                 new Direction { Value = Vector2.right },
                 new Velocity { Value = Vector2.right * _playerMovementConfig.MinimumSpeed },
                 new ManualMovementTag(),
-                new CircleCollider
+                new CollisionBody
                 {
-                    Radius = _configuration.TargetColliderRadius,
-                    Kind = ColliderKind.Solid,
                     BodyType = ColliderBodyType.Dynamic,
                     Layer = CollisionLayer.Player
                 },
+                new CircleCollider { Radius = _configuration.TargetColliderRadius },
                 new Health
                 {
                     Current = _configuration.TargetHealth,
@@ -160,13 +159,12 @@ namespace _Project.Gameplay.Infrastructure
                     new Direction() { Value = Vector2.right },
                     new Velocity(),
                     new MoveSpeed { Value = Random.Range(1, _configuration.EnemySpeed) },
-                    new CircleCollider
+                    new CollisionBody
                     {
-                        Radius = _configuration.EnemyColliderRadius,
-                        Kind = ColliderKind.Solid,
                         BodyType = ColliderBodyType.Dynamic,
                         Layer = CollisionLayer.Enemy
                     },
+                    new CircleCollider { Radius = _configuration.EnemyColliderRadius },
                     new Health
                     {
                         Current = Random.Range(1f, _configuration.EnemyHealth),

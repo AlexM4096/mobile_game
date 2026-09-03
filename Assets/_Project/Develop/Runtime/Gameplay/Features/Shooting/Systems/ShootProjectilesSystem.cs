@@ -76,18 +76,17 @@ namespace _Project.Gameplay.Features.Shooting.Systems
                 new MoveSpeed { Value = _settings.Speed },
                 new Velocity(),
                 new AngularVelocity() { Value = new float3(0, 0, 40) },
-                new CircleCollider
+                new CollisionBody
                 {
-                    Radius = _settings.Radius,
-                    Kind = ColliderKind.Trigger,
                     BodyType = ColliderBodyType.Dynamic,
                     Layer = CollisionLayer.Projectile
                 },
-                new CollisionEvents(),
+                new CircleCollider { Radius = _settings.Radius },
+                new TriggerTag(),
                 new DamageOnCollision
                 {
                     Amount = _settings.Damage,
-                    EventType = CollisionEventType.TriggerEnter
+                    Phase = CollisionPhase.Enter
                 },
                 new EntityLifetime { Value = _settings.Lifetime });
 

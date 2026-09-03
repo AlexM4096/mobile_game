@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Arch.Core;
 using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Collision;
@@ -10,10 +11,15 @@ namespace _Project.Gameplay.Features.Player.Systems
     public sealed class BouncePlayerOnEnvironmentSystem : UnitySystemBase
     {
         private const float DirectionEpsilonSquared = 0.00000001f;
-        private static readonly QueryDescription _description = 
+        private static readonly QueryDescription _eventDescription =
             new QueryDescription()
-                .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion, CollisionEvents>();
+                .WithAll<CollisionEvent>();
+        private static readonly QueryDescription _playerDescription =
+            new QueryDescription()
+                .WithAll<PlayerTag, Position, Direction, Velocity, PlayerMotion>();
+
         private readonly PlayerMovementConfig _settings;
+        private readonly Dictionary<Entity, ContactNormals> _normalsByPlayer = new();
 
         public BouncePlayerOnEnvironmentSystem(
             World world, 
@@ -25,10 +31,41 @@ namespace _Project.Gameplay.Features.Player.Systems
 
         public override void Update(in SystemState state)
         {
-            World.Query(in _description, (ref Position position, ref Direction direction,
-                ref Velocity velocity, ref PlayerMotion motion, ref CollisionEvents events) =>
+            _normalsByPlayer.Clear();
+
+            World.Query(in _eventDescription, (ref CollisionEvent collisionEvent) =>
             {
-                if (!TryGetEnvironmentNormal(events, out var normal)) return;
+                if (collisionEvent.Phase != CollisionPhase.Enter ||
+                    !World.IsAlive(collisionEvent.First) ||
+                    !World.IsAlive(collisionEvent.Second) ||
+                    World.Has<TriggerTag>(collisionEvent.First) ||
+                    World.Has<TriggerTag>(collisionEvent.Second))
+                {
+                    return;
+                }
+
+                if (IsPlayer(collisionEvent.First) && IsEnvironment(collisionEvent.Second))
+                {
+                    AddNormal(collisionEvent.First, collisionEvent.Normal);
+                }
+
+                if (IsPlayer(collisionEvent.Second) && IsEnvironment(collisionEvent.First))
+                {
+                    AddNormal(collisionEvent.Second, -collisionEvent.Normal);
+                }
+            });
+
+            World.Query(in _playerDescription, (
+                Entity entity,
+                ref Position position,
+                ref Direction direction,
+                ref Velocity velocity,
+                ref PlayerMotion motion) =>
+            {
+                if (!TryGetEnvironmentNormal(entity, out var normal))
+                {
+                    return;
+                }
 
                 var wasOrbiting = motion.Mode == PlayerMotionMode.Orbit;
                 var incomingDirection = wasOrbiting
@@ -46,32 +83,45 @@ namespace _Project.Gameplay.Features.Player.Systems
             });
         }
 
-        private bool TryGetEnvironmentNormal(CollisionEvents events, out Vector2 normal)
+        private bool IsPlayer(Entity entity)
         {
-            normal = Vector2.zero;
-            if (events.Items == null) return false;
+            return World.Has<PlayerTag>(entity);
+        }
 
-            var fallbackNormal = Vector2.zero;
-            var hasCollision = false;
-            foreach (var collisionEvent in events.Items)
+        private bool IsEnvironment(Entity entity)
+        {
+            return World.Has<CollisionBody>(entity) &&
+                   World.Get<CollisionBody>(entity).Layer == CollisionLayer.Environment;
+        }
+
+        private void AddNormal(Entity player, Vector2 normal)
+        {
+            if (_normalsByPlayer.TryGetValue(player, out var contacts))
             {
-                if (collisionEvent.Type != CollisionEventType.CollisionEnter ||
-                    !World.IsAlive(collisionEvent.Other) ||
-                    !World.Has<CircleCollider>(collisionEvent.Other) ||
-                    World.Get<CircleCollider>(collisionEvent.Other).Layer != CollisionLayer.Environment)
-                {
-                    continue;
-                }
-
-                hasCollision = true;
-                fallbackNormal = collisionEvent.Normal;
-                normal += collisionEvent.Normal;
+                contacts.Sum += normal;
+                contacts.Fallback = normal;
+                _normalsByPlayer[player] = contacts;
+                return;
             }
 
-            if (!hasCollision) return false;
-            normal = normal.sqrMagnitude > DirectionEpsilonSquared
-                ? normal.normalized
-                : fallbackNormal.normalized;
+            _normalsByPlayer.Add(player, new ContactNormals
+            {
+                Sum = normal,
+                Fallback = normal
+            });
+        }
+
+        private bool TryGetEnvironmentNormal(Entity player, out Vector2 normal)
+        {
+            if (!_normalsByPlayer.TryGetValue(player, out var contacts))
+            {
+                normal = Vector2.zero;
+                return false;
+            }
+
+            normal = contacts.Sum.sqrMagnitude > DirectionEpsilonSquared
+                ? contacts.Sum.normalized
+                : contacts.Fallback.normalized;
             return normal.sqrMagnitude > DirectionEpsilonSquared;
         }
 
@@ -85,6 +135,12 @@ namespace _Project.Gameplay.Features.Player.Systems
         {
             if (velocity.sqrMagnitude > DirectionEpsilonSquared) return velocity.normalized;
             return direction.sqrMagnitude > DirectionEpsilonSquared ? direction.normalized : Vector2.right;
+        }
+
+        private struct ContactNormals
+        {
+            public Vector2 Sum;
+            public Vector2 Fallback;
         }
     }
 }

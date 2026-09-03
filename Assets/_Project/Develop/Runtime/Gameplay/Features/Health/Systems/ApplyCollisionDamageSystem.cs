@@ -11,7 +11,7 @@ namespace _Project.Gameplay.Features.Health.Systems
     {
         private static readonly QueryDescription _description =
             new QueryDescription()
-                .WithAll<DamageOnCollision, CollisionEvents>();
+                .WithAll<CollisionEvent>();
 
         private readonly Dictionary<Entity, float> _damageByTarget = new();
 
@@ -23,28 +23,10 @@ namespace _Project.Gameplay.Features.Health.Systems
         {
             _damageByTarget.Clear();
 
-            World.Query(in _description, (
-                ref DamageOnCollision damageOnCollision,
-                ref CollisionEvents collisionEvents) =>
+            World.Query(in _description, (ref CollisionEvent collisionEvent) =>
             {
-                if (damageOnCollision.Amount <= 0f || collisionEvents.Items == null)
-                {
-                    return;
-                }
-
-                foreach (var collisionEvent in collisionEvents.Items)
-                {
-                    var target = collisionEvent.Other;
-                    if (collisionEvent.Type != damageOnCollision.EventType ||
-                        !World.IsAlive(target) ||
-                        !target.Has<Health>())
-                    {
-                        continue;
-                    }
-
-                    _damageByTarget.TryGetValue(target, out var damage);
-                    _damageByTarget[target] = damage + damageOnCollision.Amount;
-                }
+                AccumulateDamage(collisionEvent.First, collisionEvent.Second, collisionEvent.Phase);
+                AccumulateDamage(collisionEvent.Second, collisionEvent.First, collisionEvent.Phase);
             });
 
             using var commandBuffer = new CommandBuffer();
@@ -63,6 +45,26 @@ namespace _Project.Gameplay.Features.Health.Systems
             }
 
             commandBuffer.Playback(World, false);
+        }
+
+        private void AccumulateDamage(Entity source, Entity target, CollisionPhase phase)
+        {
+            if (!World.IsAlive(source) ||
+                !World.IsAlive(target) ||
+                !source.Has<DamageOnCollision>() ||
+                !target.Has<Health>())
+            {
+                return;
+            }
+
+            ref var damageOnCollision = ref World.Get<DamageOnCollision>(source);
+            if (damageOnCollision.Amount <= 0f || damageOnCollision.Phase != phase)
+            {
+                return;
+            }
+
+            _damageByTarget.TryGetValue(target, out var damage);
+            _damageByTarget[target] = damage + damageOnCollision.Amount;
         }
     }
 }

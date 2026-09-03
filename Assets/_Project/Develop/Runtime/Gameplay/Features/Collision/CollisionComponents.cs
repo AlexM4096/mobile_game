@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Arch.Core;
 using UnityEngine;
 
@@ -10,20 +9,11 @@ namespace _Project.Gameplay.Features.Collision
         Dynamic = 1
     }
 
-    public enum ColliderKind
+    public enum CollisionPhase
     {
-        Solid = 0,
-        Trigger = 1
-    }
-
-    public enum CollisionEventType
-    {
-        CollisionEnter = 0,
-        CollisionStay = 1,
-        CollisionExit = 2,
-        TriggerEnter = 3,
-        TriggerStay = 4,
-        TriggerExit = 5
+        Enter = 0,
+        Stay = 1,
+        Exit = 2
     }
 
     public enum CollisionLayer
@@ -36,21 +26,25 @@ namespace _Project.Gameplay.Features.Collision
         Projectile = 5
     }
 
-    public struct CircleCollider
+    public struct CollisionBody
     {
-        public float Radius;
-        public ColliderKind Kind;
         public ColliderBodyType BodyType;
         public CollisionLayer Layer;
     }
 
+    public struct CircleCollider { public float Radius; }
+
+    public struct BoxCollider { public Vector2 HalfExtents; }
+
+    public struct TriggerTag { }
+
     public struct CollisionEvent
     {
-        public Entity Other;
-        public CollisionEventType Type;
+        public Entity First;
+        public Entity Second;
+        public CollisionPhase Phase;
+        public Vector2 Point;
         public Vector2 Normal;
         public float Penetration;
     }
-
-    public struct CollisionEvents { public List<CollisionEvent> Items; }
 }

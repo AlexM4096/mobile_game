@@ -8,7 +8,8 @@ namespace _Project.Gameplay.Features.Collision
     {
         public static void AddCollisionFeature(this NewArchAppBuilder systems)
         {
-            systems.Add<DetectCircleCollisionsSystem>(SystemRunner.Update);
+            systems.Add<CleanupCollisionEventsSystem>(SystemRunner.Update);
+            systems.Add<DetectCollisionsSystem>(SystemRunner.Update);
         }
     }
 }
