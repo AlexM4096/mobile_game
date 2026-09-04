@@ -5,8 +5,10 @@ using NUnit.Framework;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Collision.Systems;
 using _Project.Gameplay.Features.Common;
+using Unity.Mathematics;
 using UnityEngine;
 using BoxColliderComponent = _Project.Gameplay.Features.Collision.BoxCollider;
+using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
 
 namespace _Project.Editor.Tests
 {
@@ -162,6 +164,35 @@ namespace _Project.Editor.Tests
             Tick();
 
             Assert.That(ReadEvents(), Is.Empty);
+        }
+
+        [Test]
+        public void RotationComponentOrientsBoxCollider()
+        {
+            _world.Create(
+                new Position { Value = Vector2.zero },
+                new RotationComponent { Value = quaternion.RotateZ(Mathf.PI * 0.5f) },
+                new CollisionBody
+                {
+                    BodyType = ColliderBodyType.Dynamic,
+                    Layer = CollisionLayer.Default
+                },
+                new BoxColliderComponent { HalfExtents = new Vector2(1f, 0.25f) },
+                new TriggerTag());
+            _world.Create(
+                new Position { Value = new Vector2(0f, 1.4f) },
+                new CollisionBody
+                {
+                    BodyType = ColliderBodyType.Dynamic,
+                    Layer = CollisionLayer.Default
+                },
+                new CircleCollider { Radius = 0.5f },
+                new TriggerTag());
+
+            Tick();
+
+            Assert.That(ReadEvents(), Has.Count.EqualTo(1));
+            Assert.That(_events[0].Penetration, Is.EqualTo(0.1f).Within(0.0001f));
         }
 
         private void Tick()

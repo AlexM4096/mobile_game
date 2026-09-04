@@ -301,6 +301,7 @@ MonoBehaviour:
   playerInputConfig: {fileID: 11400000, guid: a4444444444444444444444444444444, type: 2}
   playerOrbitVisualizationConfig: {fileID: 11400000, guid: a5555555555555555555555555555555, type: 2}
   healthBarConfig: {fileID: 11400000, guid: a6666666666666666666666666666666, type: 2}
+  swordConfig: {fileID: 11400000, guid: 75db06cbc82c4ead8f0d38ed3b7e7855, type: 2}
   mainCamera: {fileID: 1002}
   eventSystem: {fileID: 3004}
 --- !u!1 &3000

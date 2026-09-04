@@ -91,6 +91,71 @@ namespace _Project.Editor.Tests
             Assert.That(contact.Penetration, Is.EqualTo(0.5f).Within(Tolerance));
         }
 
+        [Test]
+        public void CircleRotatedBox_UsesBoxLocalSpace()
+        {
+            var circle = CollisionShape.Circle(new Vector2(0f, 1.4f), 0.5f);
+            var unrotatedBox = CollisionShape.Box(
+                Vector2.zero,
+                new Vector2(1f, 0.25f));
+            var rotatedBox = CollisionShape.Box(
+                Vector2.zero,
+                new Vector2(1f, 0.25f),
+                Mathf.PI * 0.5f);
+
+            Assert.That(
+                CollisionMath.TryGetContact(circle, unrotatedBox, out _),
+                Is.False);
+            Assert.That(
+                CollisionMath.TryGetContact(circle, rotatedBox, out var contact),
+                Is.True);
+            AssertVector(contact.Point, new Vector2(0f, 0.95f));
+            AssertVector(contact.Normal, Vector2.down);
+            Assert.That(contact.Penetration, Is.EqualTo(0.1f).Within(Tolerance));
+        }
+
+        [Test]
+        public void RotatedBoxCircle_ReversesNormal()
+        {
+            var box = CollisionShape.Box(
+                Vector2.zero,
+                new Vector2(1f, 0.25f),
+                Mathf.PI * 0.5f);
+            var circle = CollisionShape.Circle(new Vector2(0f, 1.4f), 0.5f);
+
+            Assert.That(CollisionMath.TryGetContact(box, circle, out var contact), Is.True);
+
+            AssertVector(contact.Point, new Vector2(0f, 0.95f));
+            AssertVector(contact.Normal, Vector2.up);
+            Assert.That(contact.Penetration, Is.EqualTo(0.1f).Within(Tolerance));
+        }
+
+        [Test]
+        public void RotatedBoxes_UseFourAxisSat()
+        {
+            var first = CollisionShape.Box(
+                Vector2.zero,
+                new Vector2(1f, 0.25f),
+                Mathf.PI * 0.25f);
+            var overlapping = CollisionShape.Box(
+                new Vector2(0.75f, 0f),
+                new Vector2(0.5f, 0.5f));
+            var separated = CollisionShape.Box(
+                new Vector2(3f, 0f),
+                new Vector2(0.5f, 0.5f));
+
+            Assert.That(
+                CollisionMath.TryGetContact(first, overlapping, out var contact),
+                Is.True);
+            Assert.That(contact.Normal.magnitude, Is.EqualTo(1f).Within(Tolerance));
+            Assert.That(contact.Penetration, Is.GreaterThanOrEqualTo(0f));
+            Assert.That(float.IsNaN(contact.Point.x), Is.False);
+            Assert.That(float.IsNaN(contact.Point.y), Is.False);
+            Assert.That(
+                CollisionMath.TryGetContact(first, separated, out _),
+                Is.False);
+        }
+
         private static void AssertVector(Vector2 actual, Vector2 expected)
         {
             Assert.That(actual.x, Is.EqualTo(expected.x).Within(Tolerance));

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d9b9f5f9b3046a58303e9bb537c9a20, type: 3}
   m_Name: WalkingTweenConfig
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   firstScaleMultiplier: {x: 1.06, y: 0.94}
   secondScaleMultiplier: {x: 0.94, y: 1.06}
   stepDuration: 0.16

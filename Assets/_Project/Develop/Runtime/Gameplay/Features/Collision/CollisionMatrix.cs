@@ -4,7 +4,7 @@ namespace _Project.Gameplay.Features.Collision
 {
     public sealed class CollisionMatrix
     {
-        private const int LayerCount = (int)CollisionLayer.Projectile + 1;
+        private const int LayerCount = (int)CollisionLayer.PlayerWeapon + 1;
 
         private readonly bool[,] _interactions = new bool[LayerCount, LayerCount];
 

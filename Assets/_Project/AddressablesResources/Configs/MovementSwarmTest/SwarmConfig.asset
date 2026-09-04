@@ -3,8 +3,24 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccd2f70c62894d7eb4209fba02ec2b2c, type: 3}
   m_Name: SwarmConfig
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   enemyRegistry: {fileID: 11400000, guid: 0c77e711e8384f2186625343b8b7baa3, type: 2}
   spawnShape: 0
   spawnOnEdge: 0
@@ -14,4 +30,4 @@ MonoBehaviour:
   randomSeed: 12345
   targetHealth: 100
   targetColliderRadius: 1
-  playerPrefab: {fileID: 544961538741716828, guid: f9eaa5484fa4d8042b038c8f3476cd72, type: 3}
+  playerPrefab: {fileID: 2013663576314763657, guid: 5ab7e46e061365b4ebfe544f4e3f4491, type: 3}

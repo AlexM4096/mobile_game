@@ -23,7 +23,8 @@ namespace _Project.Gameplay.Features.Collision
         Player = 2,
         Enemy = 3,
         Environment = 4,
-        Projectile = 5
+        Projectile = 5,
+        PlayerWeapon = 6
     }
 
     public struct CollisionBody

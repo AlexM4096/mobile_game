@@ -12,6 +12,7 @@ using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
+using _Project.Gameplay.Features.Sword;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -33,6 +34,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private PlayerInputConfig playerInputConfig;
         [SerializeField, InlineEditor] private PlayerOrbitVisualizationConfig playerOrbitVisualizationConfig;
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
+        [SerializeField, InlineEditor] private SwordConfig swordConfig;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private EventSystem eventSystem;
 
@@ -44,15 +46,13 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(playerInputConfig);
             builder.RegisterInstance(playerOrbitVisualizationConfig);
             builder.RegisterInstance(healthBarConfig);
+            builder.RegisterInstance(swordConfig);
             builder.RegisterInstance(mainCamera);
             builder.RegisterInstance(eventSystem);
+            builder.Register<SwordFactory>(VContainer.Lifetime.Scoped);
 
 
-            var collisionMatrix = new CollisionMatrix();
-            collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Enemy, false);
-            collisionMatrix.SetInteraction(CollisionLayer.Enemy, CollisionLayer.Enemy, false);
-            collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Projectile, false);
-            collisionMatrix.SetInteraction(CollisionLayer.Projectile, CollisionLayer.Projectile, false);
+            var collisionMatrix = CreateCollisionMatrix();
             builder.RegisterInstance(collisionMatrix);
 
             builder.UseNewArchApp(
@@ -63,6 +63,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddPlayerControlFeature();
                     systems.AddAIFeature();
                     systems.AddMovementFeature();
+                    systems.AddSwordFeature();
                     systems.AddCollisionFeature();
                     systems.AddPlayerCollisionResponseFeature();
                     systems.AddRotationFeature();
@@ -74,6 +75,21 @@ namespace _Project.Gameplay.Infrastructure
                 });
             builder.RegisterEntryPoint<SwarmSpawner>();
         }
+
+        internal static CollisionMatrix CreateCollisionMatrix()
+        {
+            var collisionMatrix = new CollisionMatrix();
+            collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Enemy, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Enemy, CollisionLayer.Enemy, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.Projectile, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Projectile, CollisionLayer.Projectile, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Default, CollisionLayer.PlayerWeapon, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Player, CollisionLayer.PlayerWeapon, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Environment, CollisionLayer.PlayerWeapon, false);
+            collisionMatrix.SetInteraction(CollisionLayer.Projectile, CollisionLayer.PlayerWeapon, false);
+            collisionMatrix.SetInteraction(CollisionLayer.PlayerWeapon, CollisionLayer.PlayerWeapon, false);
+            return collisionMatrix;
+        }
     }
 
 
@@ -82,6 +98,8 @@ namespace _Project.Gameplay.Infrastructure
         private readonly World _world;
         private readonly SwarmConfig _configuration;
         private readonly PlayerMovementConfig _playerMovementConfig;
+        private readonly SwordConfig _swordConfig;
+        private readonly SwordFactory _swordFactory;
         private readonly Camera _mainCamera;
         private Transform _spawnedViewsRoot;
         private CinemachineCamera _playerFollowCamera;
@@ -90,12 +108,16 @@ namespace _Project.Gameplay.Infrastructure
             World world,
             SwarmConfig configuration,
             PlayerMovementConfig playerMovementConfig,
+            SwordConfig swordConfig,
+            SwordFactory swordFactory,
             Camera mainCamera
         )
         {
             _world = world;
             _configuration = configuration;
             _playerMovementConfig = playerMovementConfig;
+            _swordConfig = swordConfig;
+            _swordFactory = swordFactory;
             _mainCamera = mainCamera;
         }
 
@@ -132,6 +154,7 @@ namespace _Project.Gameplay.Infrastructure
             targetView.name = "Player View";
             targetView.transform.position = Vector3.zero;
             _world.Add(targetEntity, new GameObjectReference(targetView));
+            _swordFactory.CreateFor(targetEntity, _spawnedViewsRoot);
             CreatePlayerFollowCamera(targetView.transform);
 
             var random = new System.Random(_configuration.RandomSeed);
@@ -202,6 +225,25 @@ namespace _Project.Gameplay.Infrastructure
                 _configuration.EnemyRegistry.Enemies.Count == 0)
             {
                 Debug.LogError("Movement swarm test requires at least one registered enemy.");
+                return false;
+            }
+
+            if (_swordConfig == null || _swordConfig.Prefab == null)
+            {
+                Debug.LogError("Movement swarm test requires a sword prefab.");
+                return false;
+            }
+
+            if (_swordConfig.RotationSpeedDegreesPerSecond <= 0f ||
+                _swordConfig.RotationRadius <= 0f ||
+                _swordConfig.WeaponCount < 1 ||
+                _swordConfig.Damage <= 0f ||
+                _swordConfig.HitboxSize.x <= 0f ||
+                _swordConfig.HitboxSize.y <= 0f ||
+                (_swordConfig.Direction != SwordRotationDirection.Clockwise &&
+                 _swordConfig.Direction != SwordRotationDirection.CounterClockwise))
+            {
+                Debug.LogError("Movement swarm test has invalid sword settings.");
                 return false;
             }
 

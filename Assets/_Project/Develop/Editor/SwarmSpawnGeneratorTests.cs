@@ -5,6 +5,7 @@ using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
+using _Project.Gameplay.Features.Sword;
 using _Project.Gameplay.Infrastructure;
 using UnityEditor;
 using UnityEngine;
@@ -121,7 +122,9 @@ namespace _Project.Editor.Tests
             var world = World.Create();
             var swarmConfig = ScriptableObject.CreateInstance<SwarmConfig>();
             var playerMovementConfig = ScriptableObject.CreateInstance<PlayerMovementConfig>();
+            var swordConfig = ScriptableObject.CreateInstance<SwordConfig>();
             var playerPrefab = new GameObject("Player Test Prefab");
+            var swordPrefab = new GameObject("Sword Test Prefab");
             var firstEnemyPrefab = new GameObject("First Enemy Test Prefab");
             var secondEnemyPrefab = new GameObject("Second Enemy Test Prefab");
 
@@ -132,12 +135,17 @@ namespace _Project.Editor.Tests
                     playerPrefab,
                     (firstEnemyPrefab, 2, 10f, 20f, 0.5f),
                     (secondEnemyPrefab, 3, 30f, 40f, 1f));
+                var serializedSwordConfig = new SerializedObject(swordConfig);
+                serializedSwordConfig.FindProperty("prefab").objectReferenceValue = swordPrefab;
+                serializedSwordConfig.ApplyModifiedPropertiesWithoutUndo();
                 LogAssert.Expect(LogType.Error, "Player follow camera requires a main camera.");
 
                 var spawner = new SwarmSpawner(
                     world,
                     swarmConfig,
                     playerMovementConfig,
+                    swordConfig,
+                    new SwordFactory(world, swordConfig),
                     null);
                 spawner.Start();
 
@@ -179,6 +187,7 @@ namespace _Project.Editor.Tests
                 }
 
                 Object.DestroyImmediate(playerPrefab);
+                Object.DestroyImmediate(swordPrefab);
                 Object.DestroyImmediate(firstEnemyPrefab);
                 Object.DestroyImmediate(secondEnemyPrefab);
                 if (swarmConfig.EnemyRegistry != null)
@@ -188,6 +197,7 @@ namespace _Project.Editor.Tests
 
                 Object.DestroyImmediate(swarmConfig);
                 Object.DestroyImmediate(playerMovementConfig);
+                Object.DestroyImmediate(swordConfig);
                 world.Dispose();
             }
         }

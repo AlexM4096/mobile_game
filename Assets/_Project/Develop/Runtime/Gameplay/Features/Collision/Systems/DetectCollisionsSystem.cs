@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using Arch.Core;
 using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Common;
+using Unity.Mathematics;
 using UnityEngine;
+using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
 
 namespace _Project.Gameplay.Features.Collision.Systems
 {
     public sealed class DetectCollisionsSystem : UnitySystemBase
     {
-        private static readonly QueryDescription _circleDescription =
+        private static readonly QueryDescription _description =
             new QueryDescription()
-                .WithAll<Position, CollisionBody, CircleCollider>();
-        private static readonly QueryDescription _boxDescription =
-            new QueryDescription()
-                .WithAll<Position, CollisionBody, BoxCollider>();
+                .WithAll<Position, CollisionBody>();
 
         private readonly CollisionMatrix _collisionMatrix;
         private readonly List<BodySnapshot> _bodies = new();
@@ -38,45 +37,54 @@ namespace _Project.Gameplay.Features.Collision.Systems
         {
             _bodies.Clear();
 
-            World.Query(in _circleDescription, (
+            World.Query(in _description, (
                 Entity entity,
                 ref Position position,
-                ref CollisionBody body,
-                ref CircleCollider collider
+                ref CollisionBody body
             ) =>
             {
-                if (World.Has<BoxCollider>(entity) ||
-                    body.Layer == CollisionLayer.None ||
-                    !IsPositiveFinite(collider.Radius))
+                var hasCircle = World.Has<CircleCollider>(entity);
+                var hasBox = World.Has<BoxCollider>(entity);
+                if (hasCircle == hasBox || body.Layer == CollisionLayer.None)
                 {
                     return;
+                }
+
+                if (hasCircle)
+                {
+                    ref var circle = ref World.Get<CircleCollider>(entity);
+                    if (!IsPositiveFinite(circle.Radius))
+                    {
+                        return;
+                    }
+
+                    _bodies.Add(new BodySnapshot(
+                        entity,
+                        body,
+                        CollisionShape.Circle(position.Value, circle.Radius),
+                        World.Has<TriggerTag>(entity)));
+                    return;
+                }
+
+                ref var box = ref World.Get<BoxCollider>(entity);
+                if (!IsPositiveFinite(box.HalfExtents.x) ||
+                    !IsPositiveFinite(box.HalfExtents.y))
+                {
+                    return;
+                }
+
+                var angle = 0f;
+                if (World.Has<RotationComponent>(entity))
+                {
+                    ref var rotation = ref World.Get<RotationComponent>(entity);
+                    var right = math.mul(rotation.Value, new float3(1f, 0f, 0f));
+                    angle = math.atan2(right.y, right.x);
                 }
 
                 _bodies.Add(new BodySnapshot(
                     entity,
                     body,
-                    CollisionShape.Circle(position.Value, collider.Radius),
-                    World.Has<TriggerTag>(entity)));
-            });
-
-            World.Query(in _boxDescription, (
-                Entity entity,
-                ref Position position,
-                ref CollisionBody body,
-                ref BoxCollider collider) =>
-            {
-                if (World.Has<CircleCollider>(entity) ||
-                    body.Layer == CollisionLayer.None ||
-                    !IsPositiveFinite(collider.HalfExtents.x) ||
-                    !IsPositiveFinite(collider.HalfExtents.y))
-                {
-                    return;
-                }
-
-                _bodies.Add(new BodySnapshot(
-                    entity,
-                    body,
-                    CollisionShape.Box(position.Value, collider.HalfExtents),
+                    CollisionShape.Box(position.Value, box.HalfExtents, angle),
                     World.Has<TriggerTag>(entity)));
             });
         }
@@ -318,32 +326,84 @@ namespace _Project.Gameplay.Features.Collision.Systems
             CollisionShapeType type,
             Vector2 position,
             float radius,
-            Vector2 halfExtents)
+            Vector2 halfExtents,
+            Vector2 axisX,
+            Vector2 axisY,
+            bool isAxisAligned)
         {
             Type = type;
             Position = position;
             Radius = radius;
             HalfExtents = halfExtents;
+            AxisX = axisX;
+            AxisY = axisY;
+            IsAxisAligned = isAxisAligned;
         }
 
         public CollisionShapeType Type { get; }
         public Vector2 Position { get; }
         public float Radius { get; }
         public Vector2 HalfExtents { get; }
+        public Vector2 AxisX { get; }
+        public Vector2 AxisY { get; }
+        public bool IsAxisAligned { get; }
 
         public static CollisionShape Circle(Vector2 position, float radius)
         {
-            return new CollisionShape(CollisionShapeType.Circle, position, radius, default);
+            return new CollisionShape(
+                CollisionShapeType.Circle,
+                position,
+                radius,
+                default,
+                Vector2.right,
+                Vector2.up,
+                true);
         }
 
         public static CollisionShape Box(Vector2 position, Vector2 halfExtents)
         {
-            return new CollisionShape(CollisionShapeType.Box, position, default, halfExtents);
+            return new CollisionShape(
+                CollisionShapeType.Box,
+                position,
+                default,
+                halfExtents,
+                Vector2.right,
+                Vector2.up,
+                true);
+        }
+
+        public static CollisionShape Box(
+            Vector2 position,
+            Vector2 halfExtents,
+            float rotationRadians)
+        {
+            if (Mathf.Abs(Mathf.DeltaAngle(0f, rotationRadians * Mathf.Rad2Deg)) <= 0.0001f)
+            {
+                return Box(position, halfExtents);
+            }
+
+            var sine = Mathf.Sin(rotationRadians);
+            var cosine = Mathf.Cos(rotationRadians);
+            return new CollisionShape(
+                CollisionShapeType.Box,
+                position,
+                default,
+                halfExtents,
+                new Vector2(cosine, sine),
+                new Vector2(-sine, cosine),
+                false);
         }
 
         public CollisionShape WithPosition(Vector2 position)
         {
-            return new CollisionShape(Type, position, Radius, HalfExtents);
+            return new CollisionShape(
+                Type,
+                position,
+                Radius,
+                HalfExtents,
+                AxisX,
+                AxisY,
+                IsAxisAligned);
         }
     }
 
@@ -432,6 +492,106 @@ namespace _Project.Gameplay.Features.Collision.Systems
             CollisionShape second,
             out CollisionContact contact)
         {
+            if (first.IsAxisAligned && second.IsAxisAligned)
+            {
+                return TryAxisAlignedBoxBox(first, second, out contact);
+            }
+
+            var centerDifference = second.Position - first.Position;
+            var minimumOverlap = float.MaxValue;
+            var minimumAxis = Vector2.right;
+
+            if (!TryUpdateMinimumOverlap(
+                    first,
+                    second,
+                    centerDifference,
+                    first.AxisX,
+                    ref minimumOverlap,
+                    ref minimumAxis) ||
+                !TryUpdateMinimumOverlap(
+                    first,
+                    second,
+                    centerDifference,
+                    first.AxisY,
+                    ref minimumOverlap,
+                    ref minimumAxis) ||
+                !TryUpdateMinimumOverlap(
+                    first,
+                    second,
+                    centerDifference,
+                    second.AxisX,
+                    ref minimumOverlap,
+                    ref minimumAxis) ||
+                !TryUpdateMinimumOverlap(
+                    first,
+                    second,
+                    centerDifference,
+                    second.AxisY,
+                    ref minimumOverlap,
+                    ref minimumAxis))
+            {
+                contact = default;
+                return false;
+            }
+
+            var normal = Vector2.Dot(centerDifference, minimumAxis) >= 0f
+                ? minimumAxis
+                : -minimumAxis;
+            var firstSurface = GetSupportPoint(first, normal);
+            var secondSurface = GetSupportPoint(second, -normal);
+            contact = new CollisionContact(
+                (firstSurface + secondSurface) * 0.5f,
+                normal,
+                minimumOverlap);
+            return true;
+        }
+
+        private static bool TryUpdateMinimumOverlap(
+            CollisionShape first,
+            CollisionShape second,
+            Vector2 centerDifference,
+            Vector2 axis,
+            ref float minimumOverlap,
+            ref Vector2 minimumAxis)
+        {
+            var firstRadius = GetProjectionRadius(first, axis);
+            var secondRadius = GetProjectionRadius(second, axis);
+            var centerDistance = Mathf.Abs(Vector2.Dot(centerDifference, axis));
+            var overlap = firstRadius + secondRadius - centerDistance;
+            if (overlap < 0f)
+            {
+                return false;
+            }
+
+            if (overlap < minimumOverlap)
+            {
+                minimumOverlap = overlap;
+                minimumAxis = axis;
+            }
+
+            return true;
+        }
+
+        private static float GetProjectionRadius(CollisionShape box, Vector2 axis)
+        {
+            return box.HalfExtents.x * Mathf.Abs(Vector2.Dot(axis, box.AxisX)) +
+                   box.HalfExtents.y * Mathf.Abs(Vector2.Dot(axis, box.AxisY));
+        }
+
+        private static Vector2 GetSupportPoint(CollisionShape box, Vector2 direction)
+        {
+            var xSign = Vector2.Dot(direction, box.AxisX) >= 0f ? 1f : -1f;
+            var ySign = Vector2.Dot(direction, box.AxisY) >= 0f ? 1f : -1f;
+            return box.Position +
+                   box.AxisX * (box.HalfExtents.x * xSign) +
+                   box.AxisY * (box.HalfExtents.y * ySign);
+        }
+
+        private static bool TryAxisAlignedBoxBox(
+            CollisionShape first,
+            CollisionShape second,
+            out CollisionContact contact)
+        {
             var difference = second.Position - first.Position;
             var overlapX = first.HalfExtents.x + second.HalfExtents.x - Mathf.Abs(difference.x);
             var overlapY = first.HalfExtents.y + second.HalfExtents.y - Mathf.Abs(difference.y);
@@ -488,12 +648,16 @@ namespace _Project.Gameplay.Features.Collision.Systems
             CollisionShape box,
             out CollisionContact contact)
         {
-            var minimum = box.Position - box.HalfExtents;
-            var maximum = box.Position + box.HalfExtents;
-            var closest = new Vector2(
-                Mathf.Clamp(circle.Position.x, minimum.x, maximum.x),
-                Mathf.Clamp(circle.Position.y, minimum.y, maximum.y));
-            var difference = closest - circle.Position;
+            var relativePosition = circle.Position - box.Position;
+            var localCirclePosition = new Vector2(
+                Vector2.Dot(relativePosition, box.AxisX),
+                Vector2.Dot(relativePosition, box.AxisY));
+            var minimum = -box.HalfExtents;
+            var maximum = box.HalfExtents;
+            var closestLocal = new Vector2(
+                Mathf.Clamp(localCirclePosition.x, minimum.x, maximum.x),
+                Mathf.Clamp(localCirclePosition.y, minimum.y, maximum.y));
+            var difference = closestLocal - localCirclePosition;
             var distanceSquared = difference.sqrMagnitude;
             var radiusSquared = circle.Radius * circle.Radius;
             if (distanceSquared > radiusSquared)
@@ -505,7 +669,8 @@ namespace _Project.Gameplay.Features.Collision.Systems
             if (distanceSquared > DistanceEpsilonSquared)
             {
                 var distance = Mathf.Sqrt(distanceSquared);
-                var normal = difference / distance;
+                var normal = ToWorldDirection(box, difference / distance);
+                var closest = ToWorldPoint(box, closestLocal);
                 var circleSurface = circle.Position + normal * circle.Radius;
                 contact = new CollisionContact(
                     (circleSurface + closest) * 0.5f,
@@ -514,40 +679,52 @@ namespace _Project.Gameplay.Features.Collision.Systems
                 return true;
             }
 
-            var distanceToFace = circle.Position.x - minimum.x;
+            var distanceToFace = localCirclePosition.x - minimum.x;
             var escapeDirection = Vector2.left;
-            var boxSurface = new Vector2(minimum.x, circle.Position.y);
+            var boxSurfaceLocal = new Vector2(minimum.x, localCirclePosition.y);
 
-            var candidateDistance = maximum.x - circle.Position.x;
+            var candidateDistance = maximum.x - localCirclePosition.x;
             if (candidateDistance < distanceToFace)
             {
                 distanceToFace = candidateDistance;
                 escapeDirection = Vector2.right;
-                boxSurface = new Vector2(maximum.x, circle.Position.y);
+                boxSurfaceLocal = new Vector2(maximum.x, localCirclePosition.y);
             }
 
-            candidateDistance = circle.Position.y - minimum.y;
+            candidateDistance = localCirclePosition.y - minimum.y;
             if (candidateDistance < distanceToFace)
             {
                 distanceToFace = candidateDistance;
                 escapeDirection = Vector2.down;
-                boxSurface = new Vector2(circle.Position.x, minimum.y);
+                boxSurfaceLocal = new Vector2(localCirclePosition.x, minimum.y);
             }
 
-            candidateDistance = maximum.y - circle.Position.y;
+            candidateDistance = maximum.y - localCirclePosition.y;
             if (candidateDistance < distanceToFace)
             {
                 distanceToFace = candidateDistance;
                 escapeDirection = Vector2.up;
-                boxSurface = new Vector2(circle.Position.x, maximum.y);
+                boxSurfaceLocal = new Vector2(localCirclePosition.x, maximum.y);
             }
 
-            var circleSurfaceInside = circle.Position + escapeDirection * circle.Radius;
+            var worldEscapeDirection = ToWorldDirection(box, escapeDirection);
+            var boxSurface = ToWorldPoint(box, boxSurfaceLocal);
+            var circleSurfaceInside = circle.Position + worldEscapeDirection * circle.Radius;
             contact = new CollisionContact(
                 (circleSurfaceInside + boxSurface) * 0.5f,
-                -escapeDirection,
+                -worldEscapeDirection,
                 circle.Radius + distanceToFace);
             return true;
+        }
+
+        private static Vector2 ToWorldPoint(CollisionShape box, Vector2 localPoint)
+        {
+            return box.Position + ToWorldDirection(box, localPoint);
+        }
+
+        private static Vector2 ToWorldDirection(CollisionShape box, Vector2 localDirection)
+        {
+            return box.AxisX * localDirection.x + box.AxisY * localDirection.y;
         }
     }
 }
