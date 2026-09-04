@@ -43,48 +43,20 @@ namespace _Project.Gameplay.Features.Collision.Systems
                 ref CollisionBody body
             ) =>
             {
-                var hasCircle = World.Has<CircleCollider>(entity);
-                var hasBox = World.Has<BoxCollider>(entity);
-                if (hasCircle == hasBox || body.Layer == CollisionLayer.None)
-                {
-                    return;
-                }
-
-                if (hasCircle)
-                {
-                    ref var circle = ref World.Get<CircleCollider>(entity);
-                    if (!IsPositiveFinite(circle.Radius))
-                    {
-                        return;
-                    }
-
-                    _bodies.Add(new BodySnapshot(
+                if (body.Layer == CollisionLayer.None ||
+                    !CollisionShapeFactory.TryCreate(
+                        World,
                         entity,
-                        body,
-                        CollisionShape.Circle(position.Value, circle.Radius),
-                        World.Has<TriggerTag>(entity)));
-                    return;
-                }
-
-                ref var box = ref World.Get<BoxCollider>(entity);
-                if (!IsPositiveFinite(box.HalfExtents.x) ||
-                    !IsPositiveFinite(box.HalfExtents.y))
+                        position.Value,
+                        out var shape))
                 {
                     return;
-                }
-
-                var angle = 0f;
-                if (World.Has<RotationComponent>(entity))
-                {
-                    ref var rotation = ref World.Get<RotationComponent>(entity);
-                    var right = math.mul(rotation.Value, new float3(1f, 0f, 0f));
-                    angle = math.atan2(right.y, right.x);
                 }
 
                 _bodies.Add(new BodySnapshot(
                     entity,
                     body,
-                    CollisionShape.Box(position.Value, box.HalfExtents, angle),
+                    shape,
                     World.Has<TriggerTag>(entity)));
             });
         }
@@ -225,11 +197,6 @@ namespace _Project.Gameplay.Features.Collision.Systems
                     contact.Point,
                     -contact.Normal,
                     contact.Penetration);
-        }
-
-        private static bool IsPositiveFinite(float value)
-        {
-            return value > 0f && !float.IsNaN(value) && !float.IsInfinity(value);
         }
 
         private readonly struct ContactPair : IEquatable<ContactPair>
@@ -404,6 +371,61 @@ namespace _Project.Gameplay.Features.Collision.Systems
                 AxisX,
                 AxisY,
                 IsAxisAligned);
+        }
+    }
+
+    internal static class CollisionShapeFactory
+    {
+        public static bool TryCreate(
+            World world,
+            Entity entity,
+            Vector2 position,
+            out CollisionShape shape)
+        {
+            var hasCircle = world.Has<CircleCollider>(entity);
+            var hasBox = world.Has<BoxCollider>(entity);
+            if (hasCircle == hasBox)
+            {
+                shape = default;
+                return false;
+            }
+
+            if (hasCircle)
+            {
+                ref var circle = ref world.Get<CircleCollider>(entity);
+                if (!IsPositiveFinite(circle.Radius))
+                {
+                    shape = default;
+                    return false;
+                }
+
+                shape = CollisionShape.Circle(position, circle.Radius);
+                return true;
+            }
+
+            ref var box = ref world.Get<BoxCollider>(entity);
+            if (!IsPositiveFinite(box.HalfExtents.x) ||
+                !IsPositiveFinite(box.HalfExtents.y))
+            {
+                shape = default;
+                return false;
+            }
+
+            var angle = 0f;
+            if (world.Has<RotationComponent>(entity))
+            {
+                ref var rotation = ref world.Get<RotationComponent>(entity);
+                var right = math.mul(rotation.Value, new float3(1f, 0f, 0f));
+                angle = math.atan2(right.y, right.x);
+            }
+
+            shape = CollisionShape.Box(position, box.HalfExtents, angle);
+            return true;
+        }
+
+        private static bool IsPositiveFinite(float value)
+        {
+            return value > 0f && !float.IsNaN(value) && !float.IsInfinity(value);
         }
     }
 

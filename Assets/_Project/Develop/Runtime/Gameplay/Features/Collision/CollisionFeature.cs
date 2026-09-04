@@ -10,6 +10,9 @@ namespace _Project.Gameplay.Features.Collision
         {
             systems.Add<CleanupCollisionEventsSystem>(SystemRunner.Update);
             systems.Add<DetectCollisionsSystem>(SystemRunner.Update);
+#if UNITY_EDITOR
+            systems.Add<ColliderDebugSystem>(SystemRunner.PreLateUpdate);
+#endif
         }
     }
 }

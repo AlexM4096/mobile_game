@@ -33,6 +33,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private PlayerMovementConfig playerMovementConfig;
         [SerializeField, InlineEditor] private PlayerInputConfig playerInputConfig;
         [SerializeField, InlineEditor] private PlayerOrbitVisualizationConfig playerOrbitVisualizationConfig;
+        [SerializeField, InlineEditor] private ColliderDebugConfig colliderDebugConfig;
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
         [SerializeField, InlineEditor] private SwordConfig swordConfig;
         [SerializeField] private Camera mainCamera;
@@ -45,6 +46,7 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(playerMovementConfig);
             builder.RegisterInstance(playerInputConfig);
             builder.RegisterInstance(playerOrbitVisualizationConfig);
+            builder.RegisterInstance(colliderDebugConfig);
             builder.RegisterInstance(healthBarConfig);
             builder.RegisterInstance(swordConfig);
             builder.RegisterInstance(mainCamera);

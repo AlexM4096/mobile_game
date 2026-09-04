@@ -300,6 +300,7 @@ MonoBehaviour:
   playerMovementConfig: {fileID: 11400000, guid: a3333333333333333333333333333333, type: 2}
   playerInputConfig: {fileID: 11400000, guid: a4444444444444444444444444444444, type: 2}
   playerOrbitVisualizationConfig: {fileID: 11400000, guid: a5555555555555555555555555555555, type: 2}
+  colliderDebugConfig: {fileID: 11400000, guid: 7df21f7f2aaa4d5a8d9b80cbecc15018, type: 2}
   healthBarConfig: {fileID: 11400000, guid: a6666666666666666666666666666666, type: 2}
   swordConfig: {fileID: 11400000, guid: 75db06cbc82c4ead8f0d38ed3b7e7855, type: 2}
   mainCamera: {fileID: 1002}
