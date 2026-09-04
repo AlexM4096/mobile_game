@@ -1,32 +1,40 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace _Project.Gameplay.Infrastructure
 {
-    [CreateAssetMenu(fileName = "SwarmConfig", menuName = "Configs/Gameplay/Swarm Config")]
-    public sealed class SwarmConfig : ScriptableObject
+    public enum SpawnShape
     {
-        [SerializeField, Min(1)] private int enemyCount = 500;
-        [SerializeField, Min(0f)] private float enemySpeed = 3f;
-        [SerializeField, Min(1f)] private float enemyHealth = 100f;
-        [SerializeField, Min(1f)] private float targetHealth = 100f;
-        [SerializeField, Min(0.01f)] private float enemyColliderRadius = 0.25f;
-        [SerializeField, Min(0.01f)] private float targetColliderRadius = 0.35f;
-        [SerializeField, Min(0f)] private float innerSpawnRadius = 7f;
-        [SerializeField, Min(0f)] private float outerSpawnRadius = 11f;
-        [SerializeField] private int randomSeed = 12345;
-        [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private GameObject playerPrefab;
+        Circle,
+        Box
+    }
 
-        public int EnemyCount => enemyCount;
-        public float EnemySpeed => enemySpeed;
-        public float EnemyHealth => enemyHealth;
-        public float TargetHealth => targetHealth;
-        public float EnemyColliderRadius => enemyColliderRadius;
-        public float TargetColliderRadius => targetColliderRadius;
-        public float InnerSpawnRadius => innerSpawnRadius;
-        public float OuterSpawnRadius => outerSpawnRadius;
+    [CreateAssetMenu(fileName = "SwarmConfig", menuName = "Configs/Gameplay/Swarm Config")]
+    public sealed class SwarmConfig : SerializedScriptableObject
+    {
+        [SerializeField, Required] private EnemyRegistryConfig enemyRegistry;
+        [SerializeField] private SpawnShape spawnShape = SpawnShape.Circle;
+        [SerializeField, ToggleLeft] private bool spawnOnEdge;
+        [SerializeField, Min(0.01f), ShowIf(nameof(spawnShape), SpawnShape.Circle)]
+        private float circleRadius = 11f;
+        [SerializeField, Min(0.01f), ShowIf(nameof(spawnShape), SpawnShape.Box)]
+        private float boxWidth = 22f;
+        [SerializeField, Min(0.01f), ShowIf(nameof(spawnShape), SpawnShape.Box)]
+        private float boxHeight = 22f;
+        [SerializeField] private int randomSeed = 12345;
+        [SerializeField, Min(1f)] private float targetHealth = 100f;
+        [SerializeField, Min(0.01f)] private float targetColliderRadius = 0.35f;
+        [SerializeField, Required] private GameObject playerPrefab;
+
+        public EnemyRegistryConfig EnemyRegistry => enemyRegistry;
+        public SpawnShape SpawnShape => spawnShape;
+        public bool SpawnOnEdge => spawnOnEdge;
+        public float CircleRadius => circleRadius;
+        public float BoxWidth => boxWidth;
+        public float BoxHeight => boxHeight;
         public int RandomSeed => randomSeed;
-        public GameObject EnemyPrefab => enemyPrefab;
+        public float TargetHealth => targetHealth;
+        public float TargetColliderRadius => targetColliderRadius;
         public GameObject PlayerPrefab => playerPrefab;
     }
 }

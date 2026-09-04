@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a7e62d9a2e4a949326d5737764b305, type: 3}
+  m_Name: EnemyRegistryConfig
+  enemies:
+  - prefab: {fileID: 2363021009994210881, guid: 6e423fbf4cf202746ae57510feab35b4, type: 3}
+    enemyCount: 25
+    baseSpeed: 3
+    baseHealth: 100
+    colliderRadius: 1
+    statNoisePercentage: 0.2
+  - prefab: {fileID: 2806775026706745429, guid: 59a127528c5a33546877203a180b1a4f, type: 3}
+    enemyCount: 25
+    baseSpeed: 3
+    baseHealth: 100
+    colliderRadius: 1
+    statNoisePercentage: 0.2
+  - prefab: {fileID: 3113049047764361972, guid: 5a5450e747a04514ea94a73366d647a7, type: 3}
+    enemyCount: 25
+    baseSpeed: 3
+    baseHealth: 100
+    colliderRadius: 1
+    statNoisePercentage: 0.2
+  - prefab: {fileID: 5157819698762423893, guid: 139391d71e8a9ca4cb4df8154fe4b8ae, type: 3}
+    enemyCount: 25
+    baseSpeed: 3
+    baseHealth: 100
+    colliderRadius: 1
+    statNoisePercentage: 0.2

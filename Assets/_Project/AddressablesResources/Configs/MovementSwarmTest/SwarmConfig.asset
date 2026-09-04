@@ -5,14 +5,13 @@ MonoBehaviour:
   m_ObjectHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccd2f70c62894d7eb4209fba02ec2b2c, type: 3}
   m_Name: SwarmConfig
-  enemyCount: 100
-  enemySpeed: 3
-  enemyHealth: 100
-  targetHealth: 100
-  enemyColliderRadius: 1
-  targetColliderRadius: 1
-  innerSpawnRadius: 20
-  outerSpawnRadius: 24
+  enemyRegistry: {fileID: 11400000, guid: 0c77e711e8384f2186625343b8b7baa3, type: 2}
+  spawnShape: 0
+  spawnOnEdge: 0
+  circleRadius: 24
+  boxWidth: 48
+  boxHeight: 48
   randomSeed: 12345
-  enemyPrefab: {fileID: 2363021009994210881, guid: 6e423fbf4cf202746ae57510feab35b4, type: 3}
+  targetHealth: 100
+  targetColliderRadius: 1
   playerPrefab: {fileID: 544961538741716828, guid: f9eaa5484fa4d8042b038c8f3476cd72, type: 3}

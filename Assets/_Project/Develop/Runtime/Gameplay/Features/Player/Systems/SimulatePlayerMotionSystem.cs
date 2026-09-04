@@ -58,9 +58,10 @@ namespace _Project.Gameplay.Features.Player.Systems
             }
 
             radiusDirection.Normalize();
-            var angle = _settings.RotationSpeed * Mathf.Deg2Rad * motion.OrbitDirection * deltaTime;
-            var sine = Mathf.Sin(angle);
-            var cosine = Mathf.Cos(angle);
+            var tangentialSpeed = _settings.LaunchSpeed;
+            var angularDisplacement = tangentialSpeed / motion.OrbitRadius * motion.OrbitDirection * deltaTime;
+            var sine = Mathf.Sin(angularDisplacement);
+            var cosine = Mathf.Cos(angularDisplacement);
             var rotatedRadius = new Vector2(
                 radiusDirection.x * cosine - radiusDirection.y * sine,
                 radiusDirection.x * sine + radiusDirection.y * cosine);
@@ -68,7 +69,7 @@ namespace _Project.Gameplay.Features.Player.Systems
             position.Value = motion.OrbitCenter + rotatedRadius * motion.OrbitRadius;
             var tangent = new Vector2(-rotatedRadius.y, rotatedRadius.x) * motion.OrbitDirection;
             direction.Value = tangent;
-            velocity.Value = tangent * (_settings.RotationSpeed * Mathf.Deg2Rad * motion.OrbitRadius);
+            velocity.Value = tangent * tangentialSpeed;
         }
 
         private void SimulateFlight(

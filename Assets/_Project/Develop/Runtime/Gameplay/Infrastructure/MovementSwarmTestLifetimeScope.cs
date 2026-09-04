@@ -101,15 +101,8 @@ namespace _Project.Gameplay.Infrastructure
 
         public void Start()
         {
-            if (_configuration.EnemyPrefab == null)
+            if (!ValidateConfiguration())
             {
-                Debug.LogError("Movement swarm test requires an enemy prefab.");
-                return;
-            }
-
-            if (_configuration.PlayerPrefab == null)
-            {
-                Debug.LogError("Movement swarm test requires a player prefab.");
                 return;
             }
 
@@ -142,39 +135,117 @@ namespace _Project.Gameplay.Infrastructure
             CreatePlayerFollowCamera(targetView.transform);
 
             var random = new System.Random(_configuration.RandomSeed);
-            var minRadius = Mathf.Min(_configuration.InnerSpawnRadius, _configuration.OuterSpawnRadius);
-            var maxRadius = Mathf.Max(_configuration.InnerSpawnRadius, _configuration.OuterSpawnRadius);
+            var enemyIndex = 0;
 
-            for (var index = 0; index < _configuration.EnemyCount; index++)
+            foreach (var enemyType in _configuration.EnemyRegistry.Enemies)
             {
-                var angle = (float)(random.NextDouble() * Mathf.PI * 2f);
-                var radius = Mathf.Lerp(minRadius, maxRadius, (float)random.NextDouble());
-                var position = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-                var entity = _world.Create(
-                    new Position { Value = position },
-                    new RotationComponent { Value = quaternion.identity },
-                    new FlipRotationTag(),
-                    new Direction() { Value = Vector2.right },
-                    new Velocity(),
-                    new MoveSpeed { Value = Random.Range(1, _configuration.EnemySpeed) },
-                    new CollisionBody
-                    {
-                        BodyType = ColliderBodyType.Dynamic,
-                        Layer = CollisionLayer.Enemy
-                    },
-                    new CircleCollider { Radius = _configuration.EnemyColliderRadius },
-                    new Health
-                    {
-                        Current = Random.Range(1f, _configuration.EnemyHealth),
-                        Max = _configuration.EnemyHealth
-                    }
-                );
+                for (var index = 0; index < enemyType.EnemyCount; index++)
+                {
+                    var position = SwarmSpawnGenerator.GeneratePosition(
+                        random,
+                        _configuration.SpawnShape,
+                        _configuration.SpawnOnEdge,
+                        _configuration.CircleRadius,
+                        _configuration.BoxWidth,
+                        _configuration.BoxHeight);
+                    var speed = SwarmSpawnGenerator.ApplyNoise(
+                        random,
+                        enemyType.BaseSpeed,
+                        enemyType.StatNoisePercentage);
+                    var health = SwarmSpawnGenerator.ApplyNoise(
+                        random,
+                        enemyType.BaseHealth,
+                        enemyType.StatNoisePercentage);
+                    var entity = _world.Create(
+                        new Position { Value = position },
+                        new RotationComponent { Value = quaternion.identity },
+                        new FlipRotationTag(),
+                        new Direction { Value = Vector2.right },
+                        new Velocity(),
+                        new MoveSpeed { Value = speed },
+                        new CollisionBody
+                        {
+                            BodyType = ColliderBodyType.Dynamic,
+                            Layer = CollisionLayer.Enemy
+                        },
+                        new CircleCollider { Radius = enemyType.ColliderRadius },
+                        new Health
+                        {
+                            Current = health,
+                            Max = health
+                        });
 
-                var view = Object.Instantiate(_configuration.EnemyPrefab, _spawnedViewsRoot);
-                view.name = $"Enemy View {index + 1}";
-                view.transform.position = new Vector3(position.x, position.y, 0f);
-                _world.Add(entity, new GameObjectReference(view));
+                    enemyIndex++;
+                    var view = Object.Instantiate(enemyType.Prefab, _spawnedViewsRoot);
+                    view.name = $"{enemyType.Prefab.name} View {enemyIndex}";
+                    view.transform.position = new Vector3(position.x, position.y, 0f);
+                    _world.Add(entity, new GameObjectReference(view));
+                }
             }
+        }
+
+        private bool ValidateConfiguration()
+        {
+            if (_configuration.PlayerPrefab == null)
+            {
+                Debug.LogError("Movement swarm test requires a player prefab.");
+                return false;
+            }
+
+            if (_configuration.EnemyRegistry == null)
+            {
+                Debug.LogError("Movement swarm test requires an enemy registry.");
+                return false;
+            }
+
+            if (_configuration.EnemyRegistry.Enemies == null ||
+                _configuration.EnemyRegistry.Enemies.Count == 0)
+            {
+                Debug.LogError("Movement swarm test requires at least one registered enemy.");
+                return false;
+            }
+
+            if (_configuration.SpawnShape == SpawnShape.Circle && _configuration.CircleRadius <= 0f)
+            {
+                Debug.LogError("Movement swarm test requires a positive circle spawn radius.");
+                return false;
+            }
+
+            if (_configuration.SpawnShape == SpawnShape.Box &&
+                (_configuration.BoxWidth <= 0f || _configuration.BoxHeight <= 0f))
+            {
+                Debug.LogError("Movement swarm test requires positive box spawn dimensions.");
+                return false;
+            }
+
+            for (var index = 0; index < _configuration.EnemyRegistry.Enemies.Count; index++)
+            {
+                var enemyType = _configuration.EnemyRegistry.Enemies[index];
+                if (enemyType == null)
+                {
+                    Debug.LogError($"Movement swarm enemy type {index} is missing.");
+                    return false;
+                }
+
+                if (enemyType.Prefab == null)
+                {
+                    Debug.LogError($"Movement swarm enemy type {index} requires a prefab.");
+                    return false;
+                }
+
+                if (enemyType.EnemyCount < 0 ||
+                    enemyType.BaseSpeed < 0f ||
+                    enemyType.BaseHealth < 1f ||
+                    enemyType.ColliderRadius <= 0f ||
+                    enemyType.StatNoisePercentage < 0f ||
+                    enemyType.StatNoisePercentage > 1f)
+                {
+                    Debug.LogError($"Movement swarm enemy type {index} has invalid values.");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void Dispose()
