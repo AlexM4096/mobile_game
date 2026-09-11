@@ -1,251 +1,189 @@
 using System.Collections.Generic;
+using System.Reflection;
 using Arch.Core;
+using Arch.Unity.Toolkit;
 using NUnit.Framework;
-using _Project.Gameplay.Features.Collision;
+using _Project.Gameplay.Features.AI;
+using _Project.Gameplay.Features.AI.Systems;
+using _Project.Gameplay.Features.Common;
+using _Project.Gameplay.Features.EnemySpawn;
+using _Project.Gameplay.Features.EnemySpawn.Systems;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Movement;
+using _Project.Gameplay.Features.Movement.Systems;
 using _Project.Gameplay.Features.Player;
-using _Project.Gameplay.Features.Sword;
-using _Project.Gameplay.Infrastructure;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace _Project.Editor.Tests
 {
     public sealed class SwarmSpawnGeneratorTests
     {
         private static readonly QueryDescription EnemyDescription =
-            new QueryDescription()
-                .WithAll<MoveSpeed, Health, CircleCollider>();
+            new QueryDescription().WithAll<Target, MoveSpeed, Health, Direction, Velocity>();
 
         [Test]
-        public void CircleInsidePositionsStayInsideRadius()
+        public void GeneratedPositionsRespectWorldSpaceZoneAndShape()
         {
             var random = new System.Random(12345);
+            var circle = Zone(SpawnShape.Circle, new Vector2(3f, -2f), true, 10f, Vector2.one);
+            var box = Zone(SpawnShape.Box, new Vector2(-4f, 5f), false, 1f, new Vector2(12f, 8f));
 
             for (var index = 0; index < 1000; index++)
             {
-                var position = Generate(random, SpawnShape.Circle, false);
+                var circlePosition = SpawnPositionGenerator.GeneratePosition(random, circle);
+                Assert.That(Vector2.Distance(circlePosition, circle.Center), Is.EqualTo(10f).Within(0.0001f));
 
-                Assert.That(position.magnitude, Is.LessThanOrEqualTo(10.0001f));
+                var boxPosition = SpawnPositionGenerator.GeneratePosition(random, box) - box.Center;
+                Assert.That(Mathf.Abs(boxPosition.x), Is.LessThanOrEqualTo(6.0001f));
+                Assert.That(Mathf.Abs(boxPosition.y), Is.LessThanOrEqualTo(4.0001f));
             }
-        }
-
-        [Test]
-        public void CircleEdgePositionsStayOnRadius()
-        {
-            var random = new System.Random(12345);
-
-            for (var index = 0; index < 1000; index++)
-            {
-                var position = Generate(random, SpawnShape.Circle, true);
-
-                Assert.That(position.magnitude, Is.EqualTo(10f).Within(0.0001f));
-            }
-        }
-
-        [Test]
-        public void BoxInsidePositionsStayInsideExtents()
-        {
-            var random = new System.Random(12345);
-
-            for (var index = 0; index < 1000; index++)
-            {
-                var position = Generate(random, SpawnShape.Box, false);
-
-                Assert.That(Mathf.Abs(position.x), Is.LessThanOrEqualTo(6.0001f));
-                Assert.That(Mathf.Abs(position.y), Is.LessThanOrEqualTo(4.0001f));
-            }
-        }
-
-        [Test]
-        public void BoxEdgePositionsStayOnPerimeterAndCoverEverySide()
-        {
-            var random = new System.Random(12345);
-            var sidesVisited = new bool[4];
-
-            for (var index = 0; index < 1000; index++)
-            {
-                var position = Generate(random, SpawnShape.Box, true);
-                var onTop = Mathf.Approximately(position.y, 4f);
-                var onRight = Mathf.Approximately(position.x, 6f);
-                var onBottom = Mathf.Approximately(position.y, -4f);
-                var onLeft = Mathf.Approximately(position.x, -6f);
-
-                Assert.That(onTop || onRight || onBottom || onLeft, Is.True);
-                Assert.That(Mathf.Abs(position.x), Is.LessThanOrEqualTo(6.0001f));
-                Assert.That(Mathf.Abs(position.y), Is.LessThanOrEqualTo(4.0001f));
-
-                sidesVisited[0] |= onTop;
-                sidesVisited[1] |= onRight;
-                sidesVisited[2] |= onBottom;
-                sidesVisited[3] |= onLeft;
-            }
-
-            Assert.That(sidesVisited, Is.All.True);
         }
 
         [Test]
         public void IdenticalSeedsProduceIdenticalPositionAndNoiseSequences()
         {
+            var zone = Zone(SpawnShape.Box, Vector2.zero, true, 1f, new Vector2(12f, 8f));
             var first = new System.Random(9876);
             var second = new System.Random(9876);
 
             for (var index = 0; index < 100; index++)
             {
                 Assert.That(
-                    Generate(first, SpawnShape.Box, true),
-                    Is.EqualTo(Generate(second, SpawnShape.Box, true)));
+                    SpawnPositionGenerator.GeneratePosition(first, zone),
+                    Is.EqualTo(SpawnPositionGenerator.GeneratePosition(second, zone)));
                 Assert.That(
-                    SwarmSpawnGenerator.ApplyNoise(first, 20f, 0.2f),
-                    Is.EqualTo(SwarmSpawnGenerator.ApplyNoise(second, 20f, 0.2f)));
+                    SpawnPositionGenerator.ApplyNoise(first, 20f, 0.2f),
+                    Is.EqualTo(SpawnPositionGenerator.ApplyNoise(second, 20f, 0.2f)));
             }
         }
 
         [Test]
-        public void NoiseRemainsWithinConfiguredPercentage()
-        {
-            var random = new System.Random(12345);
-
-            for (var index = 0; index < 1000; index++)
-            {
-                var value = SwarmSpawnGenerator.ApplyNoise(random, 100f, 0.2f);
-
-                Assert.That(value, Is.InRange(80f, 120f));
-            }
-        }
-
-        [Test]
-        public void SpawnerUsesAllProfilesAndAppliesTheirStats()
+        public void WaveTimelineSupportsDelayCatchUpAndOverlappingEntries()
         {
             var world = World.Create();
-            var swarmConfig = ScriptableObject.CreateInstance<SwarmConfig>();
-            var playerMovementConfig = ScriptableObject.CreateInstance<PlayerMovementConfig>();
-            var swordConfig = ScriptableObject.CreateInstance<SwordConfig>();
-            var playerPrefab = new GameObject("Player Test Prefab");
-            var swordPrefab = new GameObject("Sword Test Prefab");
-            var firstEnemyPrefab = new GameObject("First Enemy Test Prefab");
-            var secondEnemyPrefab = new GameObject("Second Enemy Test Prefab");
+            var factory = new EnemyFactory(world);
+            var config = ScriptableObject.CreateInstance<EnemySpawnConfig>();
+            var firstEnemy = ScriptableObject.CreateInstance<EnemyConfig>();
+            var secondEnemy = ScriptableObject.CreateInstance<EnemyConfig>();
+            var firstPrefab = new GameObject("First Enemy");
+            var secondPrefab = new GameObject("Second Enemy");
 
             try
             {
-                ConfigureSwarm(
-                    swarmConfig,
-                    playerPrefab,
-                    (firstEnemyPrefab, 2, 10f, 20f, 0.5f),
-                    (secondEnemyPrefab, 3, 30f, 40f, 1f));
-                var serializedSwordConfig = new SerializedObject(swordConfig);
-                serializedSwordConfig.FindProperty("prefab").objectReferenceValue = swordPrefab;
-                serializedSwordConfig.ApplyModifiedPropertiesWithoutUndo();
-                LogAssert.Expect(LogType.Error, "Player follow camera requires a main camera.");
-
-                var spawner = new SwarmSpawner(
-                    world,
-                    swarmConfig,
-                    playerMovementConfig,
-                    swordConfig,
-                    new SwordFactory(world, swordConfig),
-                    null);
-                spawner.Start();
-
-                var enemyCount = 0;
-                var firstTypeCount = 0;
-                var secondTypeCount = 0;
-                world.Query(in EnemyDescription, (Entity entity, ref MoveSpeed speed) =>
+                ConfigureEnemy(firstEnemy, firstPrefab, 10f, 20f, 0.5f);
+                ConfigureEnemy(secondEnemy, secondPrefab, 30f, 40f, 1f);
+                var zone = Zone(SpawnShape.Circle, Vector2.zero, true, 5f, Vector2.one);
+                Set(config, "waves", new List<EnemyWaveConfig>
                 {
-                    enemyCount++;
-                    var health = world.Get<Health>(entity);
-                    var collider = world.Get<CircleCollider>(entity);
-
-                    Assert.That(health.Current, Is.EqualTo(health.Max));
-                    if (Mathf.Approximately(collider.Radius, 0.5f))
-                    {
-                        firstTypeCount++;
-                        Assert.That(speed.Value, Is.InRange(8f, 12f));
-                        Assert.That(health.Max, Is.InRange(16f, 24f));
-                    }
-                    else
-                    {
-                        secondTypeCount++;
-                        Assert.That(collider.Radius, Is.EqualTo(1f));
-                        Assert.That(speed.Value, Is.InRange(24f, 36f));
-                        Assert.That(health.Max, Is.InRange(32f, 48f));
-                    }
+                    Wave(1f, 2f, zone, Entry(firstEnemy, 4, 2f)),
+                    Wave(0.5f, 1f, zone, Entry(secondEnemy, 2, 1f))
                 });
 
-                Assert.That(enemyCount, Is.EqualTo(5));
-                Assert.That(firstTypeCount, Is.EqualTo(2));
-                Assert.That(secondTypeCount, Is.EqualTo(3));
+                var player = world.Create(new PlayerTag(), new Position { Value = Vector2.zero });
+                var system = new SpawnEnemiesSystem(world, config, factory);
+                system.Initialize();
+
+                Run(system, 0d);
+                Assert.That(EnemyCount(world), Is.Zero);
+                Run(system, 1d);
+                Assert.That(EnemyCount(world), Is.EqualTo(1));
+                Run(system, 4d);
+                Assert.That(EnemyCount(world), Is.EqualTo(3));
+                Run(system, 8d);
+                Assert.That(EnemyCount(world), Is.EqualTo(6));
+
+                new MoveToTargetSystem(world).Update(default);
+                new CalculateVelocitySystem(world).Update(default);
+
+                world.Query(in EnemyDescription, (
+                    Entity entity,
+                    ref Target target,
+                    ref Direction direction,
+                    ref MoveSpeed speed,
+                    ref Velocity velocity) =>
+                {
+                    Assert.That(target.Entity, Is.EqualTo(player));
+                    Assert.That(direction.Value.magnitude, Is.EqualTo(1f).Within(0.0001f));
+                    Assert.That(velocity.Value.magnitude, Is.EqualTo(speed.Value).Within(0.0001f));
+                });
             }
             finally
             {
-                var spawnedRoot = GameObject.Find("Spawned Enemy Views");
-                if (spawnedRoot != null)
-                {
-                    Object.DestroyImmediate(spawnedRoot);
-                }
-
-                Object.DestroyImmediate(playerPrefab);
-                Object.DestroyImmediate(swordPrefab);
-                Object.DestroyImmediate(firstEnemyPrefab);
-                Object.DestroyImmediate(secondEnemyPrefab);
-                if (swarmConfig.EnemyRegistry != null)
-                {
-                    Object.DestroyImmediate(swarmConfig.EnemyRegistry);
-                }
-
-                Object.DestroyImmediate(swarmConfig);
-                Object.DestroyImmediate(playerMovementConfig);
-                Object.DestroyImmediate(swordConfig);
+                factory.Dispose();
+                Object.DestroyImmediate(firstPrefab);
+                Object.DestroyImmediate(secondPrefab);
+                Object.DestroyImmediate(firstEnemy);
+                Object.DestroyImmediate(secondEnemy);
+                Object.DestroyImmediate(config);
                 world.Dispose();
             }
         }
 
-        private static Vector2 Generate(
-            System.Random random,
-            SpawnShape shape,
-            bool spawnOnEdge)
+        [Test]
+        public void EmptyConfigurationIsRejected()
         {
-            return SwarmSpawnGenerator.GeneratePosition(
-                random,
-                shape,
-                spawnOnEdge,
-                10f,
-                12f,
-                8f);
-        }
-
-        private static void ConfigureSwarm(
-            SwarmConfig config,
-            GameObject playerPrefab,
-            params (GameObject prefab, int count, float speed, float health, float radius)[] profiles)
-        {
-            var registry = ScriptableObject.CreateInstance<EnemyRegistryConfig>();
-            var serializedRegistry = new SerializedObject(registry);
-            var enemies = serializedRegistry.FindProperty("enemies");
-            enemies.arraySize = profiles.Length;
-            for (var index = 0; index < profiles.Length; index++)
+            var config = ScriptableObject.CreateInstance<EnemySpawnConfig>();
+            try
             {
-                var profile = profiles[index];
-                var element = enemies.GetArrayElementAtIndex(index);
-                element.FindPropertyRelative("prefab").objectReferenceValue = profile.prefab;
-                element.FindPropertyRelative("enemyCount").intValue = profile.count;
-                element.FindPropertyRelative("baseSpeed").floatValue = profile.speed;
-                element.FindPropertyRelative("baseHealth").floatValue = profile.health;
-                element.FindPropertyRelative("colliderRadius").floatValue = profile.radius;
-                element.FindPropertyRelative("statNoisePercentage").floatValue = 0.2f;
+                Assert.That(EnemySpawnConfigValidator.TryValidate(config, out var error), Is.False);
+                Assert.That(error, Does.Contain("at least one wave"));
             }
-
-            serializedRegistry.ApplyModifiedPropertiesWithoutUndo();
-
-            var serializedConfig = new SerializedObject(config);
-            serializedConfig.FindProperty("enemyRegistry").objectReferenceValue = registry;
-            serializedConfig.FindProperty("playerPrefab").objectReferenceValue = playerPrefab;
-            serializedConfig.FindProperty("spawnShape").enumValueIndex = (int)SpawnShape.Circle;
-            serializedConfig.FindProperty("spawnOnEdge").boolValue = false;
-            serializedConfig.FindProperty("circleRadius").floatValue = 10f;
-            serializedConfig.ApplyModifiedPropertiesWithoutUndo();
+            finally
+            {
+                Object.DestroyImmediate(config);
+            }
         }
+
+        private static void Run(SpawnEnemiesSystem system, double time) =>
+            system.Update(new SystemState { Time = time, DeltaTime = 0.1f });
+
+        private static int EnemyCount(World world)
+        {
+            var count = 0;
+            world.Query(in EnemyDescription, (Entity _, ref Target __) => count++);
+            return count;
+        }
+
+        private static SpawnZone Zone(SpawnShape shape, Vector2 center, bool edge, float radius, Vector2 size)
+        {
+            var zone = new SpawnZone();
+            Set(zone, "shape", shape);
+            Set(zone, "center", center);
+            Set(zone, "spawnOnEdge", edge);
+            Set(zone, "circleRadius", radius);
+            Set(zone, "boxSize", size);
+            return zone;
+        }
+
+        private static EnemyWaveEntry Entry(EnemyConfig enemy, int count, float interval)
+        {
+            var entry = new EnemyWaveEntry();
+            Set(entry, "enemy", enemy);
+            Set(entry, "count", count);
+            Set(entry, "spawnInterval", interval);
+            return entry;
+        }
+
+        private static EnemyWaveConfig Wave(float delay, float duration, SpawnZone zone, params EnemyWaveEntry[] entries)
+        {
+            var wave = new EnemyWaveConfig();
+            Set(wave, "delay", delay);
+            Set(wave, "duration", duration);
+            Set(wave, "spawnZone", zone);
+            Set(wave, "composition", new List<EnemyWaveEntry>(entries));
+            return wave;
+        }
+
+        private static void ConfigureEnemy(EnemyConfig enemy, GameObject prefab, float speed, float health, float radius)
+        {
+            Set(enemy, "prefab", prefab);
+            Set(enemy, "baseSpeed", speed);
+            Set(enemy, "baseHealth", health);
+            Set(enemy, "colliderRadius", radius);
+            Set(enemy, "statNoisePercentage", 0f);
+        }
+
+        private static void Set(object target, string fieldName, object value) =>
+            target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
     }
 }

@@ -44,7 +44,7 @@ namespace _Project.Gameplay.Features.Sword.Systems
 
                 ref var ownerPosition = ref World.Get<Position>(orbit.Owner);
                 ref var ownerMotion = ref World.Get<PlayerMotion>(orbit.Owner);
-                var direction = GetRotationDirection(ownerMotion);
+                var direction = (float)_settings.Direction;
 
                 orbit.AngleRadians = Mathf.Repeat(
                     orbit.AngleRadians + angularSpeed * direction * deltaTime,

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e37ad42cd67841e99ea06c3113acaf07, type: 3}
   m_Name: SwordConfig
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Sword.SwordConfig
   prefab: {fileID: 634501100000000001, guid: 65d641e12b674cd48b489f573e41d62b, type: 3}
   rotationSpeedDegreesPerSecond: 180
   rotationRadius: 2

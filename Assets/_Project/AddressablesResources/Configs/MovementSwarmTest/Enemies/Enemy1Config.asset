@@ -9,12 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a307a1561a30414a897e8bc8fb1b7ae, type: 3}
-  m_Name: PlayerMovementConfig
+  m_Script: {fileID: 11500000, guid: c1ef2ecb42354d9abb2e726e276f5c66, type: 3}
+  m_Name: Enemy1Config
   m_EditorClassIdentifier: 
-  tangentialSpeed: 13
-  launchSpeed: 20
-  decelerationSpeed: 3
-  minimumSpeed: 3
-  bounceSpeedIncrease: 1
-  maximumSpeed: 36
+  prefab: {fileID: 2806775026706745429, guid: 59a127528c5a33546877203a180b1a4f, type: 3}
+  baseSpeed: 3
+  baseHealth: 100
+  colliderRadius: 1
+  statNoisePercentage: 0.2

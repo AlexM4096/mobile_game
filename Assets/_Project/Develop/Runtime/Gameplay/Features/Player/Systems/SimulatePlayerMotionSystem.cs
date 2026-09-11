@@ -58,7 +58,7 @@ namespace _Project.Gameplay.Features.Player.Systems
             }
 
             radiusDirection.Normalize();
-            var tangentialSpeed = _settings.LaunchSpeed;
+            var tangentialSpeed = _settings.TangentialSpeed;
             var angularDisplacement = tangentialSpeed / motion.OrbitRadius * motion.OrbitDirection * deltaTime;
             var sine = Mathf.Sin(angularDisplacement);
             var cosine = Mathf.Cos(angularDisplacement);

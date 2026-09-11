@@ -6,6 +6,7 @@ using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.Death;
 using _Project.Gameplay.Features.Destroy;
+using _Project.Gameplay.Features.EnemySpawn;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
@@ -29,6 +30,7 @@ namespace _Project.Gameplay.Infrastructure
     public sealed class MovementSwarmTestLifetimeScope : LifetimeScope
     {
         [SerializeField, InlineEditor] private SwarmConfig swarmConfig;
+        [SerializeField, InlineEditor] private EnemySpawnConfig enemySpawnConfig;
         [SerializeField, InlineEditor] private MovementConfig movementConfig;
         [SerializeField, InlineEditor] private PlayerMovementConfig playerMovementConfig;
         [SerializeField, InlineEditor] private PlayerInputConfig playerInputConfig;
@@ -42,6 +44,7 @@ namespace _Project.Gameplay.Infrastructure
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(swarmConfig);
+            builder.RegisterInstance(enemySpawnConfig);
             builder.RegisterInstance(movementConfig);
             builder.RegisterInstance(playerMovementConfig);
             builder.RegisterInstance(playerInputConfig);
@@ -52,7 +55,7 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(mainCamera);
             builder.RegisterInstance(eventSystem);
             builder.Register<SwordFactory>(VContainer.Lifetime.Scoped);
-
+            builder.Register<EnemyFactory>(VContainer.Lifetime.Scoped);
 
             var collisionMatrix = CreateCollisionMatrix();
             builder.RegisterInstance(collisionMatrix);
@@ -63,6 +66,7 @@ namespace _Project.Gameplay.Infrastructure
                 systems =>
                 {
                     systems.AddPlayerControlFeature();
+                    systems.AddEnemySpawnFeature();
                     systems.AddAIFeature();
                     systems.AddMovementFeature();
                     systems.AddSwordFeature();
@@ -130,7 +134,7 @@ namespace _Project.Gameplay.Infrastructure
                 return;
             }
 
-            _spawnedViewsRoot = new GameObject("Spawned Enemy Views").transform;
+            _spawnedViewsRoot = new GameObject("Spawned Player Views").transform;
             var targetEntity = _world.Create(
                 new PlayerTag(),
                 new PlayerMotion { Mode = PlayerMotionMode.Flight },
@@ -158,55 +162,6 @@ namespace _Project.Gameplay.Infrastructure
             _world.Add(targetEntity, new GameObjectReference(targetView));
             _swordFactory.CreateFor(targetEntity, _spawnedViewsRoot);
             CreatePlayerFollowCamera(targetView.transform);
-
-            var random = new System.Random(_configuration.RandomSeed);
-            var enemyIndex = 0;
-
-            foreach (var enemyType in _configuration.EnemyRegistry.Enemies)
-            {
-                for (var index = 0; index < enemyType.EnemyCount; index++)
-                {
-                    var position = SwarmSpawnGenerator.GeneratePosition(
-                        random,
-                        _configuration.SpawnShape,
-                        _configuration.SpawnOnEdge,
-                        _configuration.CircleRadius,
-                        _configuration.BoxWidth,
-                        _configuration.BoxHeight);
-                    var speed = SwarmSpawnGenerator.ApplyNoise(
-                        random,
-                        enemyType.BaseSpeed,
-                        enemyType.StatNoisePercentage);
-                    var health = SwarmSpawnGenerator.ApplyNoise(
-                        random,
-                        enemyType.BaseHealth,
-                        enemyType.StatNoisePercentage);
-                    var entity = _world.Create(
-                        new Position { Value = position },
-                        new RotationComponent { Value = quaternion.identity },
-                        new FlipRotationTag(),
-                        new Direction { Value = Vector2.right },
-                        new Velocity(),
-                        new MoveSpeed { Value = speed },
-                        new CollisionBody
-                        {
-                            BodyType = ColliderBodyType.Dynamic,
-                            Layer = CollisionLayer.Enemy
-                        },
-                        new CircleCollider { Radius = enemyType.ColliderRadius },
-                        new Health
-                        {
-                            Current = health,
-                            Max = health
-                        });
-
-                    enemyIndex++;
-                    var view = Object.Instantiate(enemyType.Prefab, _spawnedViewsRoot);
-                    view.name = $"{enemyType.Prefab.name} View {enemyIndex}";
-                    view.transform.position = new Vector3(position.x, position.y, 0f);
-                    _world.Add(entity, new GameObjectReference(view));
-                }
-            }
         }
 
         private bool ValidateConfiguration()
@@ -214,19 +169,6 @@ namespace _Project.Gameplay.Infrastructure
             if (_configuration.PlayerPrefab == null)
             {
                 Debug.LogError("Movement swarm test requires a player prefab.");
-                return false;
-            }
-
-            if (_configuration.EnemyRegistry == null)
-            {
-                Debug.LogError("Movement swarm test requires an enemy registry.");
-                return false;
-            }
-
-            if (_configuration.EnemyRegistry.Enemies == null ||
-                _configuration.EnemyRegistry.Enemies.Count == 0)
-            {
-                Debug.LogError("Movement swarm test requires at least one registered enemy.");
                 return false;
             }
 
@@ -247,46 +189,6 @@ namespace _Project.Gameplay.Infrastructure
             {
                 Debug.LogError("Movement swarm test has invalid sword settings.");
                 return false;
-            }
-
-            if (_configuration.SpawnShape == SpawnShape.Circle && _configuration.CircleRadius <= 0f)
-            {
-                Debug.LogError("Movement swarm test requires a positive circle spawn radius.");
-                return false;
-            }
-
-            if (_configuration.SpawnShape == SpawnShape.Box &&
-                (_configuration.BoxWidth <= 0f || _configuration.BoxHeight <= 0f))
-            {
-                Debug.LogError("Movement swarm test requires positive box spawn dimensions.");
-                return false;
-            }
-
-            for (var index = 0; index < _configuration.EnemyRegistry.Enemies.Count; index++)
-            {
-                var enemyType = _configuration.EnemyRegistry.Enemies[index];
-                if (enemyType == null)
-                {
-                    Debug.LogError($"Movement swarm enemy type {index} is missing.");
-                    return false;
-                }
-
-                if (enemyType.Prefab == null)
-                {
-                    Debug.LogError($"Movement swarm enemy type {index} requires a prefab.");
-                    return false;
-                }
-
-                if (enemyType.EnemyCount < 0 ||
-                    enemyType.BaseSpeed < 0f ||
-                    enemyType.BaseHealth < 1f ||
-                    enemyType.ColliderRadius <= 0f ||
-                    enemyType.StatNoisePercentage < 0f ||
-                    enemyType.StatNoisePercentage > 1f)
-                {
-                    Debug.LogError($"Movement swarm enemy type {index} has invalid values.");
-                    return false;
-                }
             }
 
             return true;
@@ -331,6 +233,13 @@ namespace _Project.Gameplay.Infrastructure
             positionComposer.CameraDistance = Mathf.Abs(
                 _mainCamera.transform.position.z - player.position.z);
             positionComposer.Damping = new Vector3(0.25f, 0.25f, 0f);
+            positionComposer.Lookahead = new LookaheadSettings()
+            {
+                Enabled = true,
+                Time = 0.5f,
+                Smoothing = 5
+            };
+
         }
     }
 }
