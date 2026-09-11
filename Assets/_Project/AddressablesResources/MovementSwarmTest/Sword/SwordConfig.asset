@@ -17,5 +17,5 @@ MonoBehaviour:
   rotationRadius: 2
   direction: -1
   weaponCount: 1
-  damage: 25
+  damage: 50
   hitboxSize: {x: 2, y: 1.3}

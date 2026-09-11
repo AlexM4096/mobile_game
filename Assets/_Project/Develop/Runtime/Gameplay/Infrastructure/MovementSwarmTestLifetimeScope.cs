@@ -232,13 +232,13 @@ namespace _Project.Gameplay.Infrastructure
             var positionComposer = cameraObject.AddComponent<CinemachinePositionComposer>();
             positionComposer.CameraDistance = Mathf.Abs(
                 _mainCamera.transform.position.z - player.position.z);
-            positionComposer.Damping = new Vector3(0.25f, 0.25f, 0f);
-            positionComposer.Lookahead = new LookaheadSettings()
-            {
-                Enabled = true,
-                Time = 0.5f,
-                Smoothing = 5
-            };
+            // positionComposer.Damping = new Vector3(0.25f, 0.25f, 0f);
+            // positionComposer.Lookahead = new LookaheadSettings()
+            // {
+            //     Enabled = true,
+            //     Time = 0.5f,
+            //     Smoothing = 5
+            // };
 
         }
     }

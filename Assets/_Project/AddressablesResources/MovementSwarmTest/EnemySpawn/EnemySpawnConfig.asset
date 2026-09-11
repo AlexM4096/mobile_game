@@ -12,10 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53ef6887ed194262b08f7ff8295999cd, type: 3}
   m_Name: EnemySpawnConfig
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   randomSeed: 12345
   waves:
   - delay: 0
-    duration: 30
+    duration: 15
     spawnZone:
       shape: 1
       center: {x: 0, y: 0}
@@ -24,14 +33,23 @@ MonoBehaviour:
       boxSize: {x: 48, y: 30}
     composition:
     - enemy: {fileID: 11400000, guid: ad77aadd8d7a44988ca2a9a2096de4e5, type: 2}
-      count: 100
+      count: 10
       spawnInterval: 0.1
     - enemy: {fileID: 11400000, guid: fd9075a9f42440b5bc397aaba49bd210, type: 2}
-      count: 100
+      count: 10
       spawnInterval: 0.1
+  - delay: 0
+    duration: 15
+    spawnZone:
+      shape: 0
+      center: {x: 0, y: 0}
+      spawnOnEdge: 0
+      circleRadius: 11
+      boxSize: {x: 22, y: 22}
+    composition:
     - enemy: {fileID: 11400000, guid: 455f3ce400694fd3afae5853bf56a1e6, type: 2}
-      count: 100
-      spawnInterval: 0.1
+      count: 10
+      spawnInterval: 1
     - enemy: {fileID: 11400000, guid: a5bf5a30b4ef43e490c4f9dde145ee0e, type: 2}
-      count: 100
-      spawnInterval: 0.1
+      count: 10
+      spawnInterval: 1

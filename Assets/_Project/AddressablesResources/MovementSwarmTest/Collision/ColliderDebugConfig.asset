@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c7d4b2304ee45d6a9cf17a568d80f3c, type: 3}
   m_Name: ColliderDebugConfig
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Collision.ColliderDebugConfig
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
@@ -209,6 +209,6 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  enabled: 1
+  enabled: 0
   lineWidth: 2
   gameViewLineWidth: 0.03
