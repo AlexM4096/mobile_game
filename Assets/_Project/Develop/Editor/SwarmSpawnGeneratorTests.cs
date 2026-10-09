@@ -19,7 +19,7 @@ namespace _Project.Editor.Tests
     public sealed class SwarmSpawnGeneratorTests
     {
         private static readonly QueryDescription EnemyDescription =
-            new QueryDescription().WithAll<Target, MoveSpeed, Health, Direction, Velocity>();
+            new QueryDescription().WithAll<Target, MoveSpeed, EnemyDefense, Direction, Velocity>();
 
         [Test]
         public void GeneratedPositionsRespectWorldSpaceZoneAndShape()
@@ -70,8 +70,8 @@ namespace _Project.Editor.Tests
 
             try
             {
-                ConfigureEnemy(firstEnemy, firstPrefab, 10f, 20f, 0.5f);
-                ConfigureEnemy(secondEnemy, secondPrefab, 30f, 40f, 1f);
+                ConfigureEnemy(firstEnemy, firstPrefab, 10f, 0.5f);
+                ConfigureEnemy(secondEnemy, secondPrefab, 30f, 1f);
                 var zone = Zone(SpawnShape.Circle, Vector2.zero, true, 5f, Vector2.one);
                 Set(config, "waves", new List<EnemyWaveConfig>
                 {
@@ -174,11 +174,11 @@ namespace _Project.Editor.Tests
             return wave;
         }
 
-        private static void ConfigureEnemy(EnemyConfig enemy, GameObject prefab, float speed, float health, float radius)
+        private static void ConfigureEnemy(EnemyConfig enemy, GameObject prefab, float speed, float radius)
         {
             Set(enemy, "prefab", prefab);
             Set(enemy, "baseSpeed", speed);
-            Set(enemy, "baseHealth", health);
+
             Set(enemy, "colliderRadius", radius);
             Set(enemy, "statNoisePercentage", 0f);
         }

@@ -14,6 +14,7 @@ namespace _Project.Gameplay.Features.Health.Systems
                 .WithAll<CollisionEvent>();
 
         private readonly Dictionary<Entity, float> _damageByTarget = new();
+        private readonly Dictionary<Entity, int> _hitsByTarget = new();
 
         public ApplyCollisionDamageSystem(World world) : base(world)
         {
@@ -22,14 +23,30 @@ namespace _Project.Gameplay.Features.Health.Systems
         public override void Update(in SystemState state)
         {
             _damageByTarget.Clear();
+            _hitsByTarget.Clear();
 
             World.Query(in _description, (ref CollisionEvent collisionEvent) =>
             {
-                AccumulateDamage(collisionEvent.First, collisionEvent.Second, collisionEvent.Phase);
-                AccumulateDamage(collisionEvent.Second, collisionEvent.First, collisionEvent.Phase);
+                AccumulateImpact(collisionEvent.First, collisionEvent.Second, collisionEvent.Phase);
+                AccumulateImpact(collisionEvent.Second, collisionEvent.First, collisionEvent.Phase);
             });
 
             using var commandBuffer = new CommandBuffer();
+
+            foreach (var targetHits in _hitsByTarget)
+            {
+                var target = targetHits.Key;
+                if (target.TryGet(out HitRequest hitRequest))
+                {
+                    hitRequest.Count += targetHits.Value;
+                    target.Set(hitRequest);
+                }
+                else
+                {
+                    commandBuffer.Add(target, new HitRequest { Count = targetHits.Value });
+                }
+            }
+
             foreach (var targetDamage in _damageByTarget)
             {
                 var target = targetDamage.Key;
@@ -47,18 +64,29 @@ namespace _Project.Gameplay.Features.Health.Systems
             commandBuffer.Playback(World, false);
         }
 
-        private void AccumulateDamage(Entity source, Entity target, CollisionPhase phase)
+        private void AccumulateImpact(Entity source, Entity target, CollisionPhase phase)
         {
             if (!World.IsAlive(source) ||
                 !World.IsAlive(target) ||
-                !source.Has<DamageOnCollision>() ||
-                !target.Has<Health>())
+                !source.Has<DamageOnCollision>())
             {
                 return;
             }
 
             ref var damageOnCollision = ref World.Get<DamageOnCollision>(source);
             if (damageOnCollision.Amount <= 0f || damageOnCollision.Phase != phase)
+            {
+                return;
+            }
+
+            if (target.Has<EnemyDefense>())
+            {
+                _hitsByTarget.TryGetValue(target, out var hitCount);
+                _hitsByTarget[target] = hitCount + 1;
+                return;
+            }
+
+            if (!target.Has<Health>())
             {
                 return;
             }

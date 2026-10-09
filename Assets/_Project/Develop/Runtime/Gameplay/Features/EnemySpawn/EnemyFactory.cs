@@ -5,6 +5,7 @@ using _Project.Gameplay.Features.AI;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.Health;
+using _Project.Gameplay.Features.Health.Views;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Rotation;
 using Unity.Mathematics;
@@ -12,7 +13,6 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = System.Random;
 using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
-using HealthComponent = _Project.Gameplay.Features.Health.Health;
 
 namespace _Project.Gameplay.Features.EnemySpawn
 {
@@ -38,15 +38,22 @@ namespace _Project.Gameplay.Features.EnemySpawn
                 throw new ArgumentException("Enemy target must be alive and have a position.", nameof(target));
             }
 
-            var targetPosition = _world.Get<Position>(target).Value;
             var speed = SpawnPositionGenerator.ApplyNoise(
                 random,
                 config.BaseSpeed,
                 config.StatNoisePercentage);
-            var health = SpawnPositionGenerator.ApplyNoise(
-                random,
-                config.BaseHealth,
-                config.StatNoisePercentage);
+            var helmetDurability = EnemyDefenseRules.GetHelmetDurability(
+                config.HelmetType,
+                config.EnchantedArmor);
+            var defense = new EnemyDefense
+            {
+                HelmetType = config.HelmetType,
+                HelmetDurability = helmetDurability,
+                MaxHelmetDurability = helmetDurability,
+                HasWeapon = config.HasWeapon,
+                IsEnchanted = config.EnchantedArmor
+            };
+
             var entity = _world.Create(
                 new Position { Value = position },
                 new RotationComponent { Value = quaternion.identity },
@@ -54,28 +61,50 @@ namespace _Project.Gameplay.Features.EnemySpawn
                 new Direction { Value = Vector2.right },
                 new Velocity(),
                 new MoveSpeed { Value = speed },
-                // new Target { Entity = target },
                 new CollisionBody
                 {
                     BodyType = ColliderBodyType.Dynamic,
                     Layer = CollisionLayer.Enemy
                 },
                 new CircleCollider { Radius = config.ColliderRadius },
-                new HealthComponent { Current = health, Max = health });
+                defense);
 
             var view = Object.Instantiate(config.Prefab, GetViewsRoot());
             view.name = $"{config.Prefab.name} View {++_viewIndex}";
             view.transform.position = new Vector3(position.x, position.y, 0f);
+
+            var defenseView = view.GetComponent<EnemyDefenseView>();
+            if (defenseView == null)
+            {
+                defenseView = view.AddComponent<EnemyDefenseView>();
+            }
+
+            defenseView.Initialize(
+                defense.HelmetType,
+                defense.HelmetDurability,
+                defense.MaxHelmetDurability,
+                defense.HasWeapon,
+                defense.IsEnchanted);
+
             _world.Add(entity, new GameObjectReference(view));
             return entity;
         }
 
         public void Dispose()
         {
-            if (_viewsRoot == null) return;
+            if (_viewsRoot == null)
+            {
+                return;
+            }
 
-            if (Application.isPlaying) Object.Destroy(_viewsRoot.gameObject);
-            else Object.DestroyImmediate(_viewsRoot.gameObject);
+            if (Application.isPlaying)
+            {
+                Object.Destroy(_viewsRoot.gameObject);
+            }
+            else
+            {
+                Object.DestroyImmediate(_viewsRoot.gameObject);
+            }
         }
 
         private Transform GetViewsRoot()

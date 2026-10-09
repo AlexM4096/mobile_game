@@ -11,9 +11,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c1ef2ecb42354d9abb2e726e276f5c66, type: 3}
   m_Name: Enemy3Config
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes:
+    ReferencedUnityObjects: []
+    SerializedBytesString:
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   prefab: {fileID: 5157819698762423893, guid: 139391d71e8a9ca4cb4df8154fe4b8ae, type: 3}
   baseSpeed: 3
-  baseHealth: 100
   colliderRadius: 1
   statNoisePercentage: 0.2
+  hasWeapon: 1
+  helmetType: 4
+  enchantedArmor: 1

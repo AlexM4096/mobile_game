@@ -12,8 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1ef2ecb42354d9abb2e726e276f5c66, type: 3}
   m_Name: Enemy1Config
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   prefab: {fileID: 2806775026706745429, guid: 59a127528c5a33546877203a180b1a4f, type: 3}
   baseSpeed: 3
-  baseHealth: 100
   colliderRadius: 1
   statNoisePercentage: 0.2
+  hasWeapon: 1
+  helmetType: 1
+  enchantedArmor: 0

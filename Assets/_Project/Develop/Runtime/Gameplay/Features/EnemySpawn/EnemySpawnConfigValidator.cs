@@ -1,3 +1,6 @@
+using System;
+using _Project.Gameplay.Features.Health;
+
 namespace _Project.Gameplay.Features.EnemySpawn
 {
     internal static class EnemySpawnConfigValidator
@@ -79,10 +82,16 @@ namespace _Project.Gameplay.Features.EnemySpawn
             out string error)
         {
             var enemy = entry?.Enemy;
-            if (enemy == null || enemy.Prefab == null ||
-                entry.Count < 0 || entry.Count > 1 && entry.SpawnInterval <= 0f ||
-                enemy.BaseSpeed < 0f || enemy.BaseHealth < 1f || enemy.ColliderRadius <= 0f ||
-                enemy.StatNoisePercentage < 0f || enemy.StatNoisePercentage > 1f)
+            if (enemy == null ||
+                enemy.Prefab == null ||
+                entry.Count < 0 ||
+                entry.Count > 1 && entry.SpawnInterval <= 0f ||
+                enemy.BaseSpeed < 0f ||
+                enemy.ColliderRadius <= 0f ||
+                enemy.StatNoisePercentage < 0f ||
+                enemy.StatNoisePercentage > 1f ||
+                !Enum.IsDefined(typeof(HelmetType), enemy.HelmetType) ||
+                enemy.EnchantedArmor && enemy.HelmetType == HelmetType.None)
             {
                 error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} is invalid.";
                 return false;

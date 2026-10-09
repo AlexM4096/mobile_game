@@ -9,9 +9,11 @@ namespace _Project.Gameplay.Features.Health
         public static void AddHealthFeature(this NewArchAppBuilder systems)
         {
             systems.Add<ApplyCollisionDamageSystem>(SystemRunner.Update);
+            systems.Add<ApplyEnemyHitsSystem>(SystemRunner.Update);
             systems.Add<ApplyDamageSystem>(SystemRunner.Update);
             systems.Add<ApplyHealSystem>(SystemRunner.Update);
-            systems.Add<UpdateHealthBarsSystem>(SystemRunner.PreLateUpdate);     
+            systems.Add<UpdateEnemyDefenseViewsSystem>(SystemRunner.Update);
+            systems.Add<UpdateHealthBarsSystem>(SystemRunner.PreLateUpdate);
         }
     }
 }
