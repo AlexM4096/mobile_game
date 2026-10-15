@@ -1,28 +1,70 @@
 fileFormatVersion: 2
-guid: 20c159464282b2c43a1e1f8400b050af
+guid: 25de40c2c1877ef4a80667f73d36c1dd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5677254000644004933
-    second: enemy_spr_set_0
+      213: -1970282732388396181
+    second: enemy_spr_set 1_0
   - first:
-      213: 2993848959515455922
-    second: enemy_spr_set_1
+      213: -5319444813956876365
+    second: enemy_spr_set 1_1
   - first:
-      213: 1137920289243569656
-    second: enemy_spr_set_2
+      213: -5359771935282813701
+    second: enemy_spr_set 1_2
   - first:
-      213: -8416429648802367666
-    second: enemy_spr_set_3
+      213: -1322800142124288145
+    second: enemy_spr_set 1_3
   - first:
-      213: 1687646626411889069
-    second: enemy_spr_set_4
+      213: 9151045459767046893
+    second: enemy_spr_set 1_4
   - first:
-      213: 1557017844344222416
-    second: enemy_spr_set_5
+      213: -890803285812857141
+    second: enemy_spr_set 1_5
   - first:
-      213: -6130107706300148075
-    second: enemy_spr_set_6
+      213: 875732999135335639
+    second: enemy_spr_set 1_6
+  - first:
+      213: 1337585079106016922
+    second: enemy_spr_set 1_7
+  - first:
+      213: 555319601960147901
+    second: enemy_spr_set 1_8
+  - first:
+      213: -3577938012231125880
+    second: enemy_spr_set 1_9
+  - first:
+      213: -3608270614020115770
+    second: enemy_spr_set 1_10
+  - first:
+      213: -6685780294805315419
+    second: enemy_spr_set 1_11
+  - first:
+      213: -6696336350318516348
+    second: enemy_spr_set 1_12
+  - first:
+      213: -4039611551509435127
+    second: enemy_spr_set 1_13
+  - first:
+      213: -1329873198156517064
+    second: enemy_spr_set 1_14
+  - first:
+      213: 8656622557581876664
+    second: enemy_spr_set 1_15
+  - first:
+      213: 69005887762435792
+    second: enemy_spr_set 1_16
+  - first:
+      213: 4460882603575707935
+    second: enemy_spr_set 1_17
+  - first:
+      213: 8794210155982969623
+    second: enemy_spr_set 1_18
+  - first:
+      213: 1238222606395898248
+    second: enemy_spr_set 1_19
+  - first:
+      213: -2290790196265503204
+    second: enemy_spr_set 1_20
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -131,7 +173,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: enemy_spr_set_0
+      name: enemy_spr_set 1_0
       rect:
         serializedVersion: 2
         x: 0
@@ -146,14 +188,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bb3e2f7d0975631b0800000000000000
-      internalID: -5677254000644004933
+      spriteID: b6357ec3b4628a4e0800000000000000
+      internalID: -1970282732388396181
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_spr_set_1
+      name: enemy_spr_set 1_1
       rect:
         serializedVersion: 2
         x: 256
@@ -168,14 +210,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2b1771f34c94c8920800000000000000
-      internalID: 2993848959515455922
+      spriteID: 3b77ec510298d26b0800000000000000
+      internalID: -5319444813956876365
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_spr_set_2
+      name: enemy_spr_set 1_2
       rect:
         serializedVersion: 2
         x: 512
@@ -190,14 +232,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8fd921f5974bacf00800000000000000
-      internalID: 1137920289243569656
+      spriteID: bf42c5872d34e95b0800000000000000
+      internalID: -5359771935282813701
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_spr_set_3
+      name: enemy_spr_set 1_3
       rect:
         serializedVersion: 2
         x: 768
@@ -212,8 +254,140 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e47b11a93d5d23b80800000000000000
-      internalID: -8416429648802367666
+      spriteID: f6778db774874ade0800000000000000
+      internalID: -1322800142124288145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_spr_set 1_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 512
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de2bdd08c5b0ffe70800000000000000
+      internalID: 9151045459767046893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_spr_set 1_5
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 512
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc6bf58912b33a3f0800000000000000
+      internalID: -890803285812857141
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_spr_set 1_6
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 512
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d49c8bd58a372c00800000000000000
+      internalID: 875732999135335639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_spr_set 1_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 256
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a961af8ea8e009210800000000000000
+      internalID: 1337585079106016922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_spr_set 1_8
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 256
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbb55ab5c34e4b700800000000000000
+      internalID: 555319601960147901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_spr_set 1_9
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 256
+        width: 256
+        height: 256
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 884b898a55c985ec0800000000000000
+      internalID: -3577938012231125880
       vertices: []
       indices: 
       edges: []
@@ -222,7 +396,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 74b4b3e07f685eb49b9bcc884d5fba0d
+    spriteID: d9c11dc3eea9b314f9def0b749c34af5
     internalID: 0
     vertices: []
     indices: 
@@ -234,13 +408,18 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":4.0,"y":4.0},"gridSpriteSize":{"x":256.0,"y":256.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      enemy_spr_set_0: -5677254000644004933
-      enemy_spr_set_1: 2993848959515455922
-      enemy_spr_set_2: 1137920289243569656
-      enemy_spr_set_3: -8416429648802367666
-      enemy_spr_set_4: 1687646626411889069
-      enemy_spr_set_5: 1557017844344222416
-      enemy_spr_set_6: -6130107706300148075
+      enemy_spr_set 1_0: -1970282732388396181
+      enemy_spr_set 1_1: -5319444813956876365
+      enemy_spr_set 1_10: -3608270614020115770
+      enemy_spr_set 1_11: -6685780294805315419
+      enemy_spr_set 1_2: -5359771935282813701
+      enemy_spr_set 1_3: -1322800142124288145
+      enemy_spr_set 1_4: 9151045459767046893
+      enemy_spr_set 1_5: -890803285812857141
+      enemy_spr_set 1_6: 875732999135335639
+      enemy_spr_set 1_7: 1337585079106016922
+      enemy_spr_set 1_8: 555319601960147901
+      enemy_spr_set 1_9: -3577938012231125880
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
