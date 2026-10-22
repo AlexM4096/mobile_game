@@ -1,5 +1,6 @@
 using System;
 using _Project.Gameplay.Features.Health;
+using _Project.Gameplay.Features.Health.Views;
 
 namespace _Project.Gameplay.Features.EnemySpawn
 {
@@ -10,6 +11,17 @@ namespace _Project.Gameplay.Features.EnemySpawn
             if (config == null || config.Waves == null || config.Waves.Count == 0)
             {
                 error = "Enemy spawn configuration requires at least one wave.";
+                return false;
+            }
+
+            if (config.EquipmentVisuals == null)
+            {
+                error = "Enemy spawn configuration requires equipment visuals.";
+                return false;
+            }
+
+            if (!config.EquipmentVisuals.TryValidate(out error))
+            {
                 return false;
             }
 
@@ -90,10 +102,26 @@ namespace _Project.Gameplay.Features.EnemySpawn
                 enemy.ColliderRadius <= 0f ||
                 enemy.StatNoisePercentage < 0f ||
                 enemy.StatNoisePercentage > 1f ||
-                !Enum.IsDefined(typeof(HelmetType), enemy.HelmetType) ||
-                enemy.EnchantedArmor && enemy.HelmetType == HelmetType.None)
+                !Enum.IsDefined(typeof(WeaponType), entry.WeaponType) ||
+                !Enum.IsDefined(typeof(HelmetType), entry.HelmetType) ||
+                entry.EnchantedArmor && entry.HelmetType == HelmetType.None)
             {
                 error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} is invalid.";
+                return false;
+            }
+
+            var defenseView = enemy.Prefab.GetComponent<EnemyDefenseView>();
+            if (defenseView == null)
+            {
+                error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} prefab requires " +
+                        $"a root {nameof(EnemyDefenseView)} component.";
+                return false;
+            }
+
+            if (!defenseView.TryValidate(out var viewError))
+            {
+                error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} prefab is invalid: " +
+                        viewError;
                 return false;
             }
 

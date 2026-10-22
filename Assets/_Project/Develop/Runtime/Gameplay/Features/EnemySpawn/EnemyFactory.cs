@@ -29,13 +29,25 @@ namespace _Project.Gameplay.Features.EnemySpawn
 
         public Entity Create(
             EnemyConfig config,
+            EnemyEquipmentLoadout loadout,
+            EnemyEquipmentVisualConfig equipmentVisuals,
             Vector2 position,
-            Entity target,
-            Random random)
+            Random random
+        )
         {
-            if (!_world.IsAlive(target) || !_world.Has<Position>(target))
+            var prefabDefenseView = config.Prefab.GetComponent<EnemyDefenseView>();
+            if (prefabDefenseView == null)
             {
-                throw new ArgumentException("Enemy target must be alive and have a position.", nameof(target));
+                throw new InvalidOperationException(
+                    $"Enemy prefab '{config.Prefab.name}' has invalid equipment sockets. " +
+                    $"A root {nameof(EnemyDefenseView)} component is required.");
+            }
+
+            if (!prefabDefenseView.TryValidate(out var viewError))
+            {
+                throw new InvalidOperationException(
+                    $"Enemy prefab '{config.Prefab.name}' has invalid equipment sockets. " +
+                    viewError);
             }
 
             var speed = SpawnPositionGenerator.ApplyNoise(
@@ -43,15 +55,15 @@ namespace _Project.Gameplay.Features.EnemySpawn
                 config.BaseSpeed,
                 config.StatNoisePercentage);
             var helmetDurability = EnemyDefenseRules.GetHelmetDurability(
-                config.HelmetType,
-                config.EnchantedArmor);
+                loadout.HelmetType,
+                loadout.IsEnchanted);
             var defense = new EnemyDefense
             {
-                HelmetType = config.HelmetType,
+                HelmetType = loadout.HelmetType,
                 HelmetDurability = helmetDurability,
                 MaxHelmetDurability = helmetDurability,
-                HasWeapon = config.HasWeapon,
-                IsEnchanted = config.EnchantedArmor
+                WeaponType = loadout.WeaponType,
+                IsEnchanted = loadout.IsEnchanted
             };
 
             var entity = _world.Create(
@@ -74,16 +86,13 @@ namespace _Project.Gameplay.Features.EnemySpawn
             view.transform.position = new Vector3(position.x, position.y, 0f);
 
             var defenseView = view.GetComponent<EnemyDefenseView>();
-            if (defenseView == null)
-            {
-                defenseView = view.AddComponent<EnemyDefenseView>();
-            }
-
             defenseView.Initialize(
+                defense.WeaponType,
+                equipmentVisuals.GetWeaponSprite(defense.WeaponType),
                 defense.HelmetType,
+                equipmentVisuals.GetHelmetSprite(defense.HelmetType),
                 defense.HelmetDurability,
                 defense.MaxHelmetDurability,
-                defense.HasWeapon,
                 defense.IsEnchanted);
 
             _world.Add(entity, new GameObjectReference(view));

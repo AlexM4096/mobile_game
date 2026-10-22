@@ -22,6 +22,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   randomSeed: 12345
+  equipmentVisuals: {fileID: 11400000, guid: f4384ab306d34ff3a7722fcd02648927, type: 2}
   waves:
   - delay: 0
     duration: 15
@@ -35,9 +36,15 @@ MonoBehaviour:
     - enemy: {fileID: 11400000, guid: ad77aadd8d7a44988ca2a9a2096de4e5, type: 2}
       count: 10
       spawnInterval: 0.1
+      weaponType: 2
+      helmetType: 4
+      enchantedArmor: 0
     - enemy: {fileID: 11400000, guid: fd9075a9f42440b5bc397aaba49bd210, type: 2}
       count: 10
       spawnInterval: 0.1
+      weaponType: 0
+      helmetType: 0
+      enchantedArmor: 0
   - delay: 0
     duration: 15
     spawnZone:
@@ -50,6 +57,12 @@ MonoBehaviour:
     - enemy: {fileID: 11400000, guid: 455f3ce400694fd3afae5853bf56a1e6, type: 2}
       count: 10
       spawnInterval: 1
+      weaponType: 0
+      helmetType: 0
+      enchantedArmor: 0
     - enemy: {fileID: 11400000, guid: a5bf5a30b4ef43e490c4f9dde145ee0e, type: 2}
       count: 10
       spawnInterval: 1
+      weaponType: 0
+      helmetType: 0
+      enchantedArmor: 0

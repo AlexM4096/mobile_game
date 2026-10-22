@@ -1,4 +1,6 @@
+using System;
 using PrimeTween;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -11,51 +13,93 @@ namespace _Project.Gameplay.Features.Health.Views
 
         private static Sprite _squareSprite;
 
+        [SerializeField, Required] private SpriteRenderer bodyRenderer;
+        [SerializeField, Required] private Transform helmetSocket;
+        [SerializeField, Required] private Transform weaponSocket;
+
         private SpriteRenderer _helmetRenderer;
         private SpriteRenderer _weaponRenderer;
         private HelmetType _helmetType;
         private bool _isEnchanted;
         private int _maxHelmetDurability;
-        private int _sortingLayerId;
-        private int _sortingOrder;
 
         public HelmetVisualState CurrentHelmetState { get; private set; }
         public bool HasHelmetVisual => _helmetRenderer != null;
         public bool HasWeaponVisual => _weaponRenderer != null;
+        public SpriteRenderer BodyRenderer => bodyRenderer;
+        public Transform HelmetSocket => helmetSocket;
+        public Transform WeaponSocket => weaponSocket;
 
         public void Initialize(
+            WeaponType weaponType,
+            Sprite weaponSprite,
             HelmetType helmetType,
+            Sprite helmetSprite,
             int helmetDurability,
             int maxHelmetDurability,
-            bool hasWeapon,
             bool isEnchanted)
         {
+            if (!TryValidate(out var error))
+            {
+                throw new InvalidOperationException(error);
+            }
+
             _helmetType = helmetType;
             _isEnchanted = isEnchanted;
             _maxHelmetDurability = maxHelmetDurability;
-            ResolveSorting();
 
             if (helmetDurability > 0)
             {
-                _helmetRenderer = CreateTile(
+                _helmetRenderer = CreatePiece(
                     "Helmet Layer",
+                    helmetSocket,
+                    helmetSprite,
                     GetHelmetColor(helmetType),
-                    new Vector3(0f, 0.52f, 0f),
-                    new Vector3(0.72f, 0.28f, 1f),
-                    _sortingOrder + 2);
+                    bodyRenderer.sortingOrder + 2);
                 UpdateHelmetAppearance(helmetDurability);
             }
 
-            if (hasWeapon)
+            if (weaponType != WeaponType.None)
             {
-                _weaponRenderer = CreateTile(
+                _weaponRenderer = CreatePiece(
                     "Weapon Layer",
-                    new Color(0.3f, 0.32f, 0.36f, 1f),
-                    new Vector3(0.52f, 0.02f, 0f),
-                    new Vector3(0.14f, 0.72f, 1f),
-                    _sortingOrder + 1);
-                _weaponRenderer.transform.localRotation = Quaternion.Euler(0f, 0f, -24f);
+                    weaponSocket,
+                    weaponSprite,
+                    Color.white,
+                    bodyRenderer.sortingOrder + 1);
+                _weaponRenderer.flipX = false;
             }
+        }
+
+        public bool TryValidate(out string error)
+        {
+            if (bodyRenderer == null)
+            {
+                error = $"{nameof(EnemyDefenseView)} on '{name}' requires a body renderer.";
+                return false;
+            }
+
+            if (helmetSocket == null)
+            {
+                error = $"{nameof(EnemyDefenseView)} on '{name}' requires a helmet socket.";
+                return false;
+            }
+
+            if (weaponSocket == null)
+            {
+                error = $"{nameof(EnemyDefenseView)} on '{name}' requires a weapon socket.";
+                return false;
+            }
+
+            if (!helmetSocket.IsChildOf(bodyRenderer.transform) ||
+                !weaponSocket.IsChildOf(bodyRenderer.transform))
+            {
+                error = $"{nameof(EnemyDefenseView)} sockets on '{name}' must be children of the body visual.";
+                return false;
+            }
+
+            error = null;
+            return true;
         }
 
         public void ApplyState(
@@ -79,12 +123,13 @@ namespace _Project.Gameplay.Features.Health.Views
 
             if ((brokenLayers & BrokenDefenseLayers.Body) != 0)
             {
-                var bodyPiece = CreateTile(
+                var bodyPiece = CreatePiece(
                     "Body Layer Broken",
+                    transform,
+                    GetSquareSprite(),
                     new Color(0.78f, 0.2f, 0.18f, 1f),
-                    Vector3.zero,
-                    new Vector3(0.48f, 0.48f, 1f),
-                    _sortingOrder + 3);
+                    bodyRenderer.sortingOrder + 3);
+                bodyPiece.transform.localScale = new Vector3(0.48f, 0.48f, 1f);
                 AnimateBreak(ref bodyPiece, new Vector3(0.15f, 0.9f, 0f));
             }
         }
@@ -105,40 +150,43 @@ namespace _Project.Gameplay.Features.Health.Views
             {
                 case HelmetVisualState.FullDurability:
                     _helmetRenderer.color = baseColor;
-                    _helmetRenderer.transform.localScale = new Vector3(0.72f, 0.28f, 1f);
+                    _helmetRenderer.transform.localScale = Vector3.one;
                     _helmetRenderer.transform.localRotation = Quaternion.identity;
                     break;
 
                 case HelmetVisualState.Damaged:
                     _helmetRenderer.color = Color.Lerp(baseColor, Color.black, 0.35f);
-                    _helmetRenderer.transform.localScale = new Vector3(0.64f, 0.24f, 1f);
+                    _helmetRenderer.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
                     _helmetRenderer.transform.localRotation = Quaternion.Euler(0f, 0f, 7f);
                     break;
 
                 case HelmetVisualState.OneHitRemaining:
                     _helmetRenderer.color = Color.Lerp(baseColor, new Color(0.75f, 0.08f, 0.06f), 0.6f);
-                    _helmetRenderer.transform.localScale = new Vector3(0.54f, 0.2f, 1f);
+                    _helmetRenderer.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
                     _helmetRenderer.transform.localRotation = Quaternion.Euler(0f, 0f, -11f);
                     break;
             }
         }
 
-        private SpriteRenderer CreateTile(
-            string tileName,
+        private SpriteRenderer CreatePiece(
+            string pieceName,
+            Transform socket,
+            Sprite sprite,
             Color color,
-            Vector3 localPosition,
-            Vector3 localScale,
             int sortingOrder)
         {
-            var tile = new GameObject(tileName);
-            tile.transform.SetParent(transform, false);
-            tile.transform.localPosition = localPosition;
-            tile.transform.localScale = localScale;
+            var piece = new GameObject(pieceName);
+            piece.transform.SetParent(socket, false);
+            piece.transform.localPosition = Vector3.zero;
+            piece.transform.localRotation = Quaternion.identity;
+            piece.transform.localScale = Vector3.one;
 
-            var renderer = tile.AddComponent<SpriteRenderer>();
-            renderer.sprite = GetSquareSprite();
+            var renderer = piece.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
             renderer.color = color;
-            renderer.sortingLayerID = _sortingLayerId;
+            renderer.flipX = bodyRenderer.flipX;
+            renderer.flipY = bodyRenderer.flipY;
+            renderer.sortingLayerID = bodyRenderer.sortingLayerID;
             renderer.sortingOrder = sortingOrder;
             return renderer;
         }
@@ -191,23 +239,16 @@ namespace _Project.Gameplay.Features.Health.Views
         {
             var color = helmetType switch
             {
-                HelmetType.Cloth => new Color(0.82f, 0.72f, 0.56f, 1f),
-                HelmetType.Wood => new Color(0.48f, 0.27f, 0.12f, 1f),
-                HelmetType.Iron => new Color(0.58f, 0.63f, 0.7f, 1f),
-                HelmetType.DragonScale => new Color(0.18f, 0.6f, 0.3f, 1f),
+                HelmetType.Cloth => Color.white,
+                HelmetType.Wood => Color.white,
+                HelmetType.Iron => Color.white,
+                HelmetType.DragonScale => new Color(0.35f, 0.82f, 0.42f, 1f),
                 _ => Color.white
             };
 
             return _isEnchanted
                 ? Color.Lerp(color, new Color(0.75f, 0.25f, 1f, 1f), 0.3f)
                 : color;
-        }
-
-        private void ResolveSorting()
-        {
-            var renderer = GetComponentInChildren<SpriteRenderer>();
-            _sortingLayerId = renderer != null ? renderer.sortingLayerID : 0;
-            _sortingOrder = renderer != null ? renderer.sortingOrder : 0;
         }
 
         private static Sprite GetSquareSprite()

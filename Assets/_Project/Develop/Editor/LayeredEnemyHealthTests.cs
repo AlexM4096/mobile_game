@@ -56,17 +56,19 @@ namespace _Project.Editor.Tests
                 Is.EqualTo(BrokenDefenseLayers.Body));
         }
 
-        [Test]
-        public void ArmedEnemyLosesWeaponBeforeBody()
+        [TestCase(WeaponType.Staff)]
+        [TestCase(WeaponType.Dagger)]
+        [TestCase(WeaponType.Axe)]
+        public void EveryWeaponLosesOneLayerBeforeBody(WeaponType weaponType)
         {
-            var defense = new EnemyDefense { HasWeapon = true };
+            var defense = new EnemyDefense { WeaponType = weaponType };
 
             var firstHit = EnemyDefenseRules.ApplyHits(ref defense, 1);
             var secondHit = EnemyDefenseRules.ApplyHits(ref defense, 1);
 
             Assert.That(firstHit.IsDefeated, Is.False);
             Assert.That(firstHit.BrokenLayers, Is.EqualTo(BrokenDefenseLayers.Weapon));
-            Assert.That(defense.HasWeapon, Is.False);
+            Assert.That(defense.WeaponType, Is.EqualTo(WeaponType.None));
             Assert.That(secondHit.IsDefeated, Is.True);
             Assert.That(secondHit.BrokenLayers, Is.EqualTo(BrokenDefenseLayers.Body));
         }
@@ -79,7 +81,7 @@ namespace _Project.Editor.Tests
                 HelmetType = HelmetType.Iron,
                 HelmetDurability = 3,
                 MaxHelmetDurability = 3,
-                HasWeapon = true
+                WeaponType = WeaponType.Axe
             };
 
             var helmetDamage = EnemyDefenseRules.ApplyHits(ref defense, 2);
@@ -90,7 +92,7 @@ namespace _Project.Editor.Tests
             var helmetBreak = EnemyDefenseRules.ApplyHits(ref defense, 1);
             Assert.That(helmetBreak.BrokenLayers, Is.EqualTo(BrokenDefenseLayers.Helmet));
             Assert.That(defense.HelmetDurability, Is.Zero);
-            Assert.That(defense.HasWeapon, Is.True);
+            Assert.That(defense.WeaponType, Is.EqualTo(WeaponType.Axe));
 
             var weaponBreak = EnemyDefenseRules.ApplyHits(ref defense, 1);
             Assert.That(weaponBreak.BrokenLayers, Is.EqualTo(BrokenDefenseLayers.Weapon));
@@ -147,7 +149,7 @@ namespace _Project.Editor.Tests
                         HelmetType = HelmetType.Iron,
                         HelmetDurability = 4,
                         MaxHelmetDurability = 4,
-                        HasWeapon = true,
+                        WeaponType = WeaponType.Staff,
                         IsEnchanted = true
                     },
                     new HitRequest { Count = 6 });
@@ -156,7 +158,7 @@ namespace _Project.Editor.Tests
                 system.Update(new SystemState());
 
                 Assert.That(world.Get<EnemyDefense>(entity).HelmetDurability, Is.Zero);
-                Assert.That(world.Get<EnemyDefense>(entity).HasWeapon, Is.False);
+                Assert.That(world.Get<EnemyDefense>(entity).WeaponType, Is.EqualTo(WeaponType.None));
                 Assert.That(world.Has<HitRequest>(entity), Is.False);
                 Assert.That(world.Has<DeadTag>(entity), Is.True);
             }

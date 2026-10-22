@@ -28,6 +28,14 @@ namespace _Project.Gameplay.Features.Health
         DragonScale
     }
 
+    public enum WeaponType
+    {
+        None,
+        Staff,
+        Dagger,
+        Axe
+    }
+
     public enum HelmetVisualState
     {
         None,
@@ -50,7 +58,7 @@ namespace _Project.Gameplay.Features.Health
         public HelmetType HelmetType;
         public int HelmetDurability;
         public int MaxHelmetDurability;
-        public bool HasWeapon;
+        public WeaponType WeaponType;
         public bool IsEnchanted;
     }
 

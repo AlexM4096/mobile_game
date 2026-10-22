@@ -74,9 +74,9 @@ namespace _Project.Gameplay.Features.Health
                     continue;
                 }
 
-                if (defense.HasWeapon)
+                if (defense.WeaponType != WeaponType.None)
                 {
-                    defense.HasWeapon = false;
+                    defense.WeaponType = WeaponType.None;
                     brokenLayers |= BrokenDefenseLayers.Weapon;
                     continue;
                 }

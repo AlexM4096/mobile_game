@@ -61,12 +61,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
                     continue;
                 }
 
-                if (!TryGetPlayer(out var target))
-                {
-                    return;
-                }
-
-                SpawnFrom(emissionIndex, target);
+                SpawnFrom(emissionIndex);
             }
         }
 
@@ -146,11 +141,16 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
             return candidate.EntryIndex < current.EntryIndex;
         }
 
-        private void SpawnFrom(int emissionIndex, Entity target)
+        private void SpawnFrom(int emissionIndex)
         {
             var emission = _activeEmissions[emissionIndex];
             var position = SpawnPositionGenerator.GeneratePosition(_random, emission.Zone);
-            _factory.Create(emission.Entry.Enemy, position, target, _random);
+            _factory.Create(
+                emission.Entry.Enemy,
+                emission.Entry.Loadout,
+                _config.EquipmentVisuals,
+                position,
+                _random);
             emission.Remaining--;
             if (emission.Remaining == 0)
             {

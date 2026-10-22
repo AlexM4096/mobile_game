@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using _Project.Gameplay.Features.Health;
 using UnityEngine;
 
 namespace _Project.Gameplay.Features.EnemySpawn
@@ -9,9 +10,11 @@ namespace _Project.Gameplay.Features.EnemySpawn
     public sealed class EnemySpawnConfig : SerializedScriptableObject
     {
         [SerializeField] private int randomSeed = 12345;
+        [SerializeField, Required, InlineEditor] private EnemyEquipmentVisualConfig equipmentVisuals;
         [SerializeField] private List<EnemyWaveConfig> waves = new();
 
         public int RandomSeed => randomSeed;
+        public EnemyEquipmentVisualConfig EquipmentVisuals => equipmentVisuals;
         public IReadOnlyList<EnemyWaveConfig> Waves => waves;
     }
 
@@ -43,10 +46,36 @@ namespace _Project.Gameplay.Features.EnemySpawn
         [SerializeField, Required, InlineEditor] private EnemyConfig enemy;
         [SerializeField, Min(0)] private int count;
         [SerializeField, Min(0f)] private float spawnInterval = 1f;
+        [SerializeField] private WeaponType weaponType;
+        [SerializeField] private HelmetType helmetType;
+        [SerializeField, ShowIf(nameof(HasHelmet))] private bool enchantedArmor;
 
         public EnemyConfig Enemy => enemy;
         public int Count => count;
         public float SpawnInterval => spawnInterval;
+        public WeaponType WeaponType => weaponType;
+        public HelmetType HelmetType => helmetType;
+        public bool EnchantedArmor => enchantedArmor;
+        public EnemyEquipmentLoadout Loadout => new(weaponType, helmetType, enchantedArmor);
+
+        private bool HasHelmet => helmetType != HelmetType.None;
+    }
+
+    public readonly struct EnemyEquipmentLoadout
+    {
+        public readonly WeaponType WeaponType;
+        public readonly HelmetType HelmetType;
+        public readonly bool IsEnchanted;
+
+        public EnemyEquipmentLoadout(
+            WeaponType weaponType,
+            HelmetType helmetType,
+            bool isEnchanted)
+        {
+            WeaponType = weaponType;
+            HelmetType = helmetType;
+            IsEnchanted = isEnchanted;
+        }
     }
 
     [Serializable]

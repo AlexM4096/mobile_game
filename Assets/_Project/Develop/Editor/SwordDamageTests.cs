@@ -103,11 +103,13 @@ namespace _Project.Editor.Tests
             CreateSword(new Vector2(0.5f, 0f), 180f);
             var enemy = CreateEnemy(
                 Vector2.zero,
-                new EnemyDefense { HasWeapon = true });
+                new EnemyDefense { WeaponType = WeaponType.Dagger });
 
             Tick();
 
-            Assert.That(_world.Get<EnemyDefense>(enemy).HasWeapon, Is.False);
+            Assert.That(
+                _world.Get<EnemyDefense>(enemy).WeaponType,
+                Is.EqualTo(WeaponType.None));
             Assert.That(_world.Has<DeadTag>(enemy), Is.True);
         }
 

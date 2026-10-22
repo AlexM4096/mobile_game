@@ -35,7 +35,8 @@ Most balance work can be done from the inline config fields on `Movement Swarm T
 
 ### Enemies and waves
 
-- `EnemySpawn/Configs/EnemySpawnConfig` — random seed and the wave list.
+- `EnemySpawn/Configs/EnemySpawnConfig` — random seed, the shared equipment visual catalog reference, and the wave list.
+- `EnemySpawn/Configs/EnemyEquipmentVisualConfig` — shared weapon and helmet sprite bindings. This is setup data and normally should not be changed for balancing.
 - `EnemySpawn/Configs/Enemies/` — individual enemy configs.
 
 Each wave contains:
@@ -43,14 +44,16 @@ Each wave contains:
 - `Delay` — pause before the wave starts. For later waves, it begins after the previous wave's duration.
 - `Duration` — the timeline length before the next wave can start. Enemies in the wave use their own spawn intervals.
 - `Spawn Zone` — circle or box, its position and size, and whether enemies spawn on its edge.
-- `Composition` — enemy type, total count, and interval between its spawns.
+- `Composition` — enemy type, total count, interval between its spawns, and that entry's equipment loadout.
 
 Important enemy values:
 
 - `Stat Noise Percentage` adds seeded random variation to an enemy's movement speed. `0` disables variation; `0.2` means up to roughly 20% variation.
-- `Has Weapon` adds one defensive hit layer before the enemy body can be defeated.
-- `Helmet Type` controls helmet durability: Cloth takes 1 hit, Wood 2, Iron 3, and Dragon Scale 4.
-- `Enchanted Armor` adds one hit of helmet durability. It requires a helmet other than `None`.
+- `Weapon Type` is selected on each wave composition entry. Staff, Dagger, and Axe are visually different but each adds one defensive hit layer before the enemy body.
+- `Helmet Type` is selected on each wave composition entry. Cloth takes 1 hit, Wood 2, Iron 3, and Dragon Scale 4.
+- `Enchanted Armor` is also selected on the wave entry and adds one hit of helmet durability. It is shown only when `Helmet Type` is not `None`.
+
+Equipment is intentionally wave-specific. Reusing the same enemy config in two composition entries can therefore produce different weapon and helmet combinations without creating another enemy asset.
 
 Using the same random seed and the same config values produces the same spawn positions and stat variations.
 

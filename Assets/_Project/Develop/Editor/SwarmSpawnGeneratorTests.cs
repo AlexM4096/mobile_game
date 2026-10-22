@@ -3,15 +3,13 @@ using System.Reflection;
 using Arch.Core;
 using Arch.Unity.Toolkit;
 using NUnit.Framework;
-using _Project.Gameplay.Features.AI;
-using _Project.Gameplay.Features.AI.Systems;
 using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.EnemySpawn;
 using _Project.Gameplay.Features.EnemySpawn.Systems;
 using _Project.Gameplay.Features.Health;
+using _Project.Gameplay.Features.Health.Views;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Movement.Systems;
-using _Project.Gameplay.Features.Player;
 using UnityEngine;
 
 namespace _Project.Editor.Tests
@@ -19,7 +17,7 @@ namespace _Project.Editor.Tests
     public sealed class SwarmSpawnGeneratorTests
     {
         private static readonly QueryDescription EnemyDescription =
-            new QueryDescription().WithAll<Target, MoveSpeed, EnemyDefense, Direction, Velocity>();
+            new QueryDescription().WithAll<MoveSpeed, EnemyDefense, Direction, Velocity>();
 
         [Test]
         public void GeneratedPositionsRespectWorldSpaceZoneAndShape()
@@ -65,6 +63,8 @@ namespace _Project.Editor.Tests
             var config = ScriptableObject.CreateInstance<EnemySpawnConfig>();
             var firstEnemy = ScriptableObject.CreateInstance<EnemyConfig>();
             var secondEnemy = ScriptableObject.CreateInstance<EnemyConfig>();
+            var equipmentVisuals = ScriptableObject.CreateInstance<EnemyEquipmentVisualConfig>();
+            var equipmentSprite = CreateSprite();
             var firstPrefab = new GameObject("First Enemy");
             var secondPrefab = new GameObject("Second Enemy");
 
@@ -72,6 +72,8 @@ namespace _Project.Editor.Tests
             {
                 ConfigureEnemy(firstEnemy, firstPrefab, 10f, 0.5f);
                 ConfigureEnemy(secondEnemy, secondPrefab, 30f, 1f);
+                ConfigureEquipmentVisuals(equipmentVisuals, equipmentSprite);
+                Set(config, "equipmentVisuals", equipmentVisuals);
                 var zone = Zone(SpawnShape.Circle, Vector2.zero, true, 5f, Vector2.one);
                 Set(config, "waves", new List<EnemyWaveConfig>
                 {
@@ -79,7 +81,6 @@ namespace _Project.Editor.Tests
                     Wave(0.5f, 1f, zone, Entry(secondEnemy, 2, 1f))
                 });
 
-                var player = world.Create(new PlayerTag(), new Position { Value = Vector2.zero });
                 var system = new SpawnEnemiesSystem(world, config, factory);
                 system.Initialize();
 
@@ -92,17 +93,14 @@ namespace _Project.Editor.Tests
                 Run(system, 8d);
                 Assert.That(EnemyCount(world), Is.EqualTo(6));
 
-                new MoveToTargetSystem(world).Update(default);
                 new CalculateVelocitySystem(world).Update(default);
 
                 world.Query(in EnemyDescription, (
-                    Entity entity,
-                    ref Target target,
+                    Entity _,
                     ref Direction direction,
                     ref MoveSpeed speed,
                     ref Velocity velocity) =>
                 {
-                    Assert.That(target.Entity, Is.EqualTo(player));
                     Assert.That(direction.Value.magnitude, Is.EqualTo(1f).Within(0.0001f));
                     Assert.That(velocity.Value.magnitude, Is.EqualTo(speed.Value).Within(0.0001f));
                 });
@@ -114,6 +112,8 @@ namespace _Project.Editor.Tests
                 Object.DestroyImmediate(secondPrefab);
                 Object.DestroyImmediate(firstEnemy);
                 Object.DestroyImmediate(secondEnemy);
+                Object.DestroyImmediate(equipmentVisuals);
+                Object.DestroyImmediate(equipmentSprite);
                 Object.DestroyImmediate(config);
                 world.Dispose();
             }
@@ -140,7 +140,7 @@ namespace _Project.Editor.Tests
         private static int EnemyCount(World world)
         {
             var count = 0;
-            world.Query(in EnemyDescription, (Entity _, ref Target __) => count++);
+            world.Query(in EnemyDescription, (Entity _, ref EnemyDefense __) => count++);
             return count;
         }
 
@@ -176,11 +176,41 @@ namespace _Project.Editor.Tests
 
         private static void ConfigureEnemy(EnemyConfig enemy, GameObject prefab, float speed, float radius)
         {
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(prefab.transform, false);
+            var bodyRenderer = visual.AddComponent<SpriteRenderer>();
+            var helmetSocket = new GameObject("HelmetSocket").transform;
+            helmetSocket.SetParent(visual.transform, false);
+            var weaponSocket = new GameObject("WeaponSocket").transform;
+            weaponSocket.SetParent(visual.transform, false);
+            var defenseView = prefab.AddComponent<EnemyDefenseView>();
+            Set(defenseView, "bodyRenderer", bodyRenderer);
+            Set(defenseView, "helmetSocket", helmetSocket);
+            Set(defenseView, "weaponSocket", weaponSocket);
+
             Set(enemy, "prefab", prefab);
             Set(enemy, "baseSpeed", speed);
 
             Set(enemy, "colliderRadius", radius);
             Set(enemy, "statNoisePercentage", 0f);
+        }
+
+        private static Sprite CreateSprite() => Sprite.Create(
+            Texture2D.whiteTexture,
+            new Rect(0f, 0f, 1f, 1f),
+            new Vector2(0.5f, 0.5f),
+            1f);
+
+        private static void ConfigureEquipmentVisuals(
+            EnemyEquipmentVisualConfig visuals,
+            Sprite sprite)
+        {
+            Set(visuals, "staffSprite", sprite);
+            Set(visuals, "daggerSprite", sprite);
+            Set(visuals, "axeSprite", sprite);
+            Set(visuals, "clothHelmetSprite", sprite);
+            Set(visuals, "woodHelmetSprite", sprite);
+            Set(visuals, "ironHelmetSprite", sprite);
         }
 
         private static void Set(object target, string fieldName, object value) =>
