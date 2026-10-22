@@ -268,8 +268,8 @@ TextureImporter:
         y: 512
         width: 256
         height: 256
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.23, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -286,12 +286,12 @@ TextureImporter:
       name: enemy_spr_set 1_5
       rect:
         serializedVersion: 2
-        x: 256
+        x: 257
         y: 512
         width: 256
         height: 256
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.23, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -308,12 +308,12 @@ TextureImporter:
       name: enemy_spr_set 1_6
       rect:
         serializedVersion: 2
-        x: 512
+        x: 513
         y: 512
         width: 256
         height: 256
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.23, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -335,7 +335,7 @@ TextureImporter:
         width: 256
         height: 256
       alignment: 9
-      pivot: {x: 0.39064333, y: 0.4781289}
+      pivot: {x: 0.63, y: 0.48}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -357,7 +357,7 @@ TextureImporter:
         width: 256
         height: 256
       alignment: 9
-      pivot: {x: 0.4088695, y: 0.48906457}
+      pivot: {x: 0.63, y: 0.48}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -374,12 +374,12 @@ TextureImporter:
       name: enemy_spr_set 1_9
       rect:
         serializedVersion: 2
-        x: 512
+        x: 513
         y: 257
         width: 256
         height: 256
       alignment: 9
-      pivot: {x: 0.41069221, y: 0.37424004}
+      pivot: {x: 0.641145, y: 0.37894547}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []

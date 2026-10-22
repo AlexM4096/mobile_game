@@ -67,7 +67,6 @@ namespace _Project.Gameplay.Features.Health.Views
                     weaponSprite,
                     Color.white,
                     bodyRenderer.sortingOrder + 1);
-                _weaponRenderer.flipX = false;
             }
         }
 
