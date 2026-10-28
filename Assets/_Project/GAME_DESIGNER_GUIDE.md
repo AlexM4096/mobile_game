@@ -66,6 +66,14 @@ Using the same random seed and the same config values produces the same spawn po
 
 Keep `Weapon Count` at 1 or higher, and keep speed, radius, damage, and both hitbox dimensions above zero.
 
+### Spear
+
+`Spear/Configs/SpearConfig` controls the automatic linear Spear ability. `Enabled` is the test toggle: disable it to run the scene without Spear targeting or projectile creation.
+
+The default prototype targets immediately and then every 2 seconds. It locks a direction for 0.25 seconds before firing, prefers distinct visible enemies inside its player-centred trigger zone, and chooses a random direction when no eligible enemy is present. The effective trigger radius is clamped so its circle remains inside the camera view.
+
+`Projectile Count` controls simultaneous shots. `Thickness Multiplier` is multiplied by the gameplay Grid cell height, while the prototype visual and collider remain 1.5 tiles long. `Damage Hits` is the number of enemy defensive layers removed per unique contact. `Total Health` is the number of unique enemies a projectile can pierce before destruction. `Projectile Lifetime` removes missed projectiles through the shared lifetime pipeline.
+
 ### Visuals and debugging
 
 - `Movement/Configs/WalkingTweenConfig` controls the shared walking squash, stretch, rotation, timing, easing, and variation used by player and enemy prefabs.

@@ -11,6 +11,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b7d42d376344d7ba8cbdb172da013a1, type: 3}
   m_Name: PlayerCameraConfig
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   lockToOrbitCenter: 1
   damping: 0.25

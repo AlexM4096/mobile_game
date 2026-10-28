@@ -13,6 +13,7 @@ using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
+using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.Sword;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -39,6 +40,8 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private ColliderDebugConfig colliderDebugConfig;
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
         [SerializeField, InlineEditor] private SwordConfig swordConfig;
+        [SerializeField, InlineEditor] private SpearConfig spearConfig;
+        [SerializeField] private Grid environmentGrid;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private EventSystem eventSystem;
 
@@ -54,9 +57,12 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(colliderDebugConfig);
             builder.RegisterInstance(healthBarConfig);
             builder.RegisterInstance(swordConfig);
+            builder.RegisterInstance(spearConfig);
+            builder.RegisterInstance(environmentGrid);
             builder.RegisterInstance(mainCamera);
             builder.RegisterInstance(eventSystem);
             builder.Register<SwordFactory>(VContainer.Lifetime.Scoped);
+            builder.Register<SpearFactory>(VContainer.Lifetime.Scoped);
             builder.Register<EnemyFactory>(VContainer.Lifetime.Scoped);
 
             var collisionMatrix = CreateCollisionMatrix();
@@ -73,6 +79,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddMovementFeature();
                     systems.AddSwordFeature();
                     systems.AddCollisionFeature();
+                    systems.AddSpearFeature();
                     systems.AddPlayerCollisionResponseFeature();
                     systems.AddRotationFeature();
                     systems.AddHealthFeature();
@@ -142,6 +149,7 @@ namespace _Project.Gameplay.Infrastructure
             _spawnedViewsRoot = new GameObject("Spawned Player Views").transform;
             var targetEntity = _world.Create(
                 new PlayerTag(),
+                new SpearAbilityCooldown(),
                 new PlayerMotion { Mode = PlayerMotionMode.Flight },
                 new Position { Value = Vector2.zero },
                 new RotationComponent { Value = quaternion.identity },

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ef4cda2e27f6344d9412711eb97c268, type: 3}
+  m_Name: SpearConfig
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Spear.SpearConfig
+  enabled: 1
+  prefab: {fileID: 4989625126875813990, guid: f091c441fa158fa4aa98e2d04cbfa8c3, type: 3}
+  cooldownDuration: 2
+  projectileLifetime: 5
+  projectileCount: 1
+  triggerRadius: 10
+  targetingDelay: 0.25
+  thicknessMultiplier: 0.35
+  damageHits: 1
+  speed: 15
+  totalHealth: 3
