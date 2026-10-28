@@ -19,6 +19,7 @@ namespace _Project.Gameplay.Features.Player
 
         public static void AddPlayerVisualizationFeature(this NewArchAppBuilder systems)
         {
+            systems.Add<UpdatePlayerCameraTargetSystem>(SystemRunner.PreLateUpdate);
             systems.Add<UpdatePlayerOrbitVisualizationSystem>(SystemRunner.PreLateUpdate);
         }
     }

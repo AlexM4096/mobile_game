@@ -35,6 +35,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private PlayerMovementConfig playerMovementConfig;
         [SerializeField, InlineEditor] private PlayerInputConfig playerInputConfig;
         [SerializeField, InlineEditor] private PlayerOrbitVisualizationConfig playerOrbitVisualizationConfig;
+        [SerializeField, InlineEditor] private PlayerCameraConfig playerCameraConfig;
         [SerializeField, InlineEditor] private ColliderDebugConfig colliderDebugConfig;
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
         [SerializeField, InlineEditor] private SwordConfig swordConfig;
@@ -49,6 +50,7 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(playerMovementConfig);
             builder.RegisterInstance(playerInputConfig);
             builder.RegisterInstance(playerOrbitVisualizationConfig);
+            builder.RegisterInstance(playerCameraConfig);
             builder.RegisterInstance(colliderDebugConfig);
             builder.RegisterInstance(healthBarConfig);
             builder.RegisterInstance(swordConfig);
@@ -104,6 +106,7 @@ namespace _Project.Gameplay.Infrastructure
         private readonly World _world;
         private readonly SwarmConfig _configuration;
         private readonly PlayerMovementConfig _playerMovementConfig;
+        private readonly PlayerCameraConfig _playerCameraConfig;
         private readonly SwordConfig _swordConfig;
         private readonly SwordFactory _swordFactory;
         private readonly Camera _mainCamera;
@@ -114,6 +117,7 @@ namespace _Project.Gameplay.Infrastructure
             World world,
             SwarmConfig configuration,
             PlayerMovementConfig playerMovementConfig,
+            PlayerCameraConfig playerCameraConfig,
             SwordConfig swordConfig,
             SwordFactory swordFactory,
             Camera mainCamera
@@ -122,6 +126,7 @@ namespace _Project.Gameplay.Infrastructure
             _world = world;
             _configuration = configuration;
             _playerMovementConfig = playerMovementConfig;
+            _playerCameraConfig = playerCameraConfig;
             _swordConfig = swordConfig;
             _swordFactory = swordFactory;
             _mainCamera = mainCamera;
@@ -160,8 +165,17 @@ namespace _Project.Gameplay.Infrastructure
             targetView.name = "Player View";
             targetView.transform.position = Vector3.zero;
             _world.Add(targetEntity, new GameObjectReference(targetView));
+
+            var cameraTarget = new GameObject("Player Camera Target");
+            cameraTarget.transform.SetParent(_spawnedViewsRoot, false);
+            cameraTarget.transform.position = targetView.transform.position;
+            _world.Add(targetEntity, new PlayerCameraTargetReference
+            {
+                Transform = cameraTarget.transform
+            });
+
             _swordFactory.CreateFor(targetEntity, _spawnedViewsRoot);
-            CreatePlayerFollowCamera(targetView.transform);
+            CreatePlayerFollowCamera(cameraTarget.transform);
         }
 
         private bool ValidateConfiguration()
@@ -207,7 +221,7 @@ namespace _Project.Gameplay.Infrastructure
             }
         }
 
-        private void CreatePlayerFollowCamera(Transform player)
+        private void CreatePlayerFollowCamera(Transform followTarget)
         {
             if (_mainCamera == null)
             {
@@ -227,12 +241,15 @@ namespace _Project.Gameplay.Infrastructure
 
             _playerFollowCamera = cameraObject.AddComponent<CinemachineCamera>();
             _playerFollowCamera.Lens = LensSettings.FromCamera(_mainCamera);
-            _playerFollowCamera.Follow = player;
+            _playerFollowCamera.Follow = followTarget;
 
             var positionComposer = cameraObject.AddComponent<CinemachinePositionComposer>();
             positionComposer.CameraDistance = Mathf.Abs(
-                _mainCamera.transform.position.z - player.position.z);
-            // positionComposer.Damping = new Vector3(0.25f, 0.25f, 0f);
+                _mainCamera.transform.position.z - followTarget.position.z);
+            positionComposer.Damping = new Vector3(
+                _playerCameraConfig.Damping,
+                _playerCameraConfig.Damping,
+                0f);
             // positionComposer.Lookahead = new LookaheadSettings()
             // {
             //     Enabled = true,

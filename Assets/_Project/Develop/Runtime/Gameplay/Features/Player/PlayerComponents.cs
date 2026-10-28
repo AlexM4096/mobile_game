@@ -17,4 +17,9 @@ namespace _Project.Gameplay.Features.Player
         public float OrbitRadius;
         public float OrbitDirection;
     }
+
+    public struct PlayerCameraTargetReference
+    {
+        public Transform Transform;
+    }
 }

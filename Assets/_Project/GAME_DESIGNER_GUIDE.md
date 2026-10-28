@@ -28,10 +28,13 @@ Most balance work can be done from the inline config fields on `Movement Swarm T
 
 - `Infrastructure/Configs/SwarmConfig` — player health, collider radius, and player prefab.
 - `Player/Configs/PlayerMovementConfig` — orbit speed, launch speed, deceleration, minimum speed, bounce speed gain, and maximum speed.
+- `Player/Configs/PlayerCameraConfig` — whether the camera locks to the orbit centre and how smoothly it follows its target.
 - `Player/Configs/PlayerOrbitVisualizationConfig` — orbit line color, line width, and marker size.
 - `Movement/Configs/MovementConfig` — arrival distance used when moving entities toward a target. This usually does not need regular balance changes.
 
 `PlayerInputConfig` contains Input System action references. Treat these as setup references, not balance values.
+
+Disable `Lock To Orbit Center` to keep the camera following the player during orbit. `Damping` controls the smooth transition between the player and orbit centre; `0` makes camera movement immediate.
 
 ### Enemies and waves
 
