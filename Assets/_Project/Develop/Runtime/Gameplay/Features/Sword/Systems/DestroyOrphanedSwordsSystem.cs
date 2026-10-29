@@ -26,7 +26,8 @@ namespace _Project.Gameplay.Features.Sword.Systems
             {
                 if (World.IsAlive(orbit.Owner) &&
                     World.Has<Position>(orbit.Owner) &&
-                    World.Has<PlayerMotion>(orbit.Owner))
+                    World.Has<PlayerMotion>(orbit.Owner) &&
+                    World.Has<SwordAbility>(orbit.Owner))
                 {
                     return;
                 }

@@ -25,6 +25,4 @@ MonoBehaviour:
   baseSpeed: 3
   colliderRadius: 1
   statNoisePercentage: 0.2
-  hasWeapon: 1
-  helmetType: 4
-  enchantedArmor: 1
+  experienceReward: 3

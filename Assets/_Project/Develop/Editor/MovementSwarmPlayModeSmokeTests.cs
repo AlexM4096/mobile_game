@@ -20,7 +20,7 @@ namespace _Project.Editor.Tests
             yield return new EnterPlayMode();
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("MovementSwarmTestScene"));
 
-            yield return new WaitForSecondsRealtime(0.1f);
+            yield return new WaitForSecondsRealtime(1.2f);
 
             var playerView = GameObject.Find("Player View");
             var playerCameraTarget = GameObject.Find("Player Camera Target");

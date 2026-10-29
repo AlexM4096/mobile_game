@@ -57,7 +57,11 @@ namespace _Project.Gameplay.Features.Spear.Systems
                 }
 
                 var origin = World.Get<Position>(request.Owner).Value;
-                _factory.Create(origin, request.Direction);
+                _factory.Create(
+                    origin,
+                    request.Direction,
+                    request.DamageHits,
+                    request.TotalHealth);
             }
 
             for (var requestIndex = 0; requestIndex < _requestsToDestroy.Count; requestIndex++)

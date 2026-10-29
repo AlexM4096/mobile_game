@@ -27,9 +27,6 @@ namespace _Project.Gameplay.Features.Sword.Systems
 
         public override void Update(in SystemState state)
         {
-            var angularSpeed = _settings.RotationSpeedDegreesPerSecond * Mathf.Deg2Rad;
-            var deltaTime = state.DeltaTime;
-
             World.Query(in _description, (
                 ref SwordOrbit orbit,
                 ref Position position,
@@ -37,35 +34,25 @@ namespace _Project.Gameplay.Features.Sword.Systems
             {
                 if (!World.IsAlive(orbit.Owner) ||
                     !World.Has<Position>(orbit.Owner) ||
-                    !World.Has<PlayerMotion>(orbit.Owner))
+                    !World.Has<PlayerMotion>(orbit.Owner) ||
+                    !World.Has<SwordAbility>(orbit.Owner))
                 {
                     return;
                 }
 
                 ref var ownerPosition = ref World.Get<Position>(orbit.Owner);
-                ref var ownerMotion = ref World.Get<PlayerMotion>(orbit.Owner);
-                var direction = (float)_settings.Direction;
-
-                orbit.AngleRadians = Mathf.Repeat(
-                    orbit.AngleRadians + angularSpeed * direction * deltaTime,
+                ref var ability = ref World.Get<SwordAbility>(orbit.Owner);
+                var angle = Mathf.Repeat(
+                    ability.OrbitPhaseRadians +
+                    FullCircleRadians * orbit.SlotIndex / ability.WeaponCount,
                     FullCircleRadians);
 
                 var radialDirection = new Vector2(
-                    Mathf.Cos(orbit.AngleRadians),
-                    Mathf.Sin(orbit.AngleRadians));
+                    Mathf.Cos(angle),
+                    Mathf.Sin(angle));
                 position.Value = ownerPosition.Value + radialDirection * _settings.RotationRadius;
-                rotation.Value = quaternion.RotateZ(orbit.AngleRadians);
+                rotation.Value = quaternion.RotateZ(angle);
             });
-        }
-
-        private float GetRotationDirection(PlayerMotion ownerMotion)
-        {
-            if (ownerMotion.Mode == PlayerMotionMode.Orbit && ownerMotion.OrbitDirection != 0f)
-            {
-                return Mathf.Sign(ownerMotion.OrbitDirection);
-            }
-
-            return (float)_settings.Direction;
         }
     }
 }

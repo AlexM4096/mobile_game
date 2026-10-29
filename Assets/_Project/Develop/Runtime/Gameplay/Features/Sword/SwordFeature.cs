@@ -9,6 +9,7 @@ namespace _Project.Gameplay.Features.Sword
         public static void AddSwordFeature(this NewArchAppBuilder systems)
         {
             systems.Add<DestroyOrphanedSwordsSystem>(SystemRunner.Update);
+            systems.Add<AdvanceSwordOrbitSystem>(SystemRunner.Update);
             systems.Add<UpdateSwordOrbitSystem>(SystemRunner.Update);
         }
     }

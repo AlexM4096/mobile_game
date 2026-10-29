@@ -1,0 +1,336 @@
+:root {
+    --panel-dark: rgba(18, 22, 31, 0.96);
+    --panel-mid: rgb(34, 42, 56);
+    --border: rgb(100, 119, 151);
+    --accent: rgb(83, 203, 255);
+    --text: rgb(246, 249, 255);
+    --muted: rgb(182, 194, 214);
+}
+
+.progression-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    color: var(--text);
+    -unity-font-definition: url("project://database/Assets/UniText/NotoSans-Regular.ttf");
+}
+
+.hud-panel {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    translate: -50% 0;
+    width: 46%;
+    min-width: 320px;
+    max-width: 760px;
+    padding: 10px 14px 12px 14px;
+    background-color: rgba(18, 22, 31, 0.88);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.level-label {
+    margin-bottom: 6px;
+    -unity-font-style: bold;
+    font-size: 16px;
+    -unity-text-align: middle-center;
+}
+
+.experience-bar {
+    position: relative;
+    height: 26px;
+    flex-shrink: 0;
+    color: var(--text);
+}
+
+.experience-bar > .unity-progress-bar__container {
+    position: relative;
+    height: 100%;
+    flex-grow: 1;
+}
+
+.experience-bar .unity-progress-bar__background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    background-color: rgb(45, 53, 68);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: var(--border);
+    border-right-color: var(--border);
+    border-bottom-color: var(--border);
+    border-left-color: var(--border);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.experience-bar .unity-progress-bar__progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    background-color: var(--accent);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.experience-bar .unity-progress-bar__title-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.experience-bar .unity-progress-bar__title {
+    width: 100%;
+    color: var(--text);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.selection-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    padding: 5%;
+    background-color: rgba(4, 6, 10, 0.82);
+    align-items: center;
+    justify-content: center;
+}
+
+.selection-panel {
+    width: 100%;
+    max-width: 1240px;
+    max-height: 100%;
+    padding: 28px;
+    align-items: center;
+    background-color: var(--panel-dark);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: var(--border);
+    border-right-color: var(--border);
+    border-bottom-color: var(--border);
+    border-left-color: var(--border);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.selection-title {
+    width: 100%;
+    font-size: 30px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.selection-subtitle {
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    color: var(--muted);
+    font-size: 16px;
+    -unity-text-align: middle-center;
+}
+
+.cards-scroll {
+    width: 100%;
+    flex-grow: 0;
+    align-self: center;
+}
+
+.cards-scroll > .unity-scroll-view__content-viewport {
+    width: 100%;
+}
+
+.cards-scroll .unity-scroll-view__content-container {
+    min-width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.cards-container {
+    width: 100%;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.upgrade-card {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 220px;
+    max-width: 360px;
+    min-height: 330px;
+    padding: 20px;
+    background-color: var(--panel-mid);
+    color: var(--text);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: var(--border);
+    border-right-color: var(--border);
+    border-bottom-color: var(--border);
+    border-left-color: var(--border);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    transition-duration: 0.12s;
+}
+
+.upgrade-card:hover {
+    background-color: rgb(44, 57, 75);
+    border-top-color: var(--accent);
+    border-right-color: var(--accent);
+    border-bottom-color: var(--accent);
+    border-left-color: var(--accent);
+}
+
+.upgrade-card:active {
+    background-color: rgb(27, 35, 48);
+}
+
+.upgrade-card:disabled {
+    opacity: 0.55;
+}
+
+.card-first,
+.card-middle {
+    margin-right: 16px;
+}
+
+.card-icon {
+    align-self: center;
+    width: 104px;
+    height: 104px;
+    margin-bottom: 16px;
+}
+
+.card-title {
+    margin-bottom: 12px;
+    font-size: 22px;
+    -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.card-description {
+    flex-grow: 1;
+    color: var(--muted);
+    font-size: 16px;
+    white-space: normal;
+    -unity-text-align: upper-center;
+}
+
+.card-rank {
+    margin-top: 16px;
+    color: var(--accent);
+    -unity-font-style: bold;
+    font-size: 15px;
+    -unity-text-align: middle-center;
+}
+
+.portrait .hud-panel {
+    width: 76%;
+    min-width: 0;
+}
+
+.portrait .selection-overlay {
+    padding: 4%;
+}
+
+.portrait .selection-panel {
+    height: 100%;
+    padding: 18px;
+}
+
+.portrait .cards-scroll {
+    flex-grow: 1;
+}
+
+.portrait .cards-scroll .unity-scroll-view__content-container {
+    justify-content: flex-start;
+}
+
+.portrait .cards-container {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.portrait .upgrade-card {
+    flex-basis: auto;
+    max-width: none;
+    min-height: 250px;
+    margin-right: 0;
+    margin-bottom: 14px;
+}
+
+.compact-landscape .selection-overlay {
+    padding: 12px;
+}
+
+.compact-landscape .selection-panel {
+    padding: 12px;
+}
+
+.compact-landscape .selection-title {
+    font-size: 22px;
+}
+
+.compact-landscape .selection-subtitle {
+    margin-top: 2px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.compact-landscape .upgrade-card {
+    min-height: 190px;
+    padding: 12px;
+}
+
+.compact-landscape .card-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+}
+
+.compact-landscape .card-title {
+    margin-bottom: 6px;
+    font-size: 17px;
+}
+
+.compact-landscape .card-description {
+    font-size: 13px;
+}
+
+.compact-landscape .card-rank {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.is-hidden {
+    display: none;
+}

@@ -51,7 +51,13 @@ namespace _Project.Editor.Tests
             {
                 var owner = _world.Create(
                     new Position { Value = new Vector2(3f, -2f) },
-                    new PlayerMotion { Mode = PlayerMotionMode.Flight });
+                    new PlayerMotion { Mode = PlayerMotionMode.Flight },
+                    new SwordAbility
+                    {
+                        WeaponCount = 3,
+                        BaseRotationSpeedDegreesPerSecond = 180f,
+                        RotationSpeedMultiplier = 1f
+                    });
 
                 new SwordFactory(_world, config).CreateFor(owner, viewRoot.transform);
                 ReadSwords();
@@ -60,8 +66,8 @@ namespace _Project.Editor.Tests
                 Assert.That(viewRoot.transform.childCount, Is.EqualTo(3));
 
                 _swords.Sort((first, second) =>
-                    _world.Get<SwordOrbit>(first).AngleRadians.CompareTo(
-                        _world.Get<SwordOrbit>(second).AngleRadians));
+                    _world.Get<SwordOrbit>(first).SlotIndex.CompareTo(
+                        _world.Get<SwordOrbit>(second).SlotIndex));
 
                 for (var index = 0; index < _swords.Count; index++)
                 {
@@ -72,8 +78,8 @@ namespace _Project.Editor.Tests
                         Mathf.Sin(expectedAngle));
 
                     Assert.That(
-                        _world.Get<SwordOrbit>(entity).AngleRadians,
-                        Is.EqualTo(expectedAngle).Within(Tolerance));
+                        _world.Get<SwordOrbit>(entity).SlotIndex,
+                        Is.EqualTo(index));
                     AssertVector(
                         _world.Get<Position>(entity).Value,
                         new Vector2(3f, -2f) + expectedDirection * 2f);
@@ -110,19 +116,27 @@ namespace _Project.Editor.Tests
                 var owner = _world.Create(
                     new Position { Value = Vector2.zero },
                     new Velocity { Value = Vector2.right * 100f },
-                    new PlayerMotion { Mode = PlayerMotionMode.Flight });
+                    new PlayerMotion { Mode = PlayerMotionMode.Flight },
+                    new SwordAbility
+                    {
+                        WeaponCount = 1,
+                        BaseRotationSpeedDegreesPerSecond = 180f,
+                        RotationSpeedMultiplier = 1f
+                    });
                 var sword = _world.Create(
                     new SwordTag(),
-                    new SwordOrbit { Owner = owner, AngleRadians = 0f },
+                    new SwordOrbit { Owner = owner, SlotIndex = 0 },
                     new Position(),
                     new RotationComponent { Value = quaternion.identity });
+                var advanceSystem = new AdvanceSwordOrbitSystem(_world, config);
                 var system = new UpdateSwordOrbitSystem(_world, config);
                 var state = new SystemState { DeltaTime = 0.5f };
 
+                advanceSystem.Update(in state);
                 system.Update(in state);
 
                 Assert.That(
-                    _world.Get<SwordOrbit>(sword).AngleRadians,
+                    _world.Get<SwordAbility>(owner).OrbitPhaseRadians,
                     Is.EqualTo(Mathf.PI * 1.5f).Within(Tolerance));
                 AssertVector(_world.Get<Position>(sword).Value, new Vector2(0f, -2f));
                 AssertPointsOutward(sword, Vector2.down);
@@ -133,21 +147,23 @@ namespace _Project.Editor.Tests
                 ownerMotion.Mode = PlayerMotionMode.Orbit;
                 ownerMotion.OrbitDirection = 1f;
 
+                advanceSystem.Update(in state);
                 system.Update(in state);
 
                 Assert.That(
-                    _world.Get<SwordOrbit>(sword).AngleRadians,
-                    Is.Zero.Within(Tolerance));
-                AssertVector(_world.Get<Position>(sword).Value, new Vector2(12f, 5f));
-                AssertPointsOutward(sword, Vector2.right);
+                    _world.Get<SwordAbility>(owner).OrbitPhaseRadians,
+                    Is.EqualTo(Mathf.PI).Within(Tolerance));
+                AssertVector(_world.Get<Position>(sword).Value, new Vector2(8f, 5f));
+                AssertPointsOutward(sword, Vector2.left);
 
                 ownerMotion.Mode = PlayerMotionMode.Flight;
+                advanceSystem.Update(in state);
                 system.Update(in state);
 
                 Assert.That(
-                    _world.Get<SwordOrbit>(sword).AngleRadians,
-                    Is.EqualTo(Mathf.PI * 1.5f).Within(Tolerance));
-                AssertVector(_world.Get<Position>(sword).Value, new Vector2(10f, 3f));
+                    _world.Get<SwordAbility>(owner).OrbitPhaseRadians,
+                    Is.EqualTo(Mathf.PI * 0.5f).Within(Tolerance));
+                AssertVector(_world.Get<Position>(sword).Value, new Vector2(10f, 7f));
             }
             finally
             {
@@ -160,7 +176,8 @@ namespace _Project.Editor.Tests
         {
             var owner = _world.Create(
                 new Position(),
-                new PlayerMotion { Mode = PlayerMotionMode.Flight });
+                new PlayerMotion { Mode = PlayerMotionMode.Flight },
+                new SwordAbility { WeaponCount = 1 });
             var sword = _world.Create(
                 new SwordTag(),
                 new SwordOrbit { Owner = owner });

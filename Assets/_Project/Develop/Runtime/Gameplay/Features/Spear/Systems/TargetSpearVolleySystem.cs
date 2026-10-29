@@ -69,7 +69,7 @@ namespace _Project.Gameplay.Features.Spear.Systems
 
             World.Query(in _description, (Entity entity, ref Position position) =>
             {
-                if (World.Has<PlayerTag>(entity) && World.Has<SpearAbilityCooldown>(entity))
+                if (World.Has<PlayerTag>(entity) && World.Has<SpearAbility>(entity))
                 {
                     _players.Add(new PlayerSnapshot(entity, position.Value));
                     return;
@@ -132,18 +132,18 @@ namespace _Project.Gameplay.Features.Spear.Systems
 
         private void ActivateIfReady(PlayerSnapshot player, double currentTime)
         {
-            ref var cooldown = ref World.Get<SpearAbilityCooldown>(player.Entity);
-            if (currentTime < cooldown.NextActivationTime)
+            ref var ability = ref World.Get<SpearAbility>(player.Entity);
+            if (currentTime < ability.NextActivationTime)
             {
                 return;
             }
 
-            cooldown.NextActivationTime = currentTime + _settings.CooldownDuration;
+            ability.NextActivationTime = currentTime + ability.CooldownDuration;
             CollectEligibleTargets(player.Position);
             ShuffleEligibleTargets();
 
             for (var projectileIndex = 0;
-                 projectileIndex < _settings.ProjectileCount;
+                 projectileIndex < ability.ProjectileCount;
                  projectileIndex++)
             {
                 var direction = GetDirection(player.Position, projectileIndex);
@@ -151,7 +151,9 @@ namespace _Project.Gameplay.Features.Spear.Systems
                 {
                     Owner = player.Entity,
                     Direction = direction,
-                    FireTime = currentTime + _settings.TargetingDelay
+                    FireTime = currentTime + _settings.TargetingDelay,
+                    DamageHits = ability.DamageHits,
+                    TotalHealth = ability.TotalHealth
                 });
             }
         }

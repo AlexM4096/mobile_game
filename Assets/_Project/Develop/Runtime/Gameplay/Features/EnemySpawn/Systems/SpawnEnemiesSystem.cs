@@ -10,7 +10,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
 {
     public sealed class SpawnEnemiesSystem : UnitySystemBase
     {
-        private static readonly QueryDescription PlayerDescription =
+        private static readonly QueryDescription _description =
             new QueryDescription().WithAll<PlayerTag, Position>();
 
         private readonly EnemySpawnConfig _config;
@@ -46,6 +46,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
         public override void Update(in SystemState state)
         {
             if (!_isEnabled) return;
+            if (!TryGetPlayer(out var player)) return;
 
             if (!_timelineStarted)
             {
@@ -61,7 +62,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
                     continue;
                 }
 
-                SpawnFrom(emissionIndex);
+                SpawnFrom(emissionIndex, player);
             }
         }
 
@@ -141,7 +142,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
             return candidate.EntryIndex < current.EntryIndex;
         }
 
-        private void SpawnFrom(int emissionIndex)
+        private void SpawnFrom(int emissionIndex, Entity player)
         {
             var emission = _activeEmissions[emissionIndex];
             var position = SpawnPositionGenerator.GeneratePosition(_random, emission.Zone);
@@ -150,7 +151,8 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
                 emission.Entry.Loadout,
                 _config.EquipmentVisuals,
                 position,
-                _random);
+                _random,
+                player);
             emission.Remaining--;
             if (emission.Remaining == 0)
             {
@@ -165,7 +167,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
         {
             var result = default(Entity);
             var found = false;
-            World.Query(in PlayerDescription, (Entity entity, ref Position _) =>
+            World.Query(in _description, (Entity entity, ref Position _) =>
             {
                 if (found) return;
                 result = entity;

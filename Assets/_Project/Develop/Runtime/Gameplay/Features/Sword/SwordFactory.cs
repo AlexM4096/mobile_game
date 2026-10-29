@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Arch.Core;
 using Arch.Unity.Conversion;
 using _Project.Gameplay.Features.Collision;
@@ -18,6 +19,7 @@ namespace _Project.Gameplay.Features.Sword
 
         private readonly World _world;
         private readonly SwordConfig _settings;
+        private readonly Dictionary<Entity, Transform> _viewParents = new();
 
         public SwordFactory(World world, SwordConfig settings)
         {
@@ -32,53 +34,72 @@ namespace _Project.Gameplay.Features.Sword
                 throw new ArgumentException("A sword owner must be alive and have a position.", nameof(owner));
             }
 
-            var ownerPosition = _world.Get<Position>(owner).Value;
-            var halfExtents = _settings.HitboxSize * 0.5f;
+            _viewParents[owner] = viewParent;
 
             for (var index = 0; index < _settings.WeaponCount; index++)
             {
-                var angle = FullCircleRadians * index / _settings.WeaponCount;
-                var radialDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                var entity = _world.Create(
-                    new SwordTag(),
-                    new SwordOrbit
-                    {
-                        Owner = owner,
-                        AngleRadians = angle
-                    },
-                    new Position
-                    {
-                        Value = ownerPosition + radialDirection * _settings.RotationRadius
-                    },
-                    new RotationComponent { Value = quaternion.RotateZ(angle) },
-                    new CollisionBody
-                    {
-                        BodyType = ColliderBodyType.Dynamic,
-                        Layer = CollisionLayer.PlayerWeapon
-                    },
-                    new BoxColliderComponent { HalfExtents = halfExtents },
-                    new TriggerTag(),
-                    new DamageOnCollision
-                    {
-                        Amount = _settings.Damage,
-                        Phase = CollisionPhase.Enter
-                    });
-
-                if (_settings.Prefab == null)
-                {
-                    continue;
-                }
-
-                var view = Object.Instantiate(_settings.Prefab, viewParent);
-                view.name = $"Sword View {index + 1}";
-                view.transform.SetPositionAndRotation(
-                    new Vector3(
-                        ownerPosition.x + radialDirection.x * _settings.RotationRadius,
-                        ownerPosition.y + radialDirection.y * _settings.RotationRadius,
-                        0f),
-                    Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg));
-                _world.Add(entity, new GameObjectReference(view));
+                CreateSlot(owner, index);
             }
+        }
+
+        public Entity CreateAdditionalFor(Entity owner, int slotIndex)
+        {
+            return CreateSlot(owner, slotIndex);
+        }
+
+        private Entity CreateSlot(Entity owner, int slotIndex)
+        {
+            if (!_world.IsAlive(owner) ||
+                !_world.Has<Position>(owner) ||
+                !_world.Has<SwordAbility>(owner))
+            {
+                throw new ArgumentException(
+                    "A sword owner must be alive and have Position and SwordAbility components.",
+                    nameof(owner));
+            }
+
+            ref var ability = ref _world.Get<SwordAbility>(owner);
+            var ownerPosition = _world.Get<Position>(owner).Value;
+            var angle = ability.OrbitPhaseRadians +
+                        FullCircleRadians * slotIndex / ability.WeaponCount;
+            var radialDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+            var entity = _world.Create(
+                new SwordTag(),
+                new SwordOrbit { Owner = owner, SlotIndex = slotIndex },
+                new Position
+                {
+                    Value = ownerPosition + radialDirection * _settings.RotationRadius
+                },
+                new RotationComponent { Value = quaternion.RotateZ(angle) },
+                new CollisionBody
+                {
+                    BodyType = ColliderBodyType.Dynamic,
+                    Layer = CollisionLayer.PlayerWeapon
+                },
+                new BoxColliderComponent { HalfExtents = _settings.HitboxSize * 0.5f },
+                new TriggerTag(),
+                new DamageOnCollision
+                {
+                    Amount = _settings.Damage,
+                    Phase = CollisionPhase.Enter
+                });
+
+            if (_settings.Prefab == null)
+            {
+                return entity;
+            }
+
+            _viewParents.TryGetValue(owner, out var viewParent);
+            var view = Object.Instantiate(_settings.Prefab, viewParent);
+            view.name = $"Sword View {slotIndex + 1}";
+            view.transform.SetPositionAndRotation(
+                new Vector3(
+                    ownerPosition.x + radialDirection.x * _settings.RotationRadius,
+                    ownerPosition.y + radialDirection.y * _settings.RotationRadius,
+                    0f),
+                Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg));
+            _world.Add(entity, new GameObjectReference(view));
+            return entity;
         }
     }
 }

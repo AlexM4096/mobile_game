@@ -9,6 +9,7 @@ using _Project.Gameplay.Features.EnemySpawn.Systems;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Health.Views;
 using _Project.Gameplay.Features.Movement;
+using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Movement.Systems;
 using UnityEngine;
 
@@ -70,6 +71,7 @@ namespace _Project.Editor.Tests
 
             try
             {
+                world.Create(new PlayerTag(), new Position { Value = Vector2.zero });
                 ConfigureEnemy(firstEnemy, firstPrefab, 10f, 0.5f);
                 ConfigureEnemy(secondEnemy, secondPrefab, 30f, 1f);
                 ConfigureEquipmentVisuals(equipmentVisuals, equipmentSprite);

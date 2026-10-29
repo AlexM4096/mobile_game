@@ -7,6 +7,7 @@ using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Health.Views;
 using _Project.Gameplay.Features.Movement;
+using _Project.Gameplay.Features.Progression;
 using _Project.Gameplay.Features.Rotation;
 using Unity.Mathematics;
 using UnityEngine;
@@ -32,7 +33,8 @@ namespace _Project.Gameplay.Features.EnemySpawn
             EnemyEquipmentLoadout loadout,
             EnemyEquipmentVisualConfig equipmentVisuals,
             Vector2 position,
-            Random random
+            Random random,
+            Entity experienceRecipient
         )
         {
             var prefabDefenseView = config.Prefab.GetComponent<EnemyDefenseView>();
@@ -79,7 +81,12 @@ namespace _Project.Gameplay.Features.EnemySpawn
                     Layer = CollisionLayer.Enemy
                 },
                 new CircleCollider { Radius = config.ColliderRadius },
-                defense);
+                defense,
+                new ExperienceReward
+                {
+                    Recipient = experienceRecipient,
+                    Amount = config.ExperienceReward
+                });
 
             var view = Object.Instantiate(config.Prefab, GetViewsRoot());
             view.name = $"{config.Prefab.name} View {++_viewIndex}";

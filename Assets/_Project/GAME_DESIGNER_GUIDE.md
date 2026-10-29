@@ -68,11 +68,23 @@ Keep `Weapon Count` at 1 or higher, and keep speed, radius, damage, and both hit
 
 ### Spear
 
-`Spear/Configs/SpearConfig` controls the automatic linear Spear ability. `Enabled` is the test toggle: disable it to run the scene without Spear targeting or projectile creation.
+`Spear/Configs/SpearConfig` controls the automatic linear Spear ability. The player now starts without Spear; it becomes active when the Spear card is selected on level-up. `Enabled` is a feature-level test toggle. When it is disabled, gameplay still starts normally and all Spear cards are removed from the level-up pool.
 
 The default prototype targets immediately and then every 2 seconds. It locks a direction for 0.25 seconds before firing, prefers distinct visible enemies inside its player-centred trigger zone, and chooses a random direction when no eligible enemy is present. The effective trigger radius is clamped so its circle remains inside the camera view.
 
 `Projectile Count` controls simultaneous shots. `Thickness Multiplier` is multiplied by the gameplay Grid cell height, while the prototype visual and collider remain 1.5 tiles long. `Damage Hits` is the number of enemy defensive layers removed per unique contact. `Total Health` is the number of unique enemies a projectile can pierce before destruction. `Projectile Lifetime` removes missed projectiles through the shared lifetime pipeline.
+
+### Experience and level-up upgrades
+
+`Progression/Configs/ProgressionConfig` controls the XP curve, maximum level, deterministic card seed, UI references, card text, rank caps, and effect magnitudes.
+
+- The player starts at level 1 with Sword and needs 5 XP for level 2. Each following threshold costs 5 more XP than the previous one.
+- Enemy tiers 0 and 1 grant 1 XP, tier 2 grants 2 XP, and tier 3 grants 3 XP. These values are stored on each enemy config.
+- Reaching a level pauses gameplay and presents up to three unique eligible cards. XP overflow and multiple pending levels are retained.
+- Spear upgrades do not appear until the Spear unlock is selected. Maxed upgrades are removed from the pool.
+- With Spear enabled, the prototype has 22 upgrade ranks and caps at level 23. With Spear disabled, only the 8 Sword ranks remain and the run caps at level 9. The XP bar displays `MAX` at the active cap.
+
+The available cards are Spear, Additional Blade, Whirling Blades, Split Throw, Quickdraw, Heavy Spear, and Reinforced Shaft. Card icons currently reuse the existing weapon sprite and can be replaced on the progression config without code changes.
 
 ### Visuals and debugging
 

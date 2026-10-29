@@ -339,6 +339,7 @@ MonoBehaviour:
   healthBarConfig: {fileID: 11400000, guid: a6666666666666666666666666666666, type: 2}
   swordConfig: {fileID: 11400000, guid: 75db06cbc82c4ead8f0d38ed3b7e7855, type: 2}
   spearConfig: {fileID: 11400000, guid: cfe3ffdf6caaeba49ba9d53d1b6eed41, type: 2}
+  progressionConfig: {fileID: 11400000, guid: f6f24f374e3712f4a8478da311d1c041, type: 2}
   environmentGrid: {fileID: 810075772}
   mainCamera: {fileID: 1002}
   eventSystem: {fileID: 3004}

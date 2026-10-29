@@ -1,0 +1,37 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/Develop/Runtime/Gameplay/Features/Progression/UI/ProgressionScreen.uss?fileID=7433441132597879392&amp;guid=7e41bef75f1f1c8429c3c69d03e6a094&amp;type=3#ProgressionScreen"/>
+    <ui:VisualElement name="progressionRoot" class="progression-root">
+        <ui:VisualElement class="hud-panel">
+            <ui:Label name="levelLabel" text="LEVEL 1" class="level-label"/>
+            <ui:ProgressBar name="experienceBar" title="0 / 5 XP" low-value="0" high-value="5" class="experience-bar"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="selectionOverlay" class="selection-overlay">
+            <ui:VisualElement class="selection-panel">
+                <ui:Label text="CHOOSE AN UPGRADE" class="selection-title"/>
+                <ui:Label text="Select one card to continue" class="selection-subtitle"/>
+                <ui:ScrollView mode="VerticalAndHorizontal" focusable="true" class="cards-scroll">
+                    <ui:VisualElement name="cardsContainer" class="cards-container">
+                        <ui:Button name="card1Button" class="upgrade-card card-first">
+                            <ui:Image name="card1Icon" class="card-icon"/>
+                            <ui:Label name="card1Title" class="card-title"/>
+                            <ui:Label name="card1Description" class="card-description"/>
+                            <ui:Label name="card1Rank" class="card-rank"/>
+                        </ui:Button>
+                        <ui:Button name="card2Button" class="upgrade-card card-middle">
+                            <ui:Image name="card2Icon" class="card-icon"/>
+                            <ui:Label name="card2Title" class="card-title"/>
+                            <ui:Label name="card2Description" class="card-description"/>
+                            <ui:Label name="card2Rank" class="card-rank"/>
+                        </ui:Button>
+                        <ui:Button name="card3Button" class="upgrade-card card-last">
+                            <ui:Image name="card3Icon" class="card-icon"/>
+                            <ui:Label name="card3Title" class="card-title"/>
+                            <ui:Label name="card3Description" class="card-description"/>
+                            <ui:Label name="card3Rank" class="card-rank"/>
+                        </ui:Button>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

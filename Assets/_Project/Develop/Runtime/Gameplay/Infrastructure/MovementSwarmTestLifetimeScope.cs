@@ -11,6 +11,7 @@ using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Lifetime;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
+using _Project.Gameplay.Features.Progression;
 using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
 using _Project.Gameplay.Features.Spear;
@@ -25,6 +26,7 @@ using _Project.Gameplay.Features.Health.Systems;
 using RotationComponent = _Project.Gameplay.Features.Common.Rotation;
 using quaternion = Unity.Mathematics.quaternion;
 using Sirenix.OdinInspector;
+using _Project.Utilities;
 
 namespace _Project.Gameplay.Infrastructure
 {
@@ -41,6 +43,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
         [SerializeField, InlineEditor] private SwordConfig swordConfig;
         [SerializeField, InlineEditor] private SpearConfig spearConfig;
+        [SerializeField, InlineEditor] private ProgressionConfig progressionConfig;
         [SerializeField] private Grid environmentGrid;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private EventSystem eventSystem;
@@ -58,12 +61,18 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(healthBarConfig);
             builder.RegisterInstance(swordConfig);
             builder.RegisterInstance(spearConfig);
+            builder.RegisterInstance(progressionConfig);
             builder.RegisterInstance(environmentGrid);
             builder.RegisterInstance(mainCamera);
             builder.RegisterInstance(eventSystem);
             builder.Register<SwordFactory>(VContainer.Lifetime.Scoped);
             builder.Register<SpearFactory>(VContainer.Lifetime.Scoped);
             builder.Register<EnemyFactory>(VContainer.Lifetime.Scoped);
+            builder.Register<UpgradeOfferGenerator>(VContainer.Lifetime.Scoped);
+            builder.Register<UpgradeAvailabilityService>(VContainer.Lifetime.Scoped)
+                .As<IUpgradeAvailabilityService>();
+            builder.Register<GameplayPauseService>(VContainer.Lifetime.Scoped)
+                .As<IGameplayPauseService>();
 
             var collisionMatrix = CreateCollisionMatrix();
             builder.RegisterInstance(collisionMatrix);
@@ -84,6 +93,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddRotationFeature();
                     systems.AddHealthFeature();
                     systems.AddDeathFeature();
+                    systems.AddProgressionFeature();
                     systems.AddLifetimeFeature();
                     systems.AddDestroyFeature();
                     systems.AddPlayerVisualizationFeature();
@@ -115,7 +125,9 @@ namespace _Project.Gameplay.Infrastructure
         private readonly PlayerMovementConfig _playerMovementConfig;
         private readonly PlayerCameraConfig _playerCameraConfig;
         private readonly SwordConfig _swordConfig;
+        private readonly SpearConfig _spearConfig;
         private readonly SwordFactory _swordFactory;
+        private readonly ProgressionConfig _progressionConfig;
         private readonly Camera _mainCamera;
         private Transform _spawnedViewsRoot;
         private CinemachineCamera _playerFollowCamera;
@@ -126,7 +138,9 @@ namespace _Project.Gameplay.Infrastructure
             PlayerMovementConfig playerMovementConfig,
             PlayerCameraConfig playerCameraConfig,
             SwordConfig swordConfig,
+            SpearConfig spearConfig,
             SwordFactory swordFactory,
+            ProgressionConfig progressionConfig,
             Camera mainCamera
         )
         {
@@ -135,7 +149,9 @@ namespace _Project.Gameplay.Infrastructure
             _playerMovementConfig = playerMovementConfig;
             _playerCameraConfig = playerCameraConfig;
             _swordConfig = swordConfig;
+            _spearConfig = spearConfig;
             _swordFactory = swordFactory;
+            _progressionConfig = progressionConfig;
             _mainCamera = mainCamera;
         }
 
@@ -149,7 +165,22 @@ namespace _Project.Gameplay.Infrastructure
             _spawnedViewsRoot = new GameObject("Spawned Player Views").transform;
             var targetEntity = _world.Create(
                 new PlayerTag(),
-                new SpearAbilityCooldown(),
+                new SwordAbility
+                {
+                    WeaponCount = _swordConfig.WeaponCount,
+                    BaseRotationSpeedDegreesPerSecond =
+                        _swordConfig.RotationSpeedDegreesPerSecond,
+                    RotationSpeedMultiplier = 1f,
+                    OrbitPhaseRadians = 0f
+                },
+                new CharacterProgress
+                {
+                    Level = 1,
+                    Experience = 0,
+                    RequiredExperience = _progressionConfig.BaseExperience,
+                    PendingSelections = 0
+                },
+                new UpgradeRanks(),
                 new PlayerMotion { Mode = PlayerMotionMode.Flight },
                 new Position { Value = Vector2.zero },
                 new RotationComponent { Value = quaternion.identity },
@@ -188,6 +219,24 @@ namespace _Project.Gameplay.Infrastructure
 
         private bool ValidateConfiguration()
         {
+            if (_progressionConfig == null)
+            {
+                Debug.LogError("Movement swarm test requires progression settings.");
+                return false;
+            }
+
+            if (!_progressionConfig.TryValidate(out var progressionError))
+            {
+                Debug.LogError($"Movement swarm test has invalid progression settings. {progressionError}");
+                return false;
+            }
+
+            if (!TryValidateSpearConfiguration(_spearConfig, out var spearError))
+            {
+                Debug.LogError($"Movement swarm test has invalid Spear settings. {spearError}");
+                return false;
+            }
+
             if (_configuration.PlayerPrefab == null)
             {
                 Debug.LogError("Movement swarm test requires a player prefab.");
@@ -214,6 +263,19 @@ namespace _Project.Gameplay.Infrastructure
             }
 
             return true;
+        }
+
+        internal static bool TryValidateSpearConfiguration(
+            SpearConfig configuration,
+            out string error)
+        {
+            if (configuration == null)
+            {
+                error = "Spear settings are missing.";
+                return false;
+            }
+
+            return configuration.TryValidate(out error);
         }
 
         public void Dispose()

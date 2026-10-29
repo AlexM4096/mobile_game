@@ -31,7 +31,11 @@ namespace _Project.Gameplay.Features.Spear
             _environmentGrid = environmentGrid;
         }
 
-        public Entity Create(Vector2 origin, Vector2 direction)
+        public Entity Create(
+            Vector2 origin,
+            Vector2 direction,
+            int damageHits,
+            int totalHealth)
         {
             if (direction.sqrMagnitude <= 0.00000001f)
             {
@@ -49,8 +53,8 @@ namespace _Project.Gameplay.Features.Spear
             var entity = _world.Create(
                 new SpearProjectile
                 {
-                    DamageHits = _settings.DamageHits,
-                    RemainingDurability = _settings.TotalHealth
+                    DamageHits = damageHits,
+                    RemainingDurability = totalHealth
                 },
                 new Position { Value = origin },
                 new RotationComponent { Value = quaternion.RotateZ(angle) },

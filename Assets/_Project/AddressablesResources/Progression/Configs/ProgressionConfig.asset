@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a443585553450a945856ff54dbe77bdb, type: 3}
+  m_Name: ProgressionConfig
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Progression.ProgressionConfig
+  baseExperience: 5
+  experienceIncreasePerLevel: 5
+  maximumLevel: 23
+  offeredCardCount: 3
+  randomSeed: 12345
+  visualTree: {fileID: 9197481963319205126, guid: 9fb129fcc6864fe4b82986381a726051, type: 3}
+  panelSettings: {fileID: 11400000, guid: af8f9b1e8a52bb049a36c1c99c947dd3, type: 2}
+  cards:
+  - id: 0
+    title: Spear
+    description: Unlock an automatic piercing Spear attack.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 1
+    magnitude: 0
+  - id: 1
+    title: Additional Blade
+    description: Add one more orbiting Sword.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 3
+    magnitude: 1
+  - id: 2
+    title: Whirling Blades
+    description: Increase Sword orbit speed by 25% of its base speed.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 5
+    magnitude: 0.25
+  - id: 3
+    title: Split Throw
+    description: Launch one additional Spear per attack.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 3
+    magnitude: 1
+  - id: 4
+    title: Quickdraw
+    description: Reduce Spear cooldown by 15% of its base cooldown.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 4
+    magnitude: 0.15
+  - id: 5
+    title: Heavy Spear
+    description: Remove one additional defensive layer per hit.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 3
+    magnitude: 1
+  - id: 6
+    title: Reinforced Shaft
+    description: Pierce one additional enemy before breaking.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 3
+    magnitude: 1
