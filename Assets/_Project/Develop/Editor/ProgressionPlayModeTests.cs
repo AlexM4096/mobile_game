@@ -43,6 +43,14 @@ namespace _Project.Editor.Tests
             var document = documentObject.GetComponent<UIDocument>();
             var root = document.rootVisualElement;
             var screenRoot = root.Q<VisualElement>("progressionRoot");
+            Assert.That(root.resolvedStyle.position, Is.EqualTo(Position.Absolute));
+            Assert.That(root.resolvedStyle.left, Is.Zero);
+            Assert.That(root.resolvedStyle.top, Is.Zero);
+            Assert.That(root.resolvedStyle.right, Is.Zero);
+            Assert.That(root.resolvedStyle.bottom, Is.Zero);
+            Assert.That(screenRoot.resolvedStyle.flexGrow, Is.EqualTo(1f));
+            Assert.That(root.pickingMode, Is.EqualTo(PickingMode.Ignore));
+            Assert.That(screenRoot.pickingMode, Is.EqualTo(PickingMode.Ignore));
             var experienceBar = root.Q<ProgressBar>("experienceBar");
             var experienceTrack = experienceBar.Q<VisualElement>(
                 className: "unity-progress-bar__background");
@@ -53,6 +61,9 @@ namespace _Project.Editor.Tests
             Assert.That(experienceTrack.layout.height, Is.GreaterThan(0f));
             Assert.That(experienceFill.layout.width, Is.GreaterThan(0f));
             Assert.That(experienceFill.layout.width, Is.LessThan(experienceTrack.layout.width));
+            Assert.That(experienceBar.pickingMode, Is.EqualTo(PickingMode.Ignore));
+            Assert.That(experienceTrack.pickingMode, Is.EqualTo(PickingMode.Ignore));
+            Assert.That(experienceFill.pickingMode, Is.EqualTo(PickingMode.Ignore));
             Assert.That(
                 experienceFill.layout.width / experienceTrack.layout.width,
                 Is.EqualTo(0.4f).Within(0.08f));
@@ -70,6 +81,10 @@ namespace _Project.Editor.Tests
             var overlay = root.Q<VisualElement>("selectionOverlay");
             Assert.That(Time.timeScale, Is.Zero);
             Assert.That(overlay.ClassListContains("is-hidden"), Is.False);
+            Assert.That(overlay.pickingMode, Is.EqualTo(PickingMode.Position));
+            Assert.That(
+                root.Q<Button>("card1Button").pickingMode,
+                Is.EqualTo(PickingMode.Position));
             Assert.That(root.Q<Label>("card1Title").text, Is.Not.Empty);
             Assert.That(root.Q<Label>("card1Description").text, Is.Not.Empty);
             Assert.That(root.Q<Label>("card1Rank").text, Is.Not.Empty);

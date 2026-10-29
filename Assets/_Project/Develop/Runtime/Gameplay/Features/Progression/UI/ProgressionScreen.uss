@@ -7,12 +7,16 @@
     --muted: rgb(182, 194, 214);
 }
 
-.progression-root {
+.progression-document-root {
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
+}
+
+.progression-root {
+    flex-grow: 1;
     color: var(--text);
     -unity-font-definition: url("project://database/Assets/UniText/NotoSans-Regular.ttf");
 }

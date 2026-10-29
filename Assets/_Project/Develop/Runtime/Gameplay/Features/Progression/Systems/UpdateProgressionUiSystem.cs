@@ -18,6 +18,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
         private const string HiddenClass = "is-hidden";
         private const string PortraitClass = "portrait";
         private const string CompactLandscapeClass = "compact-landscape";
+        private const string DocumentRootClass = "progression-document-root";
         private const float CompactLandscapeHeight = 600f;
 
         private static readonly QueryDescription _description =
@@ -76,11 +77,15 @@ namespace _Project.Gameplay.Features.Progression.Systems
             _documentObject.SetActive(false);
             var document = _documentObject.AddComponent<UIDocument>();
             document.panelSettings = _config.PanelSettings;
-            document.visualTreeAsset = _config.VisualTree;
             document.sortingOrder = 100;
             _documentObject.SetActive(true);
 
             _root = document.rootVisualElement;
+            _config.VisualTree.CloneTree(_root);
+            _root.AddToClassList(DocumentRootClass);
+            _root.pickingMode = PickingMode.Ignore;
+            Require<VisualElement>("progressionRoot").pickingMode = PickingMode.Ignore;
+            IgnorePickingRecursively(_root.Q<VisualElement>(className: "hud-panel"));
             _selectionOverlay = Require<VisualElement>("selectionOverlay");
             _levelLabel = Require<Label>("levelLabel");
             _experienceBar = Require<ProgressBar>("experienceBar");
@@ -316,6 +321,21 @@ namespace _Project.Gameplay.Features.Progression.Systems
             }
 
             return element;
+        }
+
+        private static void IgnorePickingRecursively(VisualElement element)
+        {
+            if (element == null)
+            {
+                throw new InvalidOperationException(
+                    "Progression UI is missing the required 'hud-panel' element.");
+            }
+
+            element.pickingMode = PickingMode.Ignore;
+            foreach (var child in element.Children())
+            {
+                IgnorePickingRecursively(child);
+            }
         }
 
         private void OnGeometryChanged(GeometryChangedEvent geometryEvent)
