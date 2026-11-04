@@ -6,6 +6,7 @@ using Cysharp.Text;
 using _Project.Gameplay.Features.Death;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Spear;
+using _Project.Gameplay.Features.LightningCharge;
 using _Project.Utilities;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -237,6 +238,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
             _offerGenerator.Generate(
                 in ranks,
                 World.Has<SpearAbility>(player),
+                World.Has<LightningChargeAbility>(player),
                 _offers);
             if (_offers.Count == 0)
             {
@@ -261,7 +263,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
                 _icons[index].sprite = card.Icon;
                 _titles[index].text = card.Title;
                 _descriptions[index].text = card.Description;
-                _ranks[index].text = card.Id == UpgradeId.Spear
+                _ranks[index].text = UpgradeRules.IsAbilityUnlock(card.Id)
                     ? "NEW"
                     : ZString.Format(
                         "RANK {0}  →  {1}",

@@ -10,7 +10,9 @@ namespace _Project.Gameplay.Features.Progression
         SplitThrow = 3,
         Quickdraw = 4,
         HeavySpear = 5,
-        ReinforcedShaft = 6
+        ReinforcedShaft = 6,
+        LightningCharge = 7,
+        Capacitor = 8
     }
 
     public struct CharacterProgress
@@ -30,6 +32,8 @@ namespace _Project.Gameplay.Features.Progression
         public int Quickdraw;
         public int HeavySpear;
         public int ReinforcedShaft;
+        public int LightningCharge;
+        public int Capacitor;
     }
 
     public struct ExperienceReward

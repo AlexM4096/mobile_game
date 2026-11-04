@@ -11,6 +11,8 @@ namespace _Project.Gameplay.Features.Progression
             UpgradeId.Quickdraw => ranks.Quickdraw,
             UpgradeId.HeavySpear => ranks.HeavySpear,
             UpgradeId.ReinforcedShaft => ranks.ReinforcedShaft,
+            UpgradeId.LightningCharge => ranks.LightningCharge,
+            UpgradeId.Capacitor => ranks.Capacitor,
             _ => 0
         };
 
@@ -39,6 +41,12 @@ namespace _Project.Gameplay.Features.Progression
                 case UpgradeId.ReinforcedShaft:
                     ranks.ReinforcedShaft = value;
                     break;
+                case UpgradeId.LightningCharge:
+                    ranks.LightningCharge = value;
+                    break;
+                case UpgradeId.Capacitor:
+                    ranks.Capacitor = value;
+                    break;
             }
         }
 
@@ -47,5 +55,11 @@ namespace _Project.Gameplay.Features.Progression
             id == UpgradeId.Quickdraw ||
             id == UpgradeId.HeavySpear ||
             id == UpgradeId.ReinforcedShaft;
+
+        public static bool RequiresLightningCharge(UpgradeId id) =>
+            id == UpgradeId.Capacitor;
+
+        public static bool IsAbilityUnlock(UpgradeId id) =>
+            id == UpgradeId.Spear || id == UpgradeId.LightningCharge;
     }
 }

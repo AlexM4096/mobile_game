@@ -49,9 +49,9 @@ namespace _Project.Gameplay.Features.Progression
                 return false;
             }
 
-            if (maximumLevel != 23 || offeredCardCount != 3)
+            if (maximumLevel != 27 || offeredCardCount != 3)
             {
-                error = "The prototype progression requires maximum level 23 and three offered cards.";
+                error = "The prototype progression requires maximum level 27 and three offered cards.";
                 return false;
             }
 
@@ -87,7 +87,7 @@ namespace _Project.Gameplay.Features.Progression
                     return false;
                 }
 
-                if (card.Id != UpgradeId.Spear && card.Magnitude <= 0f)
+                if (!UpgradeRules.IsAbilityUnlock(card.Id) && card.Magnitude <= 0f)
                 {
                     error = $"Progression card '{card.Id}' requires a positive effect magnitude.";
                     return false;

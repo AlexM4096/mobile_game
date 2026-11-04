@@ -7,6 +7,7 @@ using _Project.Gameplay.Features.Progression;
 using _Project.Gameplay.Features.Progression.Systems;
 using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.Sword;
+using _Project.Gameplay.Features.LightningCharge;
 using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Infrastructure;
@@ -24,10 +25,15 @@ namespace _Project.Editor.Tests
             "Assets/_Project/AddressablesResources/Sword/Configs/SwordConfig.asset";
         private const string SpearConfigPath =
             "Assets/_Project/AddressablesResources/Spear/Configs/SpearConfig.asset";
+        private const string LightningChargeConfigPath =
+            "Assets/_Project/AddressablesResources/LightningCharge/Configs/LightningChargeConfig.asset";
 
         private World _world;
         private ProgressionConfig _config;
         private SpearConfig _spearConfig;
+        private LightningChargeConfig _lightningChargeConfig;
+        private GameObject _gridObject;
+        private Grid _environmentGrid;
         private IUpgradeAvailabilityService _availability;
 
         [SetUp]
@@ -36,8 +42,13 @@ namespace _Project.Editor.Tests
             _world = World.Create();
             _config = AssetDatabase.LoadAssetAtPath<ProgressionConfig>(ProgressionConfigPath);
             _spearConfig = AssetDatabase.LoadAssetAtPath<SpearConfig>(SpearConfigPath);
+            _lightningChargeConfig =
+                AssetDatabase.LoadAssetAtPath<LightningChargeConfig>(LightningChargeConfigPath);
+            _gridObject = new GameObject("Progression Test Grid");
+            _environmentGrid = _gridObject.AddComponent<Grid>();
             Assert.That(_config, Is.Not.Null);
             Assert.That(_spearConfig, Is.Not.Null);
+            Assert.That(_lightningChargeConfig, Is.Not.Null);
             Assert.That(_config.TryValidate(out var error), Is.True, error);
             _availability = new UpgradeAvailabilityService(_config, _spearConfig);
         }
@@ -46,6 +57,7 @@ namespace _Project.Editor.Tests
         public void TearDown()
         {
             _world.Dispose();
+            Object.DestroyImmediate(_gridObject);
         }
 
         [Test]
@@ -82,8 +94,8 @@ namespace _Project.Editor.Tests
             system.Update(default);
 
             var progress = _world.Get<CharacterProgress>(player);
-            Assert.That(progress.Level, Is.EqualTo(23));
-            Assert.That(progress.PendingSelections, Is.EqualTo(22));
+            Assert.That(progress.Level, Is.EqualTo(27));
+            Assert.That(progress.PendingSelections, Is.EqualTo(26));
             Assert.That(progress.Experience, Is.EqualTo(progress.RequiredExperience));
         }
 
@@ -117,9 +129,9 @@ namespace _Project.Editor.Tests
             var ranks = new UpgradeRanks();
 
             new UpgradeOfferGenerator(_config, _availability)
-                .Generate(in ranks, false, first);
+                .Generate(in ranks, false, false, first);
             new UpgradeOfferGenerator(_config, _availability)
-                .Generate(in ranks, false, second);
+                .Generate(in ranks, false, false, second);
 
             Assert.That(first, Has.Count.EqualTo(3));
             Assert.That(first[0].Id, Is.EqualTo(second[0].Id));
@@ -146,12 +158,14 @@ namespace _Project.Editor.Tests
                 SplitThrow = 3,
                 Quickdraw = 4,
                 HeavySpear = 3,
-                ReinforcedShaft = 2
+                ReinforcedShaft = 2,
+                LightningCharge = 1,
+                Capacitor = 3
             };
             var offers = new List<UpgradeCardDefinition>();
 
             new UpgradeOfferGenerator(_config, _availability)
-                .Generate(in ranks, true, offers);
+                .Generate(in ranks, true, true, offers);
 
             Assert.That(offers, Has.Count.EqualTo(1));
             Assert.That(offers[0].Id, Is.EqualTo(UpgradeId.ReinforcedShaft));
@@ -174,13 +188,15 @@ namespace _Project.Editor.Tests
                 {
                     Level = 8,
                     RequiredExperience = 40,
-                    PendingSelections = 7
+                    PendingSelections = 9
                 },
                 new UpgradeRanks());
             var system = new ApplySelectedUpgradeSystem(
                 _world,
                 _config,
                 _spearConfig,
+                _lightningChargeConfig,
+                _environmentGrid,
                 _availability,
                 new SwordFactory(_world, swordConfig));
 
@@ -191,9 +207,12 @@ namespace _Project.Editor.Tests
             Apply(system, player, UpgradeId.Quickdraw);
             Apply(system, player, UpgradeId.HeavySpear);
             Apply(system, player, UpgradeId.ReinforcedShaft);
+            Apply(system, player, UpgradeId.LightningCharge);
+            Apply(system, player, UpgradeId.Capacitor);
 
             var sword = _world.Get<SwordAbility>(player);
             var spear = _world.Get<SpearAbility>(player);
+            var lightningCharge = _world.Get<LightningChargeAbility>(player);
             var ranks = _world.Get<UpgradeRanks>(player);
             Assert.That(sword.WeaponCount, Is.EqualTo(2));
             Assert.That(sword.RotationSpeedMultiplier, Is.EqualTo(1.25f).Within(0.0001f));
@@ -201,12 +220,21 @@ namespace _Project.Editor.Tests
             Assert.That(spear.CooldownDuration, Is.EqualTo(1.7f).Within(0.0001f));
             Assert.That(spear.DamageHits, Is.EqualTo(_spearConfig.DamageHits + 1));
             Assert.That(spear.TotalHealth, Is.EqualTo(_spearConfig.TotalHealth + 1));
+            Assert.That(
+                lightningCharge.ChargesPerActivation,
+                Is.EqualTo(_lightningChargeConfig.BaseChargeCount + 1));
+            Assert.That(
+                lightningCharge.TransferRadius,
+                Is.EqualTo(_lightningChargeConfig.GetTransferRadius(_environmentGrid))
+                    .Within(0.0001f));
             Assert.That(ranks.Spear, Is.EqualTo(1));
+            Assert.That(ranks.LightningCharge, Is.EqualTo(1));
+            Assert.That(ranks.Capacitor, Is.EqualTo(1));
             Assert.That(_world.Get<CharacterProgress>(player).PendingSelections, Is.Zero);
         }
 
         [Test]
-        public void DisabledSpearHidesItsUpgradeFamilyAndCapsRunAtLevelNine()
+        public void DisabledSpearHidesItsUpgradeFamilyAndCapsRunAtLevelThirteen()
         {
             var disabledSpear = CreateDisabledSpearConfig();
             try
@@ -218,7 +246,7 @@ namespace _Project.Editor.Tests
                         out var validationError),
                     Is.True,
                     validationError);
-                Assert.That(availability.MaximumRunLevel, Is.EqualTo(9));
+                Assert.That(availability.MaximumRunLevel, Is.EqualTo(13));
                 Assert.That(availability.IsAvailable(UpgradeId.AdditionalBlade), Is.True);
                 Assert.That(availability.IsAvailable(UpgradeId.WhirlingBlades), Is.True);
                 Assert.That(availability.IsAvailable(UpgradeId.Spear), Is.False);
@@ -226,15 +254,17 @@ namespace _Project.Editor.Tests
                 Assert.That(availability.IsAvailable(UpgradeId.Quickdraw), Is.False);
                 Assert.That(availability.IsAvailable(UpgradeId.HeavySpear), Is.False);
                 Assert.That(availability.IsAvailable(UpgradeId.ReinforcedShaft), Is.False);
+                Assert.That(availability.IsAvailable(UpgradeId.LightningCharge), Is.True);
+                Assert.That(availability.IsAvailable(UpgradeId.Capacitor), Is.True);
 
                 var offers = new List<UpgradeCardDefinition>();
                 var ranks = new UpgradeRanks();
                 new UpgradeOfferGenerator(_config, availability)
-                    .Generate(in ranks, false, offers);
-                Assert.That(offers, Has.Count.EqualTo(2));
-                Assert.That(offers, Has.All.Matches<UpgradeCardDefinition>(
-                    card => card.Id == UpgradeId.AdditionalBlade ||
-                            card.Id == UpgradeId.WhirlingBlades));
+                    .Generate(in ranks, false, false, offers);
+                Assert.That(offers, Has.Count.EqualTo(3));
+                Assert.That(offers, Has.None.Matches<UpgradeCardDefinition>(
+                    card => UpgradeRules.RequiresSpear(card.Id) ||
+                            UpgradeRules.RequiresLightningCharge(card.Id)));
 
                 var player = _world.Create(new CharacterProgress
                 {
@@ -244,8 +274,8 @@ namespace _Project.Editor.Tests
                 });
                 new ResolveLevelUpsSystem(_world, _config, availability).Update(default);
                 var progress = _world.Get<CharacterProgress>(player);
-                Assert.That(progress.Level, Is.EqualTo(9));
-                Assert.That(progress.PendingSelections, Is.EqualTo(8));
+                Assert.That(progress.Level, Is.EqualTo(13));
+                Assert.That(progress.PendingSelections, Is.EqualTo(12));
                 Assert.That(progress.Experience, Is.EqualTo(progress.RequiredExperience));
 
                 _world.Create(new GrantExperienceRequest
@@ -284,6 +314,8 @@ namespace _Project.Editor.Tests
                     _world,
                     _config,
                     disabledSpear,
+                    _lightningChargeConfig,
+                    _environmentGrid,
                     availability,
                     new SwordFactory(_world, swordConfig));
 

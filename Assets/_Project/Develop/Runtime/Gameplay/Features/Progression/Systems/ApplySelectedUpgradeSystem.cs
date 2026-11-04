@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.Sword;
+using _Project.Gameplay.Features.LightningCharge;
 using UnityEngine;
 
 namespace _Project.Gameplay.Features.Progression.Systems
@@ -14,6 +15,8 @@ namespace _Project.Gameplay.Features.Progression.Systems
 
         private readonly ProgressionConfig _config;
         private readonly SpearConfig _spearConfig;
+        private readonly LightningChargeConfig _lightningChargeConfig;
+        private readonly Grid _environmentGrid;
         private readonly IUpgradeAvailabilityService _availability;
         private readonly SwordFactory _swordFactory;
         private readonly List<Entity> _requestEntities = new();
@@ -23,11 +26,15 @@ namespace _Project.Gameplay.Features.Progression.Systems
             World world,
             ProgressionConfig config,
             SpearConfig spearConfig,
+            LightningChargeConfig lightningChargeConfig,
+            Grid environmentGrid,
             IUpgradeAvailabilityService availability,
             SwordFactory swordFactory) : base(world)
         {
             _config = config;
             _spearConfig = spearConfig;
+            _lightningChargeConfig = lightningChargeConfig;
+            _environmentGrid = environmentGrid;
             _availability = availability;
             _swordFactory = swordFactory;
         }
@@ -72,11 +79,14 @@ namespace _Project.Gameplay.Features.Progression.Systems
             ref var ranks = ref World.Get<UpgradeRanks>(request.Target);
             var currentRank = UpgradeRules.GetRank(in ranks, request.Upgrade);
             var hasSpear = World.Has<SpearAbility>(request.Target);
+            var hasLightningCharge = World.Has<LightningChargeAbility>(request.Target);
             if (!_availability.IsAvailable(request.Upgrade) ||
                 progress.PendingSelections <= 0 ||
                 currentRank >= card.MaximumRank ||
                 (request.Upgrade == UpgradeId.Spear && hasSpear) ||
-                (UpgradeRules.RequiresSpear(request.Upgrade) && !hasSpear))
+                (UpgradeRules.RequiresSpear(request.Upgrade) && !hasSpear) ||
+                (request.Upgrade == UpgradeId.LightningCharge && hasLightningCharge) ||
+                (UpgradeRules.RequiresLightningCharge(request.Upgrade) && !hasLightningCharge))
             {
                 Debug.LogError($"Upgrade '{request.Upgrade}' is not currently eligible.");
                 return;
@@ -139,6 +149,24 @@ namespace _Project.Gameplay.Features.Progression.Systems
                 {
                     ref var ability = ref World.Get<SpearAbility>(request.Target);
                     ability.TotalHealth += Mathf.RoundToInt(card.Magnitude);
+                    break;
+                }
+                case UpgradeId.LightningCharge:
+                    World.Add(request.Target, new LightningChargeAbility
+                    {
+                        NextActivationTime = currentTime,
+                        CooldownDuration = _lightningChargeConfig.CooldownDuration,
+                        ChargeDuration = _lightningChargeConfig.ChargeDuration,
+                        TransferRadius = _lightningChargeConfig.GetTransferRadius(_environmentGrid),
+                        ChargesPerActivation = _lightningChargeConfig.BaseChargeCount,
+                        DamageHits = _lightningChargeConfig.DamageHits,
+                        MaxTargetsPerChain = _lightningChargeConfig.MaxTargetsPerChain
+                    });
+                    break;
+                case UpgradeId.Capacitor:
+                {
+                    ref var ability = ref World.Get<LightningChargeAbility>(request.Target);
+                    ability.ChargesPerActivation += Mathf.Max(1, Mathf.RoundToInt(card.Magnitude));
                     break;
                 }
             }

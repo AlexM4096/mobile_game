@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Progression.ProgressionConfig
   baseExperience: 5
   experienceIncreasePerLevel: 5
-  maximumLevel: 23
+  maximumLevel: 27
   offeredCardCount: 3
   randomSeed: 12345
   visualTree: {fileID: 9197481963319205126, guid: 9fb129fcc6864fe4b82986381a726051, type: 3}
@@ -59,6 +59,18 @@ MonoBehaviour:
   - id: 6
     title: Reinforced Shaft
     description: Pierce one additional enemy before breaking.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 3
+    magnitude: 1
+  - id: 7
+    title: Lightning Charge
+    description: Charge every Sword so its next contact releases chain lightning.
+    icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
+    maximumRank: 1
+    magnitude: 0
+  - id: 8
+    title: Capacitor
+    description: Add one Lightning Charge per activation.
     icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
     maximumRank: 3
     magnitude: 1

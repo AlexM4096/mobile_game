@@ -9,6 +9,7 @@ using _Project.Gameplay.Features.Destroy;
 using _Project.Gameplay.Features.EnemySpawn;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Lifetime;
+using _Project.Gameplay.Features.LightningCharge;
 using _Project.Gameplay.Features.Movement;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Progression;
@@ -43,6 +44,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private HealthBarConfig healthBarConfig;
         [SerializeField, InlineEditor] private SwordConfig swordConfig;
         [SerializeField, InlineEditor] private SpearConfig spearConfig;
+        [SerializeField, InlineEditor] private LightningChargeConfig lightningChargeConfig;
         [SerializeField, InlineEditor] private ProgressionConfig progressionConfig;
         [SerializeField] private Grid environmentGrid;
         [SerializeField] private Camera mainCamera;
@@ -61,12 +63,15 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(healthBarConfig);
             builder.RegisterInstance(swordConfig);
             builder.RegisterInstance(spearConfig);
+            builder.RegisterInstance(lightningChargeConfig);
             builder.RegisterInstance(progressionConfig);
             builder.RegisterInstance(environmentGrid);
             builder.RegisterInstance(mainCamera);
             builder.RegisterInstance(eventSystem);
             builder.Register<SwordFactory>(VContainer.Lifetime.Scoped);
             builder.Register<SpearFactory>(VContainer.Lifetime.Scoped);
+            builder.Register<LightningTargetRegistry>(VContainer.Lifetime.Scoped);
+            builder.Register<LightningArcFactory>(VContainer.Lifetime.Scoped);
             builder.Register<EnemyFactory>(VContainer.Lifetime.Scoped);
             builder.Register<UpgradeOfferGenerator>(VContainer.Lifetime.Scoped);
             builder.Register<UpgradeAvailabilityService>(VContainer.Lifetime.Scoped)
@@ -88,6 +93,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddMovementFeature();
                     systems.AddSwordFeature();
                     systems.AddCollisionFeature();
+                    systems.AddLightningChargeFeature();
                     systems.AddSpearFeature();
                     systems.AddPlayerCollisionResponseFeature();
                     systems.AddRotationFeature();
@@ -126,8 +132,10 @@ namespace _Project.Gameplay.Infrastructure
         private readonly PlayerCameraConfig _playerCameraConfig;
         private readonly SwordConfig _swordConfig;
         private readonly SpearConfig _spearConfig;
+        private readonly LightningChargeConfig _lightningChargeConfig;
         private readonly SwordFactory _swordFactory;
         private readonly ProgressionConfig _progressionConfig;
+        private readonly Grid _environmentGrid;
         private readonly Camera _mainCamera;
         private Transform _spawnedViewsRoot;
         private CinemachineCamera _playerFollowCamera;
@@ -139,8 +147,10 @@ namespace _Project.Gameplay.Infrastructure
             PlayerCameraConfig playerCameraConfig,
             SwordConfig swordConfig,
             SpearConfig spearConfig,
+            LightningChargeConfig lightningChargeConfig,
             SwordFactory swordFactory,
             ProgressionConfig progressionConfig,
+            Grid environmentGrid,
             Camera mainCamera
         )
         {
@@ -150,8 +160,10 @@ namespace _Project.Gameplay.Infrastructure
             _playerCameraConfig = playerCameraConfig;
             _swordConfig = swordConfig;
             _spearConfig = spearConfig;
+            _lightningChargeConfig = lightningChargeConfig;
             _swordFactory = swordFactory;
             _progressionConfig = progressionConfig;
+            _environmentGrid = environmentGrid;
             _mainCamera = mainCamera;
         }
 
@@ -234,6 +246,21 @@ namespace _Project.Gameplay.Infrastructure
             if (!TryValidateSpearConfiguration(_spearConfig, out var spearError))
             {
                 Debug.LogError($"Movement swarm test has invalid Spear settings. {spearError}");
+                return false;
+            }
+
+            if (_lightningChargeConfig == null)
+            {
+                Debug.LogError(
+                    "Movement swarm test has invalid Lightning Charge settings. " +
+                    "Lightning Charge settings are missing.");
+                return false;
+            }
+
+            if (!_lightningChargeConfig.TryValidate(_environmentGrid, out var lightningError))
+            {
+                Debug.LogError(
+                    $"Movement swarm test has invalid Lightning Charge settings. {lightningError}");
                 return false;
             }
 

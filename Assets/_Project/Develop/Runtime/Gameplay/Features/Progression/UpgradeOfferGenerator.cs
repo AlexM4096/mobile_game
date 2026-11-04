@@ -21,6 +21,7 @@ namespace _Project.Gameplay.Features.Progression
         public void Generate(
             in UpgradeRanks ranks,
             bool hasSpear,
+            bool hasLightningCharge,
             List<UpgradeCardDefinition> destination)
         {
             destination.Clear();
@@ -33,7 +34,9 @@ namespace _Project.Gameplay.Features.Progression
                 if (!_availability.IsAvailable(card.Id) ||
                     currentRank >= card.MaximumRank ||
                     (card.Id == UpgradeId.Spear && hasSpear) ||
-                    (UpgradeRules.RequiresSpear(card.Id) && !hasSpear))
+                    (UpgradeRules.RequiresSpear(card.Id) && !hasSpear) ||
+                    (card.Id == UpgradeId.LightningCharge && hasLightningCharge) ||
+                    (UpgradeRules.RequiresLightningCharge(card.Id) && !hasLightningCharge))
                 {
                     continue;
                 }
