@@ -166,7 +166,7 @@
     },
     "com.unity.burst": {
       "version": "1.8.29",
-      "depth": 1,
+      "depth": 2,
       "source": "registry",
       "dependencies": {
         "com.unity.mathematics": "1.2.1",
@@ -424,17 +424,6 @@
       "source": "registry",
       "dependencies": {},
       "url": "https://package.openupm.com"
-    },
-    "media.lightside.unitext": {
-      "version": "2.12.12",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.burst": "1.6.0",
-        "com.unity.ugui": "1.0.0",
-        "com.unity.modules.ui": "1.0.0"
-      },
-      "url": "https://registry.lightside.media"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
