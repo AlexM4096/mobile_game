@@ -19,9 +19,10 @@ namespace _Project.Gameplay.Features.Spear
                 return;
             }
 
+            var uniformScale = worldSize.x / spriteSize.x;
             spriteRenderer.transform.localScale = new Vector3(
-                worldSize.y / spriteSize.x,
-                worldSize.x / spriteSize.y,
+                uniformScale,
+                uniformScale,
                 1f);
         }
     }

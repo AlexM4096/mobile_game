@@ -16,7 +16,7 @@ namespace _Project.Gameplay.Features.Spear
 {
     public sealed class SpearFactory : IDisposable
     {
-        internal const float LengthInTiles = 1.5f;
+        internal const float LengthInTiles = 2f;
 
         private readonly World _world;
         private readonly SpearConfig _settings;
