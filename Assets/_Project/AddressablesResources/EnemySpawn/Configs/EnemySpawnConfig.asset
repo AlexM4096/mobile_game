@@ -34,13 +34,13 @@ MonoBehaviour:
       boxSize: {x: 48, y: 30}
     composition:
     - enemy: {fileID: 11400000, guid: ad77aadd8d7a44988ca2a9a2096de4e5, type: 2}
-      count: 10
+      count: 100
       spawnInterval: 0.1
       weaponType: 0
       helmetType: 0
       enchantedArmor: 0
     - enemy: {fileID: 11400000, guid: fd9075a9f42440b5bc397aaba49bd210, type: 2}
-      count: 10
+      count: 100
       spawnInterval: 0.1
       weaponType: 0
       helmetType: 0
