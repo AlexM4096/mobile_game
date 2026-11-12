@@ -12,7 +12,7 @@ namespace _Project.Gameplay.Features.Progression
     {
         [SerializeField, Min(1)] private int baseExperience = 5;
         [SerializeField, Min(1)] private int experienceIncreasePerLevel = 5;
-        [SerializeField, Min(2)] private int maximumLevel = 23;
+        [SerializeField, Min(2)] private int maximumLevel = 37;
         [SerializeField, Range(1, 3)] private int offeredCardCount = 3;
         [SerializeField] private int randomSeed = 12345;
         [SerializeField] private VisualTreeAsset visualTree;
@@ -49,9 +49,9 @@ namespace _Project.Gameplay.Features.Progression
                 return false;
             }
 
-            if (maximumLevel != 27 || offeredCardCount != 3)
+            if (maximumLevel != 37 || offeredCardCount != 3)
             {
-                error = "The prototype progression requires maximum level 27 and three offered cards.";
+                error = "The prototype progression requires maximum level 37 and three offered cards.";
                 return false;
             }
 

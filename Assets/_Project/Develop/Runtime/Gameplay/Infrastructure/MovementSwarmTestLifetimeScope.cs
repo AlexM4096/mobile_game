@@ -17,6 +17,7 @@ using _Project.Gameplay.Features.Rotation;
 using _Project.Gameplay.Features.Shooting;
 using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.Sword;
+using _Project.Gameplay.Features.RainOfArrows;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -45,6 +46,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private SwordConfig swordConfig;
         [SerializeField, InlineEditor] private SpearConfig spearConfig;
         [SerializeField, InlineEditor] private LightningChargeConfig lightningChargeConfig;
+        [SerializeField, InlineEditor] private RainOfArrowsConfig rainOfArrowsConfig;
         [SerializeField, InlineEditor] private ProgressionConfig progressionConfig;
         [SerializeField] private Grid environmentGrid;
         [SerializeField] private Camera mainCamera;
@@ -64,6 +66,7 @@ namespace _Project.Gameplay.Infrastructure
             builder.RegisterInstance(swordConfig);
             builder.RegisterInstance(spearConfig);
             builder.RegisterInstance(lightningChargeConfig);
+            builder.RegisterInstance(rainOfArrowsConfig);
             builder.RegisterInstance(progressionConfig);
             builder.RegisterInstance(environmentGrid);
             builder.RegisterInstance(mainCamera);
@@ -72,6 +75,8 @@ namespace _Project.Gameplay.Infrastructure
             builder.Register<SpearFactory>(VContainer.Lifetime.Scoped);
             builder.Register<LightningTargetRegistry>(VContainer.Lifetime.Scoped);
             builder.Register<LightningArcFactory>(VContainer.Lifetime.Scoped);
+            builder.Register<RainOfArrowsTargetRegistry>(VContainer.Lifetime.Scoped);
+            builder.Register<RainOfArrowsFactory>(VContainer.Lifetime.Scoped);
             builder.Register<EnemyFactory>(VContainer.Lifetime.Scoped);
             builder.Register<UpgradeOfferGenerator>(VContainer.Lifetime.Scoped);
             builder.Register<UpgradeAvailabilityService>(VContainer.Lifetime.Scoped)
@@ -95,6 +100,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddCollisionFeature();
                     systems.AddLightningChargeFeature();
                     systems.AddSpearFeature();
+                    systems.AddRainOfArrowsFeature();
                     systems.AddPlayerCollisionResponseFeature();
                     systems.AddRotationFeature();
                     systems.AddHealthFeature();
@@ -133,6 +139,7 @@ namespace _Project.Gameplay.Infrastructure
         private readonly SwordConfig _swordConfig;
         private readonly SpearConfig _spearConfig;
         private readonly LightningChargeConfig _lightningChargeConfig;
+        private readonly RainOfArrowsConfig _rainOfArrowsConfig;
         private readonly SwordFactory _swordFactory;
         private readonly ProgressionConfig _progressionConfig;
         private readonly Grid _environmentGrid;
@@ -148,6 +155,7 @@ namespace _Project.Gameplay.Infrastructure
             SwordConfig swordConfig,
             SpearConfig spearConfig,
             LightningChargeConfig lightningChargeConfig,
+            RainOfArrowsConfig rainOfArrowsConfig,
             SwordFactory swordFactory,
             ProgressionConfig progressionConfig,
             Grid environmentGrid,
@@ -161,6 +169,7 @@ namespace _Project.Gameplay.Infrastructure
             _swordConfig = swordConfig;
             _spearConfig = spearConfig;
             _lightningChargeConfig = lightningChargeConfig;
+            _rainOfArrowsConfig = rainOfArrowsConfig;
             _swordFactory = swordFactory;
             _progressionConfig = progressionConfig;
             _environmentGrid = environmentGrid;
@@ -261,6 +270,21 @@ namespace _Project.Gameplay.Infrastructure
             {
                 Debug.LogError(
                     $"Movement swarm test has invalid Lightning Charge settings. {lightningError}");
+                return false;
+            }
+
+            if (_rainOfArrowsConfig == null)
+            {
+                Debug.LogError(
+                    "Movement swarm test has invalid Rain of Arrows settings. " +
+                    "Rain of Arrows settings are missing.");
+                return false;
+            }
+
+            if (!_rainOfArrowsConfig.TryValidate(_environmentGrid, out var rainError))
+            {
+                Debug.LogError(
+                    $"Movement swarm test has invalid Rain of Arrows settings. {rainError}");
                 return false;
             }
 

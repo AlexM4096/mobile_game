@@ -7,6 +7,7 @@ using _Project.Gameplay.Features.Death;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.LightningCharge;
+using _Project.Gameplay.Features.RainOfArrows;
 using _Project.Utilities;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -239,6 +240,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
                 in ranks,
                 World.Has<SpearAbility>(player),
                 World.Has<LightningChargeAbility>(player),
+                World.Has<RainOfArrowsAbility>(player),
                 _offers);
             if (_offers.Count == 0)
             {

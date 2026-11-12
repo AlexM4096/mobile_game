@@ -340,6 +340,7 @@ MonoBehaviour:
   swordConfig: {fileID: 11400000, guid: 75db06cbc82c4ead8f0d38ed3b7e7855, type: 2}
   spearConfig: {fileID: 11400000, guid: cfe3ffdf6caaeba49ba9d53d1b6eed41, type: 2}
   lightningChargeConfig: {fileID: 11400000, guid: fc66ce58364ee2342a07a8099cd11eb5, type: 2}
+  rainOfArrowsConfig: {fileID: 11400000, guid: 3f4a5b6c7d8e90123456789abcdef012, type: 2}
   progressionConfig: {fileID: 11400000, guid: f6f24f374e3712f4a8478da311d1c041, type: 2}
   environmentGrid: {fileID: 810075772}
   mainCamera: {fileID: 1002}
@@ -450,7 +451,7 @@ Transform:
   m_GameObject: {fileID: 689862524}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.01, y: 0.038, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -4,6 +4,7 @@ using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.Sword;
 using _Project.Gameplay.Features.LightningCharge;
+using _Project.Gameplay.Features.RainOfArrows;
 using UnityEngine;
 
 namespace _Project.Gameplay.Features.Progression.Systems
@@ -16,6 +17,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
         private readonly ProgressionConfig _config;
         private readonly SpearConfig _spearConfig;
         private readonly LightningChargeConfig _lightningChargeConfig;
+        private readonly RainOfArrowsConfig _rainOfArrowsConfig;
         private readonly Grid _environmentGrid;
         private readonly IUpgradeAvailabilityService _availability;
         private readonly SwordFactory _swordFactory;
@@ -27,6 +29,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
             ProgressionConfig config,
             SpearConfig spearConfig,
             LightningChargeConfig lightningChargeConfig,
+            RainOfArrowsConfig rainOfArrowsConfig,
             Grid environmentGrid,
             IUpgradeAvailabilityService availability,
             SwordFactory swordFactory) : base(world)
@@ -34,6 +37,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
             _config = config;
             _spearConfig = spearConfig;
             _lightningChargeConfig = lightningChargeConfig;
+            _rainOfArrowsConfig = rainOfArrowsConfig;
             _environmentGrid = environmentGrid;
             _availability = availability;
             _swordFactory = swordFactory;
@@ -80,13 +84,16 @@ namespace _Project.Gameplay.Features.Progression.Systems
             var currentRank = UpgradeRules.GetRank(in ranks, request.Upgrade);
             var hasSpear = World.Has<SpearAbility>(request.Target);
             var hasLightningCharge = World.Has<LightningChargeAbility>(request.Target);
+            var hasRainOfArrows = World.Has<RainOfArrowsAbility>(request.Target);
             if (!_availability.IsAvailable(request.Upgrade) ||
                 progress.PendingSelections <= 0 ||
                 currentRank >= card.MaximumRank ||
                 (request.Upgrade == UpgradeId.Spear && hasSpear) ||
                 (UpgradeRules.RequiresSpear(request.Upgrade) && !hasSpear) ||
                 (request.Upgrade == UpgradeId.LightningCharge && hasLightningCharge) ||
-                (UpgradeRules.RequiresLightningCharge(request.Upgrade) && !hasLightningCharge))
+                (UpgradeRules.RequiresLightningCharge(request.Upgrade) && !hasLightningCharge) ||
+                (request.Upgrade == UpgradeId.RainOfArrows && hasRainOfArrows) ||
+                (UpgradeRules.RequiresRainOfArrows(request.Upgrade) && !hasRainOfArrows))
             {
                 Debug.LogError($"Upgrade '{request.Upgrade}' is not currently eligible.");
                 return;
@@ -167,6 +174,44 @@ namespace _Project.Gameplay.Features.Progression.Systems
                 {
                     ref var ability = ref World.Get<LightningChargeAbility>(request.Target);
                     ability.ChargesPerActivation += Mathf.Max(1, Mathf.RoundToInt(card.Magnitude));
+                    break;
+                }
+                case UpgradeId.RainOfArrows:
+                    World.Add(request.Target, new RainOfArrowsAbility
+                    {
+                        NextActivationTime = currentTime,
+                        CooldownDuration = _rainOfArrowsConfig.CooldownDuration,
+                        Duration = _rainOfArrowsConfig.Duration,
+                        MaxConcurrentZones = _rainOfArrowsConfig.MaxConcurrentZones,
+                        ActiveZones = 0,
+                        TargetingRange = _rainOfArrowsConfig.GetTargetingRange(_environmentGrid),
+                        ZoneRadius = _rainOfArrowsConfig.GetZoneRadius(_environmentGrid),
+                        ImpactRadius = _rainOfArrowsConfig.GetImpactRadius(_environmentGrid),
+                        ProjectileCount = _rainOfArrowsConfig.ProjectileCount,
+                        DamageHits = _rainOfArrowsConfig.DamageHits,
+                        ProjectileSpeed = _rainOfArrowsConfig.ProjectileSpeed
+                    });
+                    break;
+                case UpgradeId.SaturationFire:
+                {
+                    ref var ability = ref World.Get<RainOfArrowsAbility>(request.Target);
+                    ability.ProjectileCount += Mathf.RoundToInt(card.Magnitude);
+                    break;
+                }
+                case UpgradeId.WideningBarrage:
+                {
+                    ref var ability = ref World.Get<RainOfArrowsAbility>(request.Target);
+                    ability.ZoneRadius +=
+                        _rainOfArrowsConfig.GetTileSize(_environmentGrid) * card.Magnitude;
+                    break;
+                }
+                case UpgradeId.RapidVolley:
+                {
+                    ref var ability = ref World.Get<RainOfArrowsAbility>(request.Target);
+                    ability.CooldownDuration = Mathf.Max(
+                        0.01f,
+                        _rainOfArrowsConfig.CooldownDuration *
+                        (1f - card.Magnitude * (currentRank + 1)));
                     break;
                 }
             }

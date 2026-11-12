@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f1a2b3c4d5e67890123456789abcdef, type: 3}
+  m_Name: RainOfArrowsConfig
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.RainOfArrows.RainOfArrowsConfig
+  projectilePrefab: {fileID: 7170474115818382240, guid: 2f3a4b5c6d7e890123456789abcdef01, type: 3}
+  projectileSprites:
+  - {fileID: -1021019943210019385, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+  - {fileID: -5154266777014804172, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+  - {fileID: 9216702338140594027, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+  cooldownDuration: 8
+  duration: 4
+  maxConcurrentZones: 1
+  targetingRangeInTiles: 6
+  zoneRadiusInTiles: 3
+  impactRadiusInTiles: 0.5
+  projectileCount: 12
+  damageHits: 1
+  projectileSpeed: 12
+  fallHeightInTiles: 2
+  outlineColor: {r: 0.65, g: 0.2, b: 1, a: 0.9}
+  outlineWidth: 0.08
+  dashLength: 0.35

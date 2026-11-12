@@ -12,7 +12,11 @@ namespace _Project.Gameplay.Features.Progression
         HeavySpear = 5,
         ReinforcedShaft = 6,
         LightningCharge = 7,
-        Capacitor = 8
+        Capacitor = 8,
+        RainOfArrows = 9,
+        SaturationFire = 10,
+        WideningBarrage = 11,
+        RapidVolley = 12
     }
 
     public struct CharacterProgress
@@ -34,6 +38,10 @@ namespace _Project.Gameplay.Features.Progression
         public int ReinforcedShaft;
         public int LightningCharge;
         public int Capacitor;
+        public int RainOfArrows;
+        public int SaturationFire;
+        public int WideningBarrage;
+        public int RapidVolley;
     }
 
     public struct ExperienceReward

@@ -80,6 +80,14 @@ The default prototype targets immediately and then every 2 seconds. It locks a d
 
 The default ability activates every 6 seconds, keeps each charge active for 5 seconds, and starts with one charge per activation. A consumed charge immediately arms the next available charge and refreshes its duration. Lightning damages the contact target and then jumps to the nearest unhit enemy inside the configured tile-scaled transfer radius. `Max Targets Per Chain` includes the initial contact target. The Capacitor card has three ranks and adds one charge per activation at each rank.
 
+### Rain of Arrows
+
+`RainOfArrows/Configs/RainOfArrowsConfig` controls the automatic area bombardment ability. It is unlocked through the Rain of Arrows level-up card. Once unlocked, a purple dashed circle continuously shows the player-centred targeting range.
+
+When ready, the ability selects the reachable enemy-centred zone containing the most enemies. If no enemy is in range, it waits without consuming its cooldown. Arrows land at uniformly randomized points inside the selected zone, and every enemy inside an arrow's localized impact radius receives the configured number of defensive hits. The selected zone remains outlined until the final arrow lands.
+
+The default prototype fires 12 arrows over 4 seconds, targets within 6 tiles, covers a 3-tile radius, and gives every arrow a 0.5-tile impact radius. Saturation Fire adds 3 arrows per rank, Widening Barrage adds 0.5 tile of zone radius per rank, and Rapid Volley removes 10% of the base cooldown per rank. Each upgrade has three ranks.
+
 ### Experience and level-up upgrades
 
 `Progression/Configs/ProgressionConfig` controls the XP curve, maximum level, deterministic card seed, UI references, card text, rank caps, and effect magnitudes.
@@ -88,9 +96,9 @@ The default ability activates every 6 seconds, keeps each charge active for 5 se
 - Enemy tiers 0 and 1 grant 1 XP, tier 2 grants 2 XP, and tier 3 grants 3 XP. These values are stored on each enemy config.
 - Reaching a level pauses gameplay and presents up to three unique eligible cards. XP overflow and multiple pending levels are retained.
 - Spear upgrades do not appear until the Spear unlock is selected. Maxed upgrades are removed from the pool.
-- With Spear enabled, the prototype has 26 upgrade ranks and caps at level 27. With Spear disabled, the Sword and Lightning Charge families provide 12 ranks and cap the run at level 13. The XP bar displays `MAX` at the active cap.
+- With Spear enabled, the prototype has 36 upgrade ranks and caps at level 37. With Spear disabled, the Sword, Lightning Charge, and Rain of Arrows families provide 22 ranks and cap the run at level 23. The XP bar displays `MAX` at the active cap.
 
-The available cards are Spear, Additional Blade, Whirling Blades, Split Throw, Quickdraw, Heavy Spear, Reinforced Shaft, Lightning Charge, and Capacitor. Card icons currently reuse the existing weapon sprite and can be replaced on the progression config without code changes.
+The available cards are Spear, Additional Blade, Whirling Blades, Split Throw, Quickdraw, Heavy Spear, Reinforced Shaft, Lightning Charge, Capacitor, Rain of Arrows, Saturation Fire, Widening Barrage, and Rapid Volley. Card icons can be replaced on the progression config without code changes.
 
 ### Visuals and debugging
 

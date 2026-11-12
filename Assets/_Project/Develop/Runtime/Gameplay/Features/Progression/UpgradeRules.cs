@@ -13,6 +13,10 @@ namespace _Project.Gameplay.Features.Progression
             UpgradeId.ReinforcedShaft => ranks.ReinforcedShaft,
             UpgradeId.LightningCharge => ranks.LightningCharge,
             UpgradeId.Capacitor => ranks.Capacitor,
+            UpgradeId.RainOfArrows => ranks.RainOfArrows,
+            UpgradeId.SaturationFire => ranks.SaturationFire,
+            UpgradeId.WideningBarrage => ranks.WideningBarrage,
+            UpgradeId.RapidVolley => ranks.RapidVolley,
             _ => 0
         };
 
@@ -47,6 +51,18 @@ namespace _Project.Gameplay.Features.Progression
                 case UpgradeId.Capacitor:
                     ranks.Capacitor = value;
                     break;
+                case UpgradeId.RainOfArrows:
+                    ranks.RainOfArrows = value;
+                    break;
+                case UpgradeId.SaturationFire:
+                    ranks.SaturationFire = value;
+                    break;
+                case UpgradeId.WideningBarrage:
+                    ranks.WideningBarrage = value;
+                    break;
+                case UpgradeId.RapidVolley:
+                    ranks.RapidVolley = value;
+                    break;
             }
         }
 
@@ -59,7 +75,14 @@ namespace _Project.Gameplay.Features.Progression
         public static bool RequiresLightningCharge(UpgradeId id) =>
             id == UpgradeId.Capacitor;
 
+        public static bool RequiresRainOfArrows(UpgradeId id) =>
+            id == UpgradeId.SaturationFire ||
+            id == UpgradeId.WideningBarrage ||
+            id == UpgradeId.RapidVolley;
+
         public static bool IsAbilityUnlock(UpgradeId id) =>
-            id == UpgradeId.Spear || id == UpgradeId.LightningCharge;
+            id == UpgradeId.Spear ||
+            id == UpgradeId.LightningCharge ||
+            id == UpgradeId.RainOfArrows;
     }
 }

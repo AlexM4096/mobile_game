@@ -22,6 +22,7 @@ namespace _Project.Gameplay.Features.Progression
             in UpgradeRanks ranks,
             bool hasSpear,
             bool hasLightningCharge,
+            bool hasRainOfArrows,
             List<UpgradeCardDefinition> destination)
         {
             destination.Clear();
@@ -36,7 +37,9 @@ namespace _Project.Gameplay.Features.Progression
                     (card.Id == UpgradeId.Spear && hasSpear) ||
                     (UpgradeRules.RequiresSpear(card.Id) && !hasSpear) ||
                     (card.Id == UpgradeId.LightningCharge && hasLightningCharge) ||
-                    (UpgradeRules.RequiresLightningCharge(card.Id) && !hasLightningCharge))
+                    (UpgradeRules.RequiresLightningCharge(card.Id) && !hasLightningCharge) ||
+                    (card.Id == UpgradeId.RainOfArrows && hasRainOfArrows) ||
+                    (UpgradeRules.RequiresRainOfArrows(card.Id) && !hasRainOfArrows))
                 {
                     continue;
                 }

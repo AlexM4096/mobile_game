@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Progression.ProgressionConfig
   baseExperience: 5
   experienceIncreasePerLevel: 5
-  maximumLevel: 27
+  maximumLevel: 37
   offeredCardCount: 3
   randomSeed: 12345
   visualTree: {fileID: 9197481963319205126, guid: 9fb129fcc6864fe4b82986381a726051, type: 3}
@@ -74,3 +74,27 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: c70ea04024017244aaad4a95a98af9b0, type: 3}
     maximumRank: 3
     magnitude: 1
+  - id: 9
+    title: Rain of Arrows
+    description: Bombard the densest nearby enemy cluster with falling arrows.
+    icon: {fileID: 1050239059990301293, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+    maximumRank: 1
+    magnitude: 0
+  - id: 10
+    title: Saturation Fire
+    description: Launch three additional arrows per bombardment.
+    icon: {fileID: 1050239059990301293, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+    maximumRank: 3
+    magnitude: 3
+  - id: 11
+    title: Widening Barrage
+    description: Increase the bombardment radius by half a tile.
+    icon: {fileID: 1050239059990301293, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+    maximumRank: 3
+    magnitude: 0.5
+  - id: 12
+    title: Rapid Volley
+    description: Reduce Rain of Arrows cooldown by 10% of its base cooldown.
+    icon: {fileID: 1050239059990301293, guid: 64e1e21591b24f1469d35f31b91e58a9, type: 3}
+    maximumRank: 3
+    magnitude: 0.1
