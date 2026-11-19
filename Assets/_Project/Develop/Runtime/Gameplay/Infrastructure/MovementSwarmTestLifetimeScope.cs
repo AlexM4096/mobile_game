@@ -105,6 +105,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddRotationFeature();
                     systems.AddHealthFeature();
                     systems.AddDeathFeature();
+                    systems.AddEnemySplitFeature();
                     systems.AddProgressionFeature();
                     systems.AddLifetimeFeature();
                     systems.AddDestroyFeature();

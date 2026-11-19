@@ -81,9 +81,17 @@ namespace _Project.Gameplay.Features.Health
                     continue;
                 }
 
-                brokenLayers |= BrokenDefenseLayers.Body;
-                isDefeated = true;
-                break;
+                // Zero is treated as the legacy one-hit body so existing entities and tests
+                // that do not explicitly initialize durability retain their old behaviour.
+                defense.BodyDurability = defense.BodyDurability > 0
+                    ? defense.BodyDurability - 1
+                    : 0;
+                if (defense.BodyDurability <= 0)
+                {
+                    brokenLayers |= BrokenDefenseLayers.Body;
+                    isDefeated = true;
+                    break;
+                }
             }
 
             return new EnemyHitResult(brokenLayers, isDefeated);

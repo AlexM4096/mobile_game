@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Arch.Core;
 using Arch.Unity.Conversion;
 using _Project.Gameplay.Features.AI;
@@ -20,8 +21,11 @@ namespace _Project.Gameplay.Features.EnemySpawn
     public sealed class EnemyFactory : IDisposable
     {
         private readonly World _world;
+        private readonly Dictionary<EnemyConfig, int> _configIds = new();
+        private readonly Dictionary<int, EnemyConfig> _configs = new();
         private Transform _viewsRoot;
         private int _viewIndex;
+        private int _nextConfigId = 1;
 
         public EnemyFactory(World world)
         {
@@ -65,7 +69,9 @@ namespace _Project.Gameplay.Features.EnemySpawn
                 HelmetDurability = helmetDurability,
                 MaxHelmetDurability = helmetDurability,
                 WeaponType = loadout.WeaponType,
-                IsEnchanted = loadout.IsEnchanted
+                IsEnchanted = loadout.IsEnchanted,
+                BodyDurability = config.BodyDurability,
+                MaxBodyDurability = config.BodyDurability
             };
 
             var entity = _world.Create(
@@ -88,6 +94,23 @@ namespace _Project.Gameplay.Features.EnemySpawn
                     Amount = config.ExperienceReward
                 });
 
+            if (config.SplitChild != null && config.SplitCount > 0)
+            {
+                var childConfigId = RegisterConfig(config.SplitChild);
+                var splitLoadout = config.SplitLoadout;
+                _world.Add(entity, new SplitOnDeath
+                {
+                    ChildConfigId = childConfigId,
+                    Count = config.SplitCount,
+                    Delay = config.SplitDelay,
+                    SpawnAt = double.PositiveInfinity,
+                    AnimationStarted = false,
+                    WeaponType = splitLoadout.WeaponType,
+                    HelmetType = splitLoadout.HelmetType,
+                    IsEnchanted = splitLoadout.IsEnchanted
+                });
+            }
+
             var view = Object.Instantiate(config.Prefab, GetViewsRoot());
             view.name = $"{config.Prefab.name} View {++_viewIndex}";
             view.transform.position = new Vector3(position.x, position.y, 0f);
@@ -105,6 +128,9 @@ namespace _Project.Gameplay.Features.EnemySpawn
             _world.Add(entity, new GameObjectReference(view));
             return entity;
         }
+
+        public bool TryGetConfig(int configId, out EnemyConfig config) =>
+            _configs.TryGetValue(configId, out config);
 
         public void Dispose()
         {
@@ -131,6 +157,19 @@ namespace _Project.Gameplay.Features.EnemySpawn
             }
 
             return _viewsRoot;
+        }
+
+        private int RegisterConfig(EnemyConfig config)
+        {
+            if (_configIds.TryGetValue(config, out var existingId))
+            {
+                return existingId;
+            }
+
+            var configId = _nextConfigId++;
+            _configIds.Add(config, configId);
+            _configs.Add(configId, config);
+            return configId;
         }
     }
 }

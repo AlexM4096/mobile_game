@@ -22,7 +22,14 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   prefab: {fileID: 5157819698762423893, guid: 139391d71e8a9ca4cb4df8154fe4b8ae, type: 3}
-  baseSpeed: 3
+  baseSpeed: 2.25
   colliderRadius: 1
-  statNoisePercentage: 0.2
+  statNoisePercentage: 0.1
+  bodyDurability: 4
   experienceReward: 3
+  splitChild: {fileID: 11400000, guid: 455f3ce400694fd3afae5853bf56a1e6, type: 2}
+  splitCount: 2
+  splitDelay: 0.25
+  splitWeaponType: 0
+  splitHelmetType: 0
+  splitEnchantedArmor: 0

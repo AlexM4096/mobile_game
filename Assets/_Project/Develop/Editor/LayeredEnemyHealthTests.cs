@@ -56,6 +56,25 @@ namespace _Project.Editor.Tests
                 Is.EqualTo(BrokenDefenseLayers.Body));
         }
 
+        [Test]
+        public void BodyDurabilityConsumesConfiguredHitsBeforeDefeat()
+        {
+            var defense = new EnemyDefense
+            {
+                BodyDurability = 4,
+                MaxBodyDurability = 4
+            };
+
+            var firstHits = EnemyDefenseRules.ApplyHits(ref defense, 3);
+            var finalHit = EnemyDefenseRules.ApplyHits(ref defense, 1);
+
+            Assert.That(firstHits.IsDefeated, Is.False);
+            Assert.That(firstHits.BrokenLayers, Is.EqualTo(BrokenDefenseLayers.None));
+            Assert.That(defense.BodyDurability, Is.Zero);
+            Assert.That(finalHit.IsDefeated, Is.True);
+            Assert.That(finalHit.BrokenLayers, Is.EqualTo(BrokenDefenseLayers.Body));
+        }
+
         [TestCase(WeaponType.Staff)]
         [TestCase(WeaponType.Dagger)]
         [TestCase(WeaponType.Axe)]

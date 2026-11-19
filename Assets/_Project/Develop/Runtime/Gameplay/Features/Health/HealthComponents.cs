@@ -60,6 +60,8 @@ namespace _Project.Gameplay.Features.Health
         public int MaxHelmetDurability;
         public WeaponType WeaponType;
         public bool IsEnchanted;
+        public int BodyDurability;
+        public int MaxBodyDurability;
     }
 
     public struct DefenseViewUpdate

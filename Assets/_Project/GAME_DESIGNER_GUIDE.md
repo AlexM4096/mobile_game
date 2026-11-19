@@ -52,11 +52,17 @@ Each wave contains:
 Important enemy values:
 
 - `Stat Noise Percentage` adds seeded random variation to an enemy's movement speed. `0` disables variation; `0.2` means up to roughly 20% variation.
+- `Body Durability` is the number of hits the enemy body takes after its helmet and weapon layers are gone.
+- `Split Child` and `Split Count` control whether a defeated enemy creates smaller enemies. A count of `0` disables splitting.
+- `Split Delay` controls how long the defeated parent plays its squash-and-pop animation before its children appear.
+- `Split Weapon Type`, `Split Helmet Type`, and `Split Enchanted Armor` define the loadout given to every child created by that split.
 - `Weapon Type` is selected on each wave composition entry. Staff, Dagger, and Axe are visually different but each adds one defensive hit layer before the enemy body.
 - `Helmet Type` is selected on each wave composition entry. Cloth takes 1 hit, Wood 2, Iron 3, and Dragon Scale 4.
 - `Enchanted Armor` is also selected on the wave entry and adds one hit of helmet durability. It is shown only when `Helmet Type` is not `None`.
 
 Equipment is intentionally wave-specific. Reusing the same enemy config in two composition entries can therefore produce different weapon and helmet combinations without creating another enemy asset.
+
+The default Slime-Cat hierarchy is Small (`Enemy1Config`, 4.5 speed, 1 body hit), Medium (`Enemy2Config`, 3.25 speed, 2 body hits, splits into 2 Small), and Large (`Enemy3Config`, 2.25 speed, 4 body hits, splits into 2 Medium). All three use 10% speed noise, travel right, and every defeated form grants its own configured XP reward. Split children default to no equipment and appear in an evenly spaced ring around the defeated parent.
 
 Using the same random seed and the same config values produces the same spawn positions and stat variations.
 

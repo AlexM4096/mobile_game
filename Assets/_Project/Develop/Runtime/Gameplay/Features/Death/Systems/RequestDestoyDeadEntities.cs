@@ -1,4 +1,5 @@
 using _Project.Gameplay.Features.Death;
+using _Project.Gameplay.Features.EnemySpawn;
 using Arch.Core;
 using Arch.Unity.Toolkit;
 
@@ -9,7 +10,8 @@ namespace _Project.Gameplay.Features.Destroy.Systems
         private static readonly QueryDescription _description = 
             new QueryDescription()
                 .WithAll<DeadTag>()
-                .WithNone<DestroySelfRequest>();
+                .WithNone<DestroySelfRequest>()
+                .WithNone<SplitOnDeath>();
 
         public RequestDestoyDeadEntities(World world) : base(world) { }
 

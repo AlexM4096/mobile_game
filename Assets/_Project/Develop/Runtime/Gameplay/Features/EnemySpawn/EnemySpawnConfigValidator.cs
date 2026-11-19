@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using _Project.Gameplay.Features.Health;
 using _Project.Gameplay.Features.Health.Views;
 
@@ -95,13 +96,8 @@ namespace _Project.Gameplay.Features.EnemySpawn
         {
             var enemy = entry?.Enemy;
             if (enemy == null ||
-                enemy.Prefab == null ||
                 entry.Count < 0 ||
                 entry.Count > 1 && entry.SpawnInterval <= 0f ||
-                enemy.BaseSpeed < 0f ||
-                enemy.ColliderRadius <= 0f ||
-                enemy.StatNoisePercentage < 0f ||
-                enemy.StatNoisePercentage > 1f ||
                 !Enum.IsDefined(typeof(WeaponType), entry.WeaponType) ||
                 !Enum.IsDefined(typeof(HelmetType), entry.HelmetType) ||
                 entry.EnchantedArmor && entry.HelmetType == HelmetType.None)
@@ -110,23 +106,84 @@ namespace _Project.Gameplay.Features.EnemySpawn
                 return false;
             }
 
-            var defenseView = enemy.Prefab.GetComponent<EnemyDefenseView>();
-            if (defenseView == null)
+            if (!TryValidateEnemy(enemy, new HashSet<EnemyConfig>(), out var enemyError))
             {
-                error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} prefab requires " +
-                        $"a root {nameof(EnemyDefenseView)} component.";
-                return false;
-            }
-
-            if (!defenseView.TryValidate(out var viewError))
-            {
-                error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} prefab is invalid: " +
-                        viewError;
+                error = $"Enemy spawn wave {waveIndex}, entry {entryIndex} is invalid: " +
+                        enemyError;
                 return false;
             }
 
             error = null;
             return true;
+        }
+
+        private static bool TryValidateEnemy(
+            EnemyConfig enemy,
+            HashSet<EnemyConfig> splitChain,
+            out string error)
+        {
+            if (enemy.Prefab == null ||
+                enemy.BaseSpeed < 0f ||
+                enemy.ColliderRadius <= 0f ||
+                enemy.StatNoisePercentage < 0f ||
+                enemy.StatNoisePercentage > 1f ||
+                enemy.BodyDurability < 1 ||
+                enemy.SplitCount < 0)
+            {
+                error = $"enemy config '{enemy.name}' has invalid base stats.";
+                return false;
+            }
+
+            var defenseView = enemy.Prefab.GetComponent<EnemyDefenseView>();
+            if (defenseView == null)
+            {
+                error = $"enemy config '{enemy.name}' prefab requires a root " +
+                        $"{nameof(EnemyDefenseView)} component.";
+                return false;
+            }
+
+            if (!defenseView.TryValidate(out var viewError))
+            {
+                error = $"enemy config '{enemy.name}' prefab is invalid: {viewError}";
+                return false;
+            }
+
+            if (enemy.SplitCount == 0)
+            {
+                error = null;
+                return true;
+            }
+
+            if (enemy.SplitChild == null)
+            {
+                error = $"enemy config '{enemy.name}' requires a split child.";
+                return false;
+            }
+
+            if (enemy.SplitDelay <= 0f)
+            {
+                error = $"enemy config '{enemy.name}' requires a positive split delay.";
+                return false;
+            }
+
+            var loadout = enemy.SplitLoadout;
+            if (!Enum.IsDefined(typeof(WeaponType), loadout.WeaponType) ||
+                !Enum.IsDefined(typeof(HelmetType), loadout.HelmetType) ||
+                loadout.IsEnchanted && loadout.HelmetType == HelmetType.None)
+            {
+                error = $"enemy config '{enemy.name}' has an invalid split loadout.";
+                return false;
+            }
+
+            if (!splitChain.Add(enemy))
+            {
+                error = $"enemy config '{enemy.name}' contains a split cycle.";
+                return false;
+            }
+
+            var isValid = TryValidateEnemy(enemy.SplitChild, splitChain, out error);
+            splitChain.Remove(enemy);
+            return isValid;
         }
     }
 }
