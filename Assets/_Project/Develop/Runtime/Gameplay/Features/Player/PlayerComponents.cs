@@ -7,7 +7,8 @@ namespace _Project.Gameplay.Features.Player
     public enum PlayerMotionMode
     {
         Flight = 0,
-        Orbit = 1
+        Orbit = 1,
+        ApproachOrbit = 2
     }
 
     public struct PlayerMotion
@@ -16,6 +17,10 @@ namespace _Project.Gameplay.Features.Player
         public Vector2 OrbitCenter;
         public float OrbitRadius;
         public float OrbitDirection;
+        public float OrbitEntryBaseSpeed;
+        public float OrbitCharge;
+        public float LaunchBurstRemaining;
+        public bool ComboFireActive;
     }
 
     public struct PlayerCameraTargetReference

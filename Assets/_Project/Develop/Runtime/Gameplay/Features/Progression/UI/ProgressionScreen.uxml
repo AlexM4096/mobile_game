@@ -3,7 +3,29 @@
     <ui:VisualElement name="progressionRoot" class="progression-root">
         <ui:VisualElement class="hud-panel">
             <ui:Label name="levelLabel" text="LEVEL 1" class="level-label"/>
-            <ui:ProgressBar name="experienceBar" title="0 / 5 XP" low-value="0" high-value="5" class="experience-bar"/>
+            <ui:ProgressBar name="experienceBar" title="0 / 5 XP" low-value="0" high-value="5" class="hud-bar experience-bar"/>
+            <ui:ProgressBar name="orbitChargeBar" title="LAUNCH CHARGE" low-value="0" high-value="1" class="hud-bar orbit-charge-bar"/>
+            <ui:VisualElement name="killComboPanel" class="kill-combo is-hidden">
+                <ui:Label name="killComboLabel" class="kill-combo-label"/>
+                <ui:ProgressBar name="killComboBar" low-value="0" high-value="1" class="hud-bar kill-combo-bar"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="arenaMinimapPanel" class="minimap-panel">
+            <ui:VisualElement name="arenaMinimap" class="minimap-surface"/>
+            <ui:VisualElement class="minimap-counters">
+                <ui:VisualElement class="minimap-counter">
+                    <ui:Label text="На карте" class="minimap-counter-title"/>
+                    <ui:Label name="enemiesAliveCount" text="0" class="minimap-counter-value"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="minimap-counter">
+                    <ui:Label text="Убито" class="minimap-counter-title"/>
+                    <ui:Label name="enemiesKilledCount" text="0" class="minimap-counter-value"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="minimap-counter">
+                    <ui:Label text="Дошли" class="minimap-counter-title"/>
+                    <ui:Label name="enemiesEscapedCount" text="0" class="minimap-counter-value"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="selectionOverlay" class="selection-overlay">
             <ui:VisualElement class="selection-panel">

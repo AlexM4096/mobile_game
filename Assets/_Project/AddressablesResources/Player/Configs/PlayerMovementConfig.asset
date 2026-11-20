@@ -12,9 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a307a1561a30414a897e8bc8fb1b7ae, type: 3}
   m_Name: PlayerMovementConfig
   m_EditorClassIdentifier: 
-  tangentialSpeed: 13
-  launchSpeed: 20
-  decelerationSpeed: 3
-  minimumSpeed: 3
+  tangentialSpeed: 16
+  launchSpeed: 25
+  orbitChargeDuration: 1.2
+  fullChargeOrbitMultiplier: 2
+  fullChargeLaunchMultiplier: 1.8
+  launchBurstDuration: 0.3
+  launchBurstSpeedBonus: 10
+  fireComboThreshold: 20
+  fireComboSpeedMultiplier: 1.12
+  fireComboChargeMultiplier: 1.25
+  decelerationSpeed: 4
+  minimumSpeed: 4.5
   bounceSpeedIncrease: 1
-  maximumSpeed: 36
+  maximumSpeed: 45

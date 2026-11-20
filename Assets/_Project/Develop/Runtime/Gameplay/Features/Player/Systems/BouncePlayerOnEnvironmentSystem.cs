@@ -72,13 +72,16 @@ namespace _Project.Gameplay.Features.Player.Systems
                     ? GetOrbitTangent(position.Value, motion)
                     : GetFlightDirection(direction.Value, velocity.Value);
                 var reflectedDirection = Vector2.Reflect(incomingDirection, normal).normalized;
-                var currentSpeed = wasOrbiting ? _settings.LaunchSpeed : velocity.Value.magnitude;
+                var burstBonus = _settings.GetLaunchBurstBonus(motion.LaunchBurstRemaining);
+                var multiplier = _settings.GetSpeedMultiplier(motion.ComboFireActive);
+                var currentSpeed = wasOrbiting ? _settings.LaunchSpeed + burstBonus : velocity.Value.magnitude / multiplier;
                 var boostedSpeed = Mathf.Min(
                     Mathf.Max(currentSpeed, _settings.MinimumSpeed) + _settings.BounceSpeedIncrease,
-                    _settings.MaximumSpeed);
+                    _settings.MaximumSpeed + burstBonus);
 
                 direction.Value = reflectedDirection;
-                velocity.Value = reflectedDirection * boostedSpeed;
+                velocity.Value = reflectedDirection * (boostedSpeed * multiplier);
+                motion.OrbitCharge = 0f;
                 motion.Mode = PlayerMotionMode.Flight;
             });
         }

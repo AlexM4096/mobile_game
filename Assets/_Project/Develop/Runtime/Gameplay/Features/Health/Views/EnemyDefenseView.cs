@@ -11,8 +11,6 @@ namespace _Project.Gameplay.Features.Health.Views
     {
         private const float BreakDuration = 0.45f;
 
-        private static Sprite _squareSprite;
-
         [SerializeField, Required] private SpriteRenderer bodyRenderer;
         [SerializeField, Required] private Transform helmetSocket;
         [SerializeField, Required] private Transform weaponSocket;
@@ -118,18 +116,6 @@ namespace _Project.Gameplay.Features.Health.Views
             if ((brokenLayers & BrokenDefenseLayers.Weapon) != 0)
             {
                 AnimateBreak(ref _weaponRenderer, new Vector3(0.8f, 0.45f, 0f));
-            }
-
-            if ((brokenLayers & BrokenDefenseLayers.Body) != 0)
-            {
-                var bodyPiece = CreatePiece(
-                    "Body Layer Broken",
-                    transform,
-                    GetSquareSprite(),
-                    new Color(0.78f, 0.2f, 0.18f, 1f),
-                    bodyRenderer.sortingOrder + 3);
-                bodyPiece.transform.localScale = new Vector3(0.48f, 0.48f, 1f);
-                AnimateBreak(ref bodyPiece, new Vector3(0.15f, 0.9f, 0f));
             }
         }
 
@@ -250,21 +236,5 @@ namespace _Project.Gameplay.Features.Health.Views
                 : color;
         }
 
-        private static Sprite GetSquareSprite()
-        {
-            if (_squareSprite != null)
-            {
-                return _squareSprite;
-            }
-
-            var texture = Texture2D.whiteTexture;
-            _squareSprite = Sprite.Create(
-                texture,
-                new Rect(0f, 0f, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f),
-                texture.width);
-            _squareSprite.name = "Runtime Defense Square";
-            return _squareSprite;
-        }
     }
 }

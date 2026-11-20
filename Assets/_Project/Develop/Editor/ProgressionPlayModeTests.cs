@@ -4,6 +4,8 @@ using Arch.Unity.Conversion;
 using NUnit.Framework;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Progression;
+using _Project.Gameplay.Infrastructure;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,7 +20,7 @@ namespace _Project.Editor.Tests
             new QueryDescription().WithAll<PlayerTag, CharacterProgress, UpgradeRanks>();
 
         [UnityTest]
-        public IEnumerator LevelUpPausesShowsSelectionAppliesUpgradeAndResumes()
+        public IEnumerator LevelUpFollowsUpgradeSelectionSetting()
         {
             EditorSceneManager.OpenScene(
                 "Assets/_Project/Scenes/MovementSwarmTestScene.unity",
@@ -28,6 +30,9 @@ namespace _Project.Editor.Tests
             yield return null;
 
             var world = EntityConversion.DefaultWorld;
+            var scope = Object.FindFirstObjectByType<MovementSwarmTestLifetimeScope>();
+            var config = (ProgressionConfig)new SerializedObject(scope)
+                .FindProperty("progressionConfig").objectReferenceValue;
             var player = default(Entity);
             world.Query(in PlayerDescription, (
                 Entity entity,
@@ -79,6 +84,22 @@ namespace _Project.Editor.Tests
                 "The progression UI must resolve a runtime font.");
 
             var overlay = root.Q<VisualElement>("selectionOverlay");
+            if (!config.EnableUpgradeSelections)
+            {
+                Assert.That(world.Get<CharacterProgress>(player).PendingSelections, Is.Zero);
+                Assert.That(overlay.ClassListContains("is-hidden"), Is.True);
+                Assert.That(Time.timeScale, Is.EqualTo(1f));
+                world.Create(new ApplyUpgradeRequest
+                {
+                    Target = player,
+                    Upgrade = UpgradeId.AdditionalBlade
+                });
+                yield return null;
+                Assert.That(world.Get<UpgradeRanks>(player).AdditionalBlade, Is.Zero);
+                yield return new ExitPlayMode();
+                yield break;
+            }
+
             Assert.That(Time.timeScale, Is.Zero);
             Assert.That(overlay.ClassListContains("is-hidden"), Is.False);
             Assert.That(overlay.pickingMode, Is.EqualTo(PickingMode.Position));

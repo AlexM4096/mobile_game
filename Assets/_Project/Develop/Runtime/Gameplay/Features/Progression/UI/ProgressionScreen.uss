@@ -44,20 +44,20 @@
     -unity-text-align: middle-center;
 }
 
-.experience-bar {
+.hud-bar {
     position: relative;
     height: 26px;
     flex-shrink: 0;
     color: var(--text);
 }
 
-.experience-bar > .unity-progress-bar__container {
+.hud-bar > .unity-progress-bar__container {
     position: relative;
     height: 100%;
     flex-grow: 1;
 }
 
-.experience-bar .unity-progress-bar__background {
+.hud-bar .unity-progress-bar__background {
     position: absolute;
     left: 0;
     top: 0;
@@ -79,7 +79,7 @@
     border-bottom-right-radius: 6px;
 }
 
-.experience-bar .unity-progress-bar__progress {
+.hud-bar .unity-progress-bar__progress {
     position: absolute;
     left: 0;
     top: 0;
@@ -92,7 +92,7 @@
     border-bottom-right-radius: 4px;
 }
 
-.experience-bar .unity-progress-bar__title-container {
+.hud-bar .unity-progress-bar__title-container {
     position: absolute;
     left: 0;
     top: 0;
@@ -102,11 +102,103 @@
     justify-content: center;
 }
 
-.experience-bar .unity-progress-bar__title {
+.hud-bar .unity-progress-bar__title {
     width: 100%;
     color: var(--text);
     -unity-font-style: bold;
     -unity-text-align: middle-center;
+}
+
+.orbit-charge-bar {
+    height: 20px;
+    margin-top: 6px;
+}
+
+.orbit-charge-bar .unity-progress-bar__progress {
+    background-color: rgb(223, 132, 43);
+}
+
+.orbit-charge-bar.full-charge .unity-progress-bar__progress {
+    background-color: rgb(255, 204, 108);
+}
+
+.kill-combo {
+    margin-top: 6px;
+}
+
+.kill-combo-label {
+    color: rgb(255, 219, 115);
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    transition-duration: 0.12s;
+}
+
+.kill-combo-bar {
+    height: 12px;
+}
+
+.kill-combo-bar .unity-progress-bar__progress {
+    background-color: rgb(255, 201, 92);
+}
+
+.kill-combo-bar.combo-expiring .unity-progress-bar__progress {
+    background-color: rgb(255, 133, 69);
+}
+
+.kill-combo.combo-milestone .kill-combo-label {
+    color: rgb(113, 242, 255);
+    scale: 1.12 1.12;
+}
+
+.kill-combo.combo-milestone .kill-combo-bar .unity-progress-bar__progress {
+    background-color: rgb(113, 242, 255);
+}
+
+.kill-combo.combo-on-fire .kill-combo-label {
+    color: rgb(255, 158, 77);
+}
+
+.minimap-panel {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    padding: 8px;
+    background-color: var(--panel-dark);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.minimap-surface {
+    width: 224px;
+    height: 112px;
+    overflow: hidden;
+    background-color: var(--panel-mid);
+    border-width: 1px;
+    border-color: var(--border);
+}
+
+.minimap-counters {
+    flex-direction: row;
+    margin-top: 5px;
+}
+
+.minimap-counter {
+    flex-grow: 1;
+    flex-basis: 0;
+    align-items: center;
+}
+
+.minimap-counter-title {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.minimap-counter-value {
+    font-size: 17px;
+    -unity-font-style: bold;
 }
 
 .selection-overlay {

@@ -22,14 +22,23 @@ namespace _Project.Gameplay.Features.Progression.Systems
 
         public override void Update(in SystemState state)
         {
+            var enableUpgradeSelections = _config.EnableUpgradeSelections;
             World.Query(in _description, (ref CharacterProgress progress) =>
             {
+                if (!enableUpgradeSelections)
+                {
+                    progress.PendingSelections = 0;
+                }
+
                 while (progress.Level < _availability.MaximumRunLevel &&
                        progress.Experience >= progress.RequiredExperience)
                 {
                     progress.Experience -= progress.RequiredExperience;
                     progress.Level++;
-                    progress.PendingSelections++;
+                    if (enableUpgradeSelections)
+                    {
+                        progress.PendingSelections++;
+                    }
                     progress.RequiredExperience =
                         _config.BaseExperience +
                         (progress.Level - 1) * _config.ExperienceIncreasePerLevel;

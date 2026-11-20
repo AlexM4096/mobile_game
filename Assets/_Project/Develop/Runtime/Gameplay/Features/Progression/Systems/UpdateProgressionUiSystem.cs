@@ -4,6 +4,8 @@ using Arch.Core;
 using Arch.Unity.Toolkit;
 using Cysharp.Text;
 using _Project.Gameplay.Features.Death;
+using _Project.Gameplay.Features.EnemySpawn;
+using _Project.Gameplay.Features.Progression.UI;
 using _Project.Gameplay.Features.Player;
 using _Project.Gameplay.Features.Spear;
 using _Project.Gameplay.Features.LightningCharge;
@@ -32,6 +34,9 @@ namespace _Project.Gameplay.Features.Progression.Systems
         private readonly UpgradeOfferGenerator _offerGenerator;
         private readonly IUpgradeAvailabilityService _availability;
         private readonly IGameplayPauseService _pauseService;
+        private readonly Camera _camera;
+        private readonly SceneSpawnZoneProvider _sceneSpawnZone;
+        private readonly EnemyRunStatistics _enemyStatistics;
         private readonly List<UpgradeCardDefinition> _offers = new();
         private readonly Button[] _buttons = new Button[3];
         private readonly Image[] _icons = new Image[3];
@@ -44,6 +49,12 @@ namespace _Project.Gameplay.Features.Progression.Systems
         private VisualElement _selectionOverlay;
         private Label _levelLabel;
         private ProgressBar _experienceBar;
+        private ProgressBar _orbitChargeBar;
+        private VisualElement _comboPanel;
+        private Label _comboLabel;
+        private ProgressBar _comboBar;
+        private IVisualElementScheduledItem _endComboPulse;
+        private ArenaMinimapView _minimap;
         private IDisposable _pauseLease;
         private Entity _activePlayer;
         private bool _isEnabled;
@@ -53,18 +64,27 @@ namespace _Project.Gameplay.Features.Progression.Systems
         private int _lastLevel = -1;
         private int _lastExperience = -1;
         private int _lastRequired = -1;
+        private int _lastComboCount;
+        private int _lastComboMilestone;
+        private bool _lastComboFireActive;
 
         public UpdateProgressionUiSystem(
             World world,
             ProgressionConfig config,
             UpgradeOfferGenerator offerGenerator,
             IUpgradeAvailabilityService availability,
-            IGameplayPauseService pauseService) : base(world)
+            IGameplayPauseService pauseService,
+            Camera camera,
+            SceneSpawnZoneProvider sceneSpawnZone,
+            EnemyRunStatistics enemyStatistics) : base(world)
         {
             _config = config;
             _offerGenerator = offerGenerator;
             _availability = availability;
             _pauseService = pauseService;
+            _camera = camera;
+            _sceneSpawnZone = sceneSpawnZone;
+            _enemyStatistics = enemyStatistics;
         }
 
         public override void Initialize()
@@ -91,6 +111,22 @@ namespace _Project.Gameplay.Features.Progression.Systems
             _selectionOverlay = Require<VisualElement>("selectionOverlay");
             _levelLabel = Require<Label>("levelLabel");
             _experienceBar = Require<ProgressBar>("experienceBar");
+            _orbitChargeBar = Require<ProgressBar>("orbitChargeBar");
+            _comboPanel = Require<VisualElement>("killComboPanel");
+            _comboLabel = Require<Label>("killComboLabel");
+            _comboBar = Require<ProgressBar>("killComboBar");
+            _endComboPulse = _comboPanel.schedule.Execute(() => _comboPanel.RemoveFromClassList("combo-milestone"));
+            _endComboPulse.Pause();
+            var minimapPanel = Require<VisualElement>("arenaMinimapPanel");
+            IgnorePickingRecursively(minimapPanel);
+            if (_camera != null && _sceneSpawnZone.TryGetLayout(out _, out var arena))
+            {
+                _minimap = new ArenaMinimapView(World, _camera, arena, _enemyStatistics, minimapPanel);
+            }
+            else
+            {
+                minimapPanel.AddToClassList(HiddenClass);
+            }
 
             for (var index = 0; index < _buttons.Length; index++)
             {
@@ -119,6 +155,7 @@ namespace _Project.Gameplay.Features.Progression.Systems
             }
 
             var foundPlayer = false;
+            var comboFireActive = false;
             World.Query(in _description, (
                 Entity entity,
                 ref CharacterProgress progress,
@@ -132,17 +169,28 @@ namespace _Project.Gameplay.Features.Progression.Systems
                 foundPlayer = true;
                 _activePlayer = entity;
                 UpdateHud(in progress);
+                if (World.Has<PlayerMotion>(entity))
+                {
+                    var motion = World.Get<PlayerMotion>(entity);
+                    comboFireActive = motion.ComboFireActive;
+                    UpdateOrbitCharge(motion.Mode == PlayerMotionMode.Orbit ? motion.OrbitCharge : 0f);
+                }
                 UpdateSelection(entity, ref progress, in ranks);
             });
 
             if (!foundPlayer)
             {
+                UpdateOrbitCharge(0f);
                 CloseSelection();
             }
+
+            UpdateCombo(foundPlayer ? _enemyStatistics.GetCombo(state.Time) : default, comboFireActive);
         }
 
         public override void Dispose()
         {
+            _minimap?.Dispose();
+            _endComboPulse?.Pause();
             CloseSelection();
             if (_root != null)
             {
@@ -159,6 +207,48 @@ namespace _Project.Gameplay.Features.Progression.Systems
             }
 
             base.Dispose();
+        }
+
+        private void UpdateCombo(KillComboSnapshot combo, bool comboFireActive)
+        {
+            if (combo.Count == 0 && _lastComboCount == 0) return;
+
+            if (combo.Count != _lastComboCount || comboFireActive != _lastComboFireActive)
+            {
+                _lastComboCount = combo.Count;
+                _lastComboFireActive = comboFireActive;
+                _comboPanel.EnableInClassList(HiddenClass, combo.Count == 0);
+                _comboPanel.EnableInClassList("combo-on-fire", comboFireActive);
+                _comboLabel.text = combo.Count == 0
+                    ? string.Empty
+                    : ZString.Format(comboFireActive ? "КОМБО ×{0} · В ОГНЕ" : "КОМБО ×{0}", combo.Count);
+            }
+
+            _comboBar.value = combo.Remaining;
+            _comboBar.EnableInClassList("combo-expiring", combo.Count > 0 && combo.Remaining <= 0.25f);
+            if (combo.Count == 0)
+            {
+                _endComboPulse.Pause();
+                _comboPanel.RemoveFromClassList("combo-milestone");
+            }
+            else if (_enemyStatistics.ComboMilestones != _lastComboMilestone)
+            {
+                _comboPanel.AddToClassList("combo-milestone");
+                _endComboPulse.ExecuteLater(350);
+            }
+
+            _lastComboMilestone = _enemyStatistics.ComboMilestones;
+        }
+
+        private void UpdateOrbitCharge(float charge)
+        {
+            if (_orbitChargeBar.value == charge)
+            {
+                return;
+            }
+
+            _orbitChargeBar.value = charge;
+            _orbitChargeBar.EnableInClassList("full-charge", charge >= 1f);
         }
 
         private void UpdateHud(in CharacterProgress progress)

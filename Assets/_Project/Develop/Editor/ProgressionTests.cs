@@ -44,7 +44,12 @@ namespace _Project.Editor.Tests
         public void SetUp()
         {
             _world = World.Create();
-            _config = AssetDatabase.LoadAssetAtPath<ProgressionConfig>(ProgressionConfigPath);
+            var configAsset = AssetDatabase.LoadAssetAtPath<ProgressionConfig>(ProgressionConfigPath);
+            Assert.That(configAsset, Is.Not.Null);
+            _config = Object.Instantiate(configAsset);
+            var configSettings = new SerializedObject(_config);
+            configSettings.FindProperty("enableUpgradeSelections").boolValue = true;
+            configSettings.ApplyModifiedPropertiesWithoutUndo();
             _spearConfig = AssetDatabase.LoadAssetAtPath<SpearConfig>(SpearConfigPath);
             _lightningChargeConfig =
                 AssetDatabase.LoadAssetAtPath<LightningChargeConfig>(LightningChargeConfigPath);
@@ -64,6 +69,7 @@ namespace _Project.Editor.Tests
         public void TearDown()
         {
             _world.Dispose();
+            Object.DestroyImmediate(_config);
             Object.DestroyImmediate(_gridObject);
         }
 

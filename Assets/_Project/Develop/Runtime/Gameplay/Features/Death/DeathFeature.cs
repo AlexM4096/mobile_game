@@ -12,6 +12,7 @@ namespace _Project.Gameplay.Features.Death
             systems.Add<MarkDeadByZeroHealthSystem>(SystemRunner.Update);
             systems.Add<MarkDeadByExpiredLifetimeSystem>(SystemRunner.Update);
             systems.Add<RequestDestoyDeadEntities>(SystemRunner.Update);
+            systems.Add<AnimateDeadEnemyViewsSystem>(SystemRunner.Update);
         }
     }
 }

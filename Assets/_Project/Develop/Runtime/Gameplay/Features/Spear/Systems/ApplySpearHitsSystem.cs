@@ -6,6 +6,8 @@ using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Death;
 using _Project.Gameplay.Features.Health;
+using _Project.Gameplay.Features.Movement;
+using UnityEngine;
 
 namespace _Project.Gameplay.Features.Spear.Systems
 {
@@ -15,7 +17,7 @@ namespace _Project.Gameplay.Features.Spear.Systems
             new QueryDescription().WithAll<CollisionEvent>();
 
         private readonly Dictionary<Entity, HashSet<Entity>> _hitEnemiesByProjectile = new();
-        private readonly Dictionary<Entity, int> _hitsByEnemy = new();
+        private readonly Dictionary<Entity, HitRequest> _hitsByEnemy = new();
         private readonly HashSet<Entity> _depletedProjectiles = new();
         private readonly List<Entity> _staleProjectiles = new();
 
@@ -36,8 +38,8 @@ namespace _Project.Gameplay.Features.Spear.Systems
                     return;
                 }
 
-                ProcessImpact(collisionEvent.First, collisionEvent.Second);
-                ProcessImpact(collisionEvent.Second, collisionEvent.First);
+                ProcessImpact(collisionEvent.First, collisionEvent.Second, collisionEvent.Normal);
+                ProcessImpact(collisionEvent.Second, collisionEvent.First, -collisionEvent.Normal);
             });
 
             using var commandBuffer = new CommandBuffer();
@@ -51,12 +53,12 @@ namespace _Project.Gameplay.Features.Spear.Systems
 
                 if (enemy.TryGet(out HitRequest hitRequest))
                 {
-                    hitRequest.Count += enemyHits.Value;
+                    hitRequest.Add(enemyHits.Value.Count, enemyHits.Value.Direction);
                     enemy.Set(hitRequest);
                 }
                 else
                 {
-                    commandBuffer.Add(enemy, new HitRequest { Count = enemyHits.Value });
+                    commandBuffer.Add(enemy, enemyHits.Value);
                 }
             }
 
@@ -81,7 +83,7 @@ namespace _Project.Gameplay.Features.Spear.Systems
             _staleProjectiles.Clear();
         }
 
-        private void ProcessImpact(Entity projectileEntity, Entity enemyEntity)
+        private void ProcessImpact(Entity projectileEntity, Entity enemyEntity, Vector2 contactDirection)
         {
             if (!World.IsAlive(projectileEntity) ||
                 !World.IsAlive(enemyEntity) ||
@@ -112,8 +114,12 @@ namespace _Project.Gameplay.Features.Spear.Systems
                 return;
             }
 
-            _hitsByEnemy.TryGetValue(enemyEntity, out var hitCount);
-            _hitsByEnemy[enemyEntity] = hitCount + projectile.DamageHits;
+            var direction = projectileEntity.TryGet(out Velocity velocity) && velocity.Value.sqrMagnitude > 0f
+                ? velocity.Value.normalized
+                : contactDirection;
+            _hitsByEnemy.TryGetValue(enemyEntity, out var hits);
+            hits.Add(projectile.DamageHits, direction);
+            _hitsByEnemy[enemyEntity] = hits;
 
             projectile.RemainingDurability--;
             if (projectile.RemainingDurability == 0)

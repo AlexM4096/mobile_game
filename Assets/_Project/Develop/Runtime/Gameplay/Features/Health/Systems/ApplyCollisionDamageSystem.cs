@@ -4,6 +4,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Unity.Toolkit;
 using _Project.Gameplay.Features.Collision;
+using UnityEngine;
 
 namespace _Project.Gameplay.Features.Health.Systems
 {
@@ -14,7 +15,7 @@ namespace _Project.Gameplay.Features.Health.Systems
                 .WithAll<CollisionEvent>();
 
         private readonly Dictionary<Entity, float> _damageByTarget = new();
-        private readonly Dictionary<Entity, int> _hitsByTarget = new();
+        private readonly Dictionary<Entity, HitRequest> _hitsByTarget = new();
 
         public ApplyCollisionDamageSystem(World world) : base(world)
         {
@@ -27,8 +28,8 @@ namespace _Project.Gameplay.Features.Health.Systems
 
             World.Query(in _description, (ref CollisionEvent collisionEvent) =>
             {
-                AccumulateImpact(collisionEvent.First, collisionEvent.Second, collisionEvent.Phase);
-                AccumulateImpact(collisionEvent.Second, collisionEvent.First, collisionEvent.Phase);
+                AccumulateImpact(collisionEvent.First, collisionEvent.Second, collisionEvent.Phase, collisionEvent.Normal);
+                AccumulateImpact(collisionEvent.Second, collisionEvent.First, collisionEvent.Phase, -collisionEvent.Normal);
             });
 
             using var commandBuffer = new CommandBuffer();
@@ -38,12 +39,12 @@ namespace _Project.Gameplay.Features.Health.Systems
                 var target = targetHits.Key;
                 if (target.TryGet(out HitRequest hitRequest))
                 {
-                    hitRequest.Count += targetHits.Value;
+                    hitRequest.Add(targetHits.Value.Count, targetHits.Value.Direction);
                     target.Set(hitRequest);
                 }
                 else
                 {
-                    commandBuffer.Add(target, new HitRequest { Count = targetHits.Value });
+                    commandBuffer.Add(target, targetHits.Value);
                 }
             }
 
@@ -64,7 +65,7 @@ namespace _Project.Gameplay.Features.Health.Systems
             commandBuffer.Playback(World, false);
         }
 
-        private void AccumulateImpact(Entity source, Entity target, CollisionPhase phase)
+        private void AccumulateImpact(Entity source, Entity target, CollisionPhase phase, Vector2 direction)
         {
             if (!World.IsAlive(source) ||
                 !World.IsAlive(target) ||
@@ -81,8 +82,9 @@ namespace _Project.Gameplay.Features.Health.Systems
 
             if (target.Has<EnemyDefense>())
             {
-                _hitsByTarget.TryGetValue(target, out var hitCount);
-                _hitsByTarget[target] = hitCount + 1;
+                _hitsByTarget.TryGetValue(target, out var hits);
+                hits.Add(1, direction);
+                _hitsByTarget[target] = hits;
                 return;
             }
 

@@ -9,6 +9,7 @@ namespace _Project.Gameplay.Features.Player
         public static void AddPlayerControlFeature(this NewArchAppBuilder systems)
         {
             systems.Add<ReadPlayerOrbitInputSystem>(SystemRunner.Update);
+            systems.Add<PlayerMotionFeedbackSystem>(SystemRunner.Update);
             systems.Add<SimulatePlayerMotionSystem>(SystemRunner.Update);
         }
 

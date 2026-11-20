@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Arch.Core;
+using _Project.Gameplay.Features.Health;
 using UnityEngine;
 
 namespace _Project.Gameplay.Features.RainOfArrows
@@ -70,19 +71,21 @@ namespace _Project.Gameplay.Features.RainOfArrows
             Vector2 impactPosition,
             float impactRadius,
             int damageHits,
-            Dictionary<Entity, int> hitsByEnemy)
+            Dictionary<Entity, HitRequest> hitsByEnemy)
         {
             var radiusSquared = impactRadius * impactRadius;
             for (var index = 0; index < _targets.Count; index++)
             {
                 var target = _targets[index];
-                if ((target.Position - impactPosition).sqrMagnitude > radiusSquared)
+                var offset = target.Position - impactPosition;
+                if (offset.sqrMagnitude > radiusSquared)
                 {
                     continue;
                 }
 
                 hitsByEnemy.TryGetValue(target.Entity, out var existingHits);
-                hitsByEnemy[target.Entity] = existingHits + damageHits;
+                existingHits.Add(damageHits, offset);
+                hitsByEnemy[target.Entity] = existingHits;
             }
         }
 

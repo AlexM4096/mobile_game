@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +11,10 @@ namespace _Project.Gameplay.Features.Progression
         menuName = "Configs/Gameplay/Progression Config")]
     public sealed class ProgressionConfig : ScriptableObject
     {
+        [SerializeField, LabelText("Выдавать способности")]
+        [Tooltip("При повышении уровня открывает выбор способности или улучшения.")]
+        private bool enableUpgradeSelections = true;
+
         [SerializeField, Min(1)] private int baseExperience = 5;
         [SerializeField, Min(1)] private int experienceIncreasePerLevel = 5;
         [SerializeField, Min(2)] private int maximumLevel = 37;
@@ -22,6 +27,7 @@ namespace _Project.Gameplay.Features.Progression
         public int BaseExperience => baseExperience;
         public int ExperienceIncreasePerLevel => experienceIncreasePerLevel;
         public int MaximumLevel => maximumLevel;
+        public bool EnableUpgradeSelections => enableUpgradeSelections;
         public int OfferedCardCount => offeredCardCount;
         public int RandomSeed => randomSeed;
         public VisualTreeAsset VisualTree => visualTree;

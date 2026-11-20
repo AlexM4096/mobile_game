@@ -10,5 +10,10 @@ namespace _Project.Gameplay.Features.EnemySpawn
         {
             systems.Add<SpawnEnemiesSystem>(SystemRunner.Update);
         }
+
+        public static void AddEnemyExitFeature(this NewArchAppBuilder systems)
+        {
+            systems.Add<RemoveEnemiesBeyondArenaSystem>(SystemRunner.Update);
+        }
     }
 }

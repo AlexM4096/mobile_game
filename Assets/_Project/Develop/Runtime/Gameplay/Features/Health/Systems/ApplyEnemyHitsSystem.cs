@@ -48,6 +48,7 @@ namespace _Project.Gameplay.Features.Health.Systems
 
                 if (hitResult.IsDefeated)
                 {
+                    defense.DefeatDirection = hitRequest.Direction;
                     commandBuffer.Add<DeadTag>(entity);
                 }
 

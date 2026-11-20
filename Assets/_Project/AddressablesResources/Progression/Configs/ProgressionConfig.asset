@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a443585553450a945856ff54dbe77bdb, type: 3}
   m_Name: ProgressionConfig
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Features.Progression.ProgressionConfig
-  baseExperience: 5
-  experienceIncreasePerLevel: 5
+  enableUpgradeSelections: 0
+  baseExperience: 50
+  experienceIncreasePerLevel: 50
   maximumLevel: 37
   offeredCardCount: 3
   randomSeed: 12345

@@ -2,6 +2,7 @@ using Arch.Core;
 using Arch.Unity;
 using Arch.Unity.Conversion;
 using _Project.Gameplay.Features.AI;
+using _Project.Gameplay.Features.Arena;
 using _Project.Gameplay.Features.Collision;
 using _Project.Gameplay.Features.Common;
 using _Project.Gameplay.Features.Death;
@@ -48,6 +49,7 @@ namespace _Project.Gameplay.Infrastructure
         [SerializeField, InlineEditor] private LightningChargeConfig lightningChargeConfig;
         [SerializeField, InlineEditor] private RainOfArrowsConfig rainOfArrowsConfig;
         [SerializeField, InlineEditor] private ProgressionConfig progressionConfig;
+        [SerializeField] private Collider2D spawnCollider;
         [SerializeField] private Grid environmentGrid;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private EventSystem eventSystem;
@@ -78,6 +80,12 @@ namespace _Project.Gameplay.Infrastructure
             builder.Register<RainOfArrowsTargetRegistry>(VContainer.Lifetime.Scoped);
             builder.Register<RainOfArrowsFactory>(VContainer.Lifetime.Scoped);
             builder.Register<EnemyFactory>(VContainer.Lifetime.Scoped);
+            builder.Register<EnemyRunStatistics>(VContainer.Lifetime.Scoped);
+            builder.Register<EnemyDeathAnimation>(VContainer.Lifetime.Scoped);
+            builder.RegisterInstance(new SceneSpawnZoneProvider(spawnCollider));
+            builder.Register(
+                resolver => new ArenaBoundaryFactory(resolver.Resolve<World>()),
+                VContainer.Lifetime.Scoped);
             builder.Register<UpgradeOfferGenerator>(VContainer.Lifetime.Scoped);
             builder.Register<UpgradeAvailabilityService>(VContainer.Lifetime.Scoped)
                 .As<IUpgradeAvailabilityService>();
@@ -85,6 +93,10 @@ namespace _Project.Gameplay.Infrastructure
                 .As<IGameplayPauseService>();
 
             var collisionMatrix = CreateCollisionMatrix();
+            if (spawnCollider != null)
+            {
+                collisionMatrix.SetInteraction(CollisionLayer.Enemy, CollisionLayer.Environment, false);
+            }
             builder.RegisterInstance(collisionMatrix);
 
             builder.UseNewArchApp(
@@ -105,6 +117,7 @@ namespace _Project.Gameplay.Infrastructure
                     systems.AddRotationFeature();
                     systems.AddHealthFeature();
                     systems.AddDeathFeature();
+                    systems.AddEnemyExitFeature();
                     systems.AddProgressionFeature();
                     systems.AddLifetimeFeature();
                     systems.AddDestroyFeature();
@@ -132,6 +145,8 @@ namespace _Project.Gameplay.Infrastructure
 
     internal sealed class SwarmSpawner : IStartable, System.IDisposable
     {
+        private const float PlayerStartDistanceFromSpawn = 6f;
+
         private readonly World _world;
         private readonly SwarmConfig _configuration;
         private readonly PlayerMovementConfig _playerMovementConfig;
@@ -144,6 +159,8 @@ namespace _Project.Gameplay.Infrastructure
         private readonly ProgressionConfig _progressionConfig;
         private readonly Grid _environmentGrid;
         private readonly Camera _mainCamera;
+        private readonly SceneSpawnZoneProvider _sceneSpawnZone;
+        private readonly ArenaBoundaryFactory _arenaBoundaries;
         private Transform _spawnedViewsRoot;
         private CinemachineCamera _playerFollowCamera;
 
@@ -159,7 +176,9 @@ namespace _Project.Gameplay.Infrastructure
             SwordFactory swordFactory,
             ProgressionConfig progressionConfig,
             Grid environmentGrid,
-            Camera mainCamera
+            Camera mainCamera,
+            SceneSpawnZoneProvider sceneSpawnZone,
+            ArenaBoundaryFactory arenaBoundaries
         )
         {
             _world = world;
@@ -174,6 +193,8 @@ namespace _Project.Gameplay.Infrastructure
             _progressionConfig = progressionConfig;
             _environmentGrid = environmentGrid;
             _mainCamera = mainCamera;
+            _sceneSpawnZone = sceneSpawnZone;
+            _arenaBoundaries = arenaBoundaries;
         }
 
         public void Start()
@@ -181,6 +202,17 @@ namespace _Project.Gameplay.Infrastructure
             if (!ValidateConfiguration())
             {
                 return;
+            }
+
+            var startPosition = Vector2.zero;
+            var startDirection = Vector2.right;
+            if (_sceneSpawnZone.TryGetLayout(out var spawnBounds, out var arena))
+            {
+                _arenaBoundaries.Create(arena, SceneSpawnZoneProvider.ArenaWallThickness);
+                startPosition = new Vector2(
+                    Mathf.Min(spawnBounds.max.x + PlayerStartDistanceFromSpawn, arena.center.x),
+                    arena.center.y);
+                startDirection = Vector2.left;
             }
 
             _spawnedViewsRoot = new GameObject("Spawned Player Views").transform;
@@ -203,11 +235,11 @@ namespace _Project.Gameplay.Infrastructure
                 },
                 new UpgradeRanks(),
                 new PlayerMotion { Mode = PlayerMotionMode.Flight },
-                new Position { Value = Vector2.zero },
+                new Position { Value = startPosition },
                 new RotationComponent { Value = quaternion.identity },
                 new FlipRotationTag(),
-                new Direction { Value = Vector2.right },
-                new Velocity { Value = Vector2.right * _playerMovementConfig.MinimumSpeed },
+                new Direction { Value = startDirection },
+                new Velocity { Value = startDirection * _playerMovementConfig.MinimumSpeed },
                 new ManualMovementTag(),
                 new CollisionBody
                 {
@@ -223,7 +255,12 @@ namespace _Project.Gameplay.Infrastructure
 
             var targetView = Object.Instantiate(_configuration.PlayerPrefab, _spawnedViewsRoot);
             targetView.name = "Player View";
-            targetView.transform.position = Vector3.zero;
+            targetView.transform.position = startPosition;
+            if (!targetView.TryGetComponent<PlayerMotionFeedbackView>(out _))
+            {
+                targetView.AddComponent<PlayerMotionFeedbackView>();
+            }
+
             _world.Add(targetEntity, new GameObjectReference(targetView));
 
             var cameraTarget = new GameObject("Player Camera Target");
@@ -363,6 +400,10 @@ namespace _Project.Gameplay.Infrastructure
             _playerFollowCamera = cameraObject.AddComponent<CinemachineCamera>();
             _playerFollowCamera.Lens = LensSettings.FromCamera(_mainCamera);
             _playerFollowCamera.Follow = followTarget;
+            if (_sceneSpawnZone.TryGetLayout(out _, out var arena))
+            {
+                cameraObject.AddComponent<ArenaCameraConfiner>().Bounds = arena;
+            }
 
             var positionComposer = cameraObject.AddComponent<CinemachinePositionComposer>();
             positionComposer.CameraDistance = Mathf.Abs(

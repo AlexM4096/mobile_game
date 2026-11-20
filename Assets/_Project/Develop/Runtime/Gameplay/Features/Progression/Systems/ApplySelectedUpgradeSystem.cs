@@ -65,7 +65,8 @@ namespace _Project.Gameplay.Features.Progression.Systems
 
         private void Apply(in ApplyUpgradeRequest request, double currentTime)
         {
-            if (!World.IsAlive(request.Target) ||
+            if (!_config.EnableUpgradeSelections ||
+                !World.IsAlive(request.Target) ||
                 !World.Has<CharacterProgress>(request.Target) ||
                 !World.Has<UpgradeRanks>(request.Target))
             {

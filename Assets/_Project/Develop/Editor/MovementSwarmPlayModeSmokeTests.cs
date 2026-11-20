@@ -1,5 +1,8 @@
 using System.Collections;
+using System.Linq;
+using _Project.Gameplay.Features.EnemySpawn;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,6 +19,9 @@ namespace _Project.Editor.Tests
             EditorSceneManager.OpenScene(
                 "Assets/_Project/Scenes/MovementSwarmTestScene.unity",
                 OpenSceneMode.Single);
+            var spawnConfig = AssetDatabase.LoadAssetAtPath<EnemySpawnConfig>(
+                "Assets/_Project/AddressablesResources/EnemySpawn/Configs/EnemySpawnConfig.asset");
+            var firstWaveCount = spawnConfig.Waves[0].Composition.Sum(entry => entry.Count);
 
             yield return new EnterPlayMode();
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("MovementSwarmTestScene"));
@@ -33,7 +39,7 @@ namespace _Project.Editor.Tests
             Assert.That(swordView, Is.Not.Null);
             Assert.That(enemyViewsRoot, Is.Not.Null);
             Assert.That(enemyViewsRoot.transform.childCount, Is.GreaterThan(0));
-            Assert.That(enemyViewsRoot.transform.childCount, Is.LessThan(400));
+            Assert.That(enemyViewsRoot.transform.childCount, Is.LessThanOrEqualTo(firstWaveCount));
 
             var cinemachineCamera = playerFollowCamera.GetComponent<CinemachineCamera>();
             var positionComposer = playerFollowCamera.GetComponent<CinemachinePositionComposer>();

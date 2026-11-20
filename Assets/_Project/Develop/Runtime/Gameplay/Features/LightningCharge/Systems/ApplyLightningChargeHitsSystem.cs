@@ -20,7 +20,7 @@ namespace _Project.Gameplay.Features.LightningCharge.Systems
         private readonly LightningTargetRegistry _targets;
         private readonly LightningArcFactory _arcFactory;
         private readonly List<Impact> _impacts = new();
-        private readonly Dictionary<Entity, int> _hitsByEnemy = new();
+        private readonly Dictionary<Entity, HitRequest> _hitsByEnemy = new();
         private readonly HashSet<Entity> _visitedTargets = new();
 
         public ApplyLightningChargeHitsSystem(
@@ -65,12 +65,12 @@ namespace _Project.Gameplay.Features.LightningCharge.Systems
 
                 if (enemy.TryGet(out HitRequest hitRequest))
                 {
-                    hitRequest.Count += enemyHits.Value;
+                    hitRequest.Add(enemyHits.Value.Count, enemyHits.Value.Direction);
                     enemy.Set(hitRequest);
                 }
                 else
                 {
-                    commandBuffer.Add(enemy, new HitRequest { Count = enemyHits.Value });
+                    commandBuffer.Add(enemy, enemyHits.Value);
                 }
             }
 
@@ -120,9 +120,8 @@ namespace _Project.Gameplay.Features.LightningCharge.Systems
 
             _visitedTargets.Clear();
             _visitedTargets.Add(impact.Enemy);
-            AccumulateHit(impact.Enemy, ability.DamageHits);
-
             var swordPosition = World.Get<Position>(impact.Sword).Value;
+            AccumulateHit(impact.Enemy, ability.DamageHits, currentPosition - swordPosition);
             _arcFactory.Create(swordPosition, currentPosition);
 
             for (var targetIndex = 1;
@@ -140,16 +139,17 @@ namespace _Project.Gameplay.Features.LightningCharge.Systems
                 }
 
                 _visitedTargets.Add(nextEnemy);
-                AccumulateHit(nextEnemy, ability.DamageHits);
+                AccumulateHit(nextEnemy, ability.DamageHits, nextPosition - currentPosition);
                 _arcFactory.Create(currentPosition, nextPosition);
                 currentPosition = nextPosition;
             }
         }
 
-        private void AccumulateHit(Entity enemy, int hitCount)
+        private void AccumulateHit(Entity enemy, int hitCount, Vector2 direction)
         {
             _hitsByEnemy.TryGetValue(enemy, out var currentHits);
-            _hitsByEnemy[enemy] = currentHits + hitCount;
+            currentHits.Add(hitCount, direction);
+            _hitsByEnemy[enemy] = currentHits;
         }
 
         private readonly struct Impact

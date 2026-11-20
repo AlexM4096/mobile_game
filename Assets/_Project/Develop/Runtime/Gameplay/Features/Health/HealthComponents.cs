@@ -1,5 +1,6 @@
 using System;
 using _Project.Gameplay.Features.Collision;
+using UnityEngine;
 
 namespace _Project.Gameplay.Features.Health
 {
@@ -11,7 +12,20 @@ namespace _Project.Gameplay.Features.Health
 
     public struct DamageRequest { public float Amount; }
     public struct HealRequest { public float Amount; }
-    public struct HitRequest { public int Count; }
+    public struct HitRequest
+    {
+        public int Count;
+        public Vector2 Direction;
+
+        public void Add(int count, Vector2 direction)
+        {
+            Count += count;
+            if (count > 0 && direction.sqrMagnitude > 0f)
+            {
+                Direction = direction;
+            }
+        }
+    }
 
     public struct DamageOnCollision
     {
@@ -60,6 +74,7 @@ namespace _Project.Gameplay.Features.Health
         public int MaxHelmetDurability;
         public WeaponType WeaponType;
         public bool IsEnchanted;
+        public Vector2 DefeatDirection;
     }
 
     public struct DefenseViewUpdate

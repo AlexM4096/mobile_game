@@ -15,7 +15,7 @@ namespace _Project.Gameplay.Features.RainOfArrows.Systems
             new QueryDescription().WithAll<RainOfArrowsImpactRequest>();
 
         private readonly RainOfArrowsTargetRegistry _targets;
-        private readonly Dictionary<Entity, int> _hitsByEnemy = new();
+        private readonly Dictionary<Entity, HitRequest> _hitsByEnemy = new();
         private readonly List<Entity> _requests = new();
 
         public ApplyRainOfArrowsImpactsSystem(
@@ -56,12 +56,12 @@ namespace _Project.Gameplay.Features.RainOfArrows.Systems
 
                 if (enemy.TryGet(out HitRequest hitRequest))
                 {
-                    hitRequest.Count += entry.Value;
+                    hitRequest.Add(entry.Value.Count, entry.Value.Direction);
                     enemy.Set(hitRequest);
                 }
                 else
                 {
-                    commandBuffer.Add(enemy, new HitRequest { Count = entry.Value });
+                    commandBuffer.Add(enemy, entry.Value);
                 }
             }
 

@@ -15,6 +15,7 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
 
         private readonly EnemySpawnConfig _config;
         private readonly EnemyFactory _factory;
+        private readonly SceneSpawnZoneProvider _sceneZone;
         private readonly List<ActiveEmission> _activeEmissions = new();
         private System.Random _random;
         private bool _isEnabled;
@@ -25,10 +26,12 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
         public SpawnEnemiesSystem(
             World world,
             EnemySpawnConfig config,
-            EnemyFactory factory) : base(world)
+            EnemyFactory factory,
+            SceneSpawnZoneProvider sceneZone = null) : base(world)
         {
             _config = config;
             _factory = factory;
+            _sceneZone = sceneZone;
         }
 
         public override void Initialize()
@@ -145,14 +148,28 @@ namespace _Project.Gameplay.Features.EnemySpawn.Systems
         private void SpawnFrom(int emissionIndex, Entity player)
         {
             var emission = _activeEmissions[emissionIndex];
-            var position = SpawnPositionGenerator.GeneratePosition(_random, emission.Zone);
-            _factory.Create(
-                emission.Entry.Enemy,
-                emission.Entry.Loadout,
-                _config.EquipmentVisuals,
-                position,
-                _random,
-                player);
+            Vector2 position;
+            var canSpawn = true;
+            if (_sceneZone != null && _sceneZone.TryGetLayout(out var spawnBounds, out _))
+            {
+                canSpawn = _sceneZone.TryGeneratePosition(_random, spawnBounds, out position);
+            }
+            else
+            {
+                position = SpawnPositionGenerator.GeneratePosition(_random, emission.Zone);
+            }
+
+            if (canSpawn)
+            {
+                _factory.Create(
+                    emission.Entry.Enemy,
+                    emission.Entry.Loadout,
+                    _config.EquipmentVisuals,
+                    position,
+                    _random,
+                    player);
+            }
+
             emission.Remaining--;
             if (emission.Remaining == 0)
             {

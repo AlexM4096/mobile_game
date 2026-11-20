@@ -51,7 +51,7 @@ namespace _Project.Gameplay.Features.Player.Systems
             _pressAction.Enable();
         }
 
-        private static void StartOrbit(
+        private void StartOrbit(
             Vector2 playerPosition,
             Vector2 orbitCenter,
             Vector2 currentDirection,
@@ -74,6 +74,10 @@ namespace _Project.Gameplay.Features.Player.Systems
             motion.Mode = PlayerMotionMode.Orbit;
             motion.OrbitCenter = orbitCenter;
             motion.OrbitRadius = radiusMagnitude;
+            var burstBonus = _movementSettings.GetLaunchBurstBonus(motion.LaunchBurstRemaining);
+            var multiplier = _movementSettings.GetSpeedMultiplier(motion.ComboFireActive);
+            motion.OrbitEntryBaseSpeed = Mathf.Max(0f, currentVelocity.magnitude / multiplier - burstBonus);
+            motion.OrbitCharge = 0f;
             motion.OrbitDirection = Vector2.Dot(counterClockwiseTangent, incomingDirection) >= 0f ? 1f : -1f;
         }
 
@@ -86,8 +90,12 @@ namespace _Project.Gameplay.Features.Player.Systems
         {
             var radiusDirection = (playerPosition - motion.OrbitCenter).normalized;
             var tangent = new Vector2(-radiusDirection.y, radiusDirection.x) * motion.OrbitDirection;
+            motion.LaunchBurstRemaining = motion.OrbitCharge >= 1f ? _movementSettings.LaunchBurstDuration : 0f;
+            var speed = _movementSettings.GetLaunchSpeed(motion.OrbitCharge) +
+                _movementSettings.GetLaunchBurstBonus(motion.LaunchBurstRemaining);
             direction.Value = tangent;
-            velocity.Value = tangent * _movementSettings.LaunchSpeed;
+            velocity.Value = tangent * (speed * _movementSettings.GetSpeedMultiplier(motion.ComboFireActive));
+            motion.OrbitCharge = 0f;
             motion.Mode = PlayerMotionMode.Flight;
         }
 
